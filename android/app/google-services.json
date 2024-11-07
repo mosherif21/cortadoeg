@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "571315776995",
+    "project_id": "cortadoegypt",
+    "storage_bucket": "cortadoegypt.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:571315776995:android:2f1d92da147aa0896584d6",
+        "android_client_info": {
+          "package_name": "com.example.cortadoeg"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "571315776995-cg8piohemp24bmq1a5cc8vlig78q5ss8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.cortadoeg",
+            "certificate_hash": "0e7299de7218cc69529de35b3740625385716e42"
+          }
+        },
+        {
+          "client_id": "571315776995-lfhqdgh7nk6rtpqh577ap4g7n76ig14m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0al34m7eJRkNJxCvE0wJ7axqfqKD5aRU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "571315776995-lfhqdgh7nk6rtpqh577ap4g7n76ig14m.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "571315776995-0a9dnrh7e9mq0ucs53l14e7r2ipp860v.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.cortadoeg"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

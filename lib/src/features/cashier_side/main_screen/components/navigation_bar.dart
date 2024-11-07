@@ -1,0 +1,122 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
+import 'package:sidebarx/sidebarx.dart';
+
+import '../../../../constants/colors.dart';
+
+class SideNavigationBar extends StatelessWidget {
+  const SideNavigationBar({
+    super.key,
+    required SidebarXController controller,
+    required bool isLangEnglish,
+  })  : _controller = controller,
+        _isLangEnglish = isLangEnglish;
+
+  final SidebarXController _controller;
+  final bool _isLangEnglish;
+  @override
+  Widget build(BuildContext context) {
+    return SidebarX(
+      controller: _controller,
+      theme: SidebarXTheme(
+        margin: EdgeInsets.only(
+          left: _isLangEnglish ? 10 : 0,
+          right: _isLangEnglish ? 0 : 10,
+          top: 10,
+          bottom: 10,
+        ),
+        decoration: BoxDecoration(
+          color: canvasColor,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        hoverColor: scaffoldBackgroundColor,
+        textStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+        selectedTextStyle: const TextStyle(color: Colors.white),
+        hoverTextStyle: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w500,
+        ),
+        itemTextPadding: EdgeInsets.only(
+            left: _isLangEnglish ? 30 : 0, right: _isLangEnglish ? 0 : 30),
+        selectedItemTextPadding: EdgeInsets.only(
+            left: _isLangEnglish ? 30 : 0, right: _isLangEnglish ? 0 : 30),
+        itemDecoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: canvasColor),
+        ),
+        selectedItemDecoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: actionColor.withOpacity(0.37),
+          ),
+          gradient: const LinearGradient(
+            colors: [accentCanvasColor, canvasColor],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.28),
+              blurRadius: 30,
+            )
+          ],
+        ),
+        iconTheme: IconThemeData(
+          color: Colors.white.withOpacity(0.7),
+          size: 20,
+        ),
+        selectedIconTheme: const IconThemeData(
+          color: Colors.white,
+          size: 20,
+        ),
+      ),
+      extendedTheme: const SidebarXTheme(
+        width: 200,
+        decoration: BoxDecoration(
+          color: canvasColor,
+        ),
+      ),
+      headerBuilder: (context, extended) {
+        return SizedBox(
+          height: 150,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Image.asset('assets/images/logo_white.png'),
+          ),
+        );
+      },
+      items: [
+        SidebarXItem(
+            icon: FontAwesomeIcons.home,
+            label: 'home'.tr,
+            onLongPress: () => _controller.toggleExtended(),
+            iconSize: 20),
+        SidebarXItem(
+            icon: Icons.table_bar,
+            label: 'tables'.tr,
+            onLongPress: () => _controller.toggleExtended(),
+            iconSize: 25),
+        SidebarXItem(
+            icon: FontAwesomeIcons.history,
+            label: 'orders'.tr,
+            onLongPress: () => _controller.toggleExtended(),
+            iconSize: 20),
+        SidebarXItem(
+            icon: FontAwesomeIcons.chartArea,
+            label: 'reports'.tr,
+            // onTap: () => _showDisabledAlert(context),
+            onLongPress: () => _controller.toggleExtended(),
+            iconSize: 20),
+        SidebarXItem(
+            icon: FontAwesomeIcons.user,
+            label: 'account'.tr,
+            onLongPress: () => _controller.toggleExtended(),
+            iconSize: 20),
+        SidebarXItem(
+            icon: Icons.settings,
+            label: 'settings'.tr,
+            onLongPress: () => _controller.toggleExtended(),
+            iconSize: 25),
+      ],
+    );
+  }
+}

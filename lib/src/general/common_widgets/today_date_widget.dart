@@ -1,0 +1,65 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+
+class DateController extends GetxController {
+  var formattedDate = ''.obs; // Observable date string
+
+  @override
+  void onInit() {
+    super.onInit();
+    _updateDate();
+    _setDailyUpdate();
+  }
+
+  void _updateDate() {
+    formattedDate.value = DateFormat('EEE, dd MMM yyyy').format(DateTime.now());
+  }
+
+  void _setDailyUpdate() {
+    DateTime now = DateTime.now();
+    DateTime nextUpdate = DateTime(now.year, now.month, now.day + 1);
+    Duration timeUntilMidnight = nextUpdate.difference(now);
+
+    Timer(timeUntilMidnight, () {
+      _updateDate();
+      _setDailyUpdate();
+    });
+  }
+}
+
+class TodayDateWidget extends StatelessWidget {
+  const TodayDateWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final dateController = Get.put(DateController());
+
+    return Material(
+      elevation: 2,
+      borderRadius: BorderRadius.circular(25),
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        child: Row(
+          children: [
+            const Icon(
+              FontAwesomeIcons.calendar,
+              color: Colors.black54,
+              size: 22,
+            ),
+            const SizedBox(width: 10),
+            Obx(() => Text(
+                  dateController.formattedDate.value,
+                  style: const TextStyle(
+                      color: Colors.black54, fontWeight: FontWeight.w600),
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+}
