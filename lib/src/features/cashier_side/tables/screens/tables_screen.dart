@@ -253,7 +253,9 @@ class Table extends StatelessWidget {
                 innerRadius: 20,
                 outerRadius: 30,
                 child: Text(
-                  'T-${tableModel.number.toString()}',
+                  'tableNumber'.trParams({
+                    'number': tableModel.number.toString(),
+                  }),
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -272,7 +274,9 @@ class Table extends StatelessWidget {
                 innerRadius: 20,
                 outerRadius: 30,
                 child: Text(
-                  'T-${tableModel.number.toString()}',
+                  'tableNumber'.trParams({
+                    'number': tableModel.number.toString(),
+                  }),
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

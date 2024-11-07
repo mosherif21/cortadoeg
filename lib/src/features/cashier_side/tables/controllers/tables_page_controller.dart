@@ -49,7 +49,7 @@ class TablesPageController extends GetxController {
       TableModel(
           number: 10, status: TableStatus.unavailable, currentOrderId: null),
     ];
-    Timer(const Duration(seconds: 3), () {
+    Timer(const Duration(seconds: 1), () {
       loadingTables.value = false;
     });
     super.onReady();

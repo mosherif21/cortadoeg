@@ -274,6 +274,8 @@ class Languages extends Translations {
           'name': 'الاسم:',
           'deleteAccountTitle': 'حذف حسابك',
           'deleteAccount': 'حذف الحساب',
+          'placeOrder': 'تنفيذ الطلب',
+          'tableNumber': 'ط-@number'
         },
         'en_US': {
           'skip': 'Skip',
@@ -554,6 +556,8 @@ class Languages extends Translations {
           'name': 'Name: ',
           'deleteAccountTitle': 'Delete your account',
           'deleteAccount': 'Delete account',
+          'placeOrder': 'Place Order',
+          'tableNumber': 'T-@number'
         },
       };
 }

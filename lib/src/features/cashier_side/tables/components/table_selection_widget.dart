@@ -1,5 +1,6 @@
 import 'package:cortadoeg/src/general/general_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class TableSelectionWidget extends StatelessWidget {
   final int tableNo;
@@ -29,7 +30,9 @@ class TableSelectionWidget extends StatelessWidget {
             ),
             child: Center(
               child: Text(
-                'T-$tableNo',
+                'tableNumber'.trParams({
+                  'number': tableNo.toString(),
+                }),
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,

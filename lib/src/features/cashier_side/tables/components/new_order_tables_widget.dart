@@ -1,4 +1,5 @@
 import 'package:cortadoeg/src/features/cashier_side/tables/components/table_selection_widget.dart';
+import 'package:cortadoeg/src/general/common_widgets/icon_text_elevated_button.dart';
 import 'package:cortadoeg/src/general/general_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -123,17 +124,28 @@ class NewOrderTablesWidgetState extends State<NewOrderTablesWidget>
                       ],
                     ),
                     const SizedBox(width: 20),
-                    SingleChildScrollView(
-                      child: Row(
-                        children: [
-                          for (int table in widget.tablesNo)
-                            GestureDetector(
-                              onTap: () => widget.tablesNo.remove(table),
-                              child: TableSelectionWidget(tableNo: table),
-                            ),
-                        ],
+                    Expanded(
+                      child: StretchingOverscrollIndicator(
+                        axisDirection: AxisDirection.down,
+                        child: SingleChildScrollView(
+                          child: Row(
+                            children: [
+                              for (int table in widget.tablesNo)
+                                GestureDetector(
+                                  onTap: () => widget.tablesNo.remove(table),
+                                  child: TableSelectionWidget(tableNo: table),
+                                ),
+                            ],
+                          ),
+                        ),
                       ),
-                    )
+                    ),
+                    const SizedBox(width: 20),
+                    IconTextElevatedButton(
+                      icon: Icons.add_shopping_cart_rounded,
+                      text: 'placeOrder'.tr,
+                      onClick: () {},
+                    ),
                   ],
                 ),
               ),
