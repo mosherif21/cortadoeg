@@ -126,7 +126,7 @@ class TablesPageController extends GetxController {
       return;
     } else {
       showSnackBar(
-          text: 'Table isn\'t available', snackBarType: SnackBarType.error);
+          text: 'tableUnavailable'.tr, snackBarType: SnackBarType.error);
     }
   }
 
