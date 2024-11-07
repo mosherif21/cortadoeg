@@ -144,7 +144,7 @@ class NewOrderTablesWidgetState extends State<NewOrderTablesWidget>
                     IconTextElevatedButton(
                       icon: Icons.add_shopping_cart_rounded,
                       text: 'placeOrder'.tr,
-                      onClick: () {},
+                      onClick: () => widget.onNewOrderTap(),
                     ),
                   ],
                 ),

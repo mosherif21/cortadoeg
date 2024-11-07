@@ -1,3 +1,4 @@
+import 'package:cortadoeg/src/general/common_widgets/today_date_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -46,6 +47,9 @@ Future<void> setLocaleLanguage(String languageCode) async {
   if (Get.locale!.languageCode != languageCode) {
     await Get.updateLocale(locale(languageCode));
     await setLocale(languageCode);
+    if (Get.isRegistered<DateController>()) {
+      DateController.instance.updateDate();
+    }
     hideLoadingScreen();
   }
 }

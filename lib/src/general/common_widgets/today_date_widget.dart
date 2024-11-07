@@ -1,22 +1,26 @@
 import 'dart:async';
 
+import 'package:cortadoeg/src/general/general_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class DateController extends GetxController {
+  static DateController get instance => Get.find();
   var formattedDate = ''.obs; // Observable date string
 
   @override
   void onInit() {
     super.onInit();
-    _updateDate();
+    updateDate();
     _setDailyUpdate();
   }
 
-  void _updateDate() {
-    formattedDate.value = DateFormat('EEE, dd MMM yyyy').format(DateTime.now());
+  void updateDate() {
+    formattedDate.value =
+        DateFormat('EEE, dd MMM yyyy', isLangEnglish() ? 'en_US' : 'ar_SA')
+            .format(DateTime.now());
   }
 
   void _setDailyUpdate() {
@@ -25,7 +29,7 @@ class DateController extends GetxController {
     Duration timeUntilMidnight = nextUpdate.difference(now);
 
     Timer(timeUntilMidnight, () {
-      _updateDate();
+      updateDate();
       _setDailyUpdate();
     });
   }
@@ -52,11 +56,13 @@ class TodayDateWidget extends StatelessWidget {
               size: 22,
             ),
             const SizedBox(width: 10),
-            Obx(() => Text(
-                  dateController.formattedDate.value,
-                  style: const TextStyle(
-                      color: Colors.black54, fontWeight: FontWeight.w600),
-                )),
+            Obx(
+              () => Text(
+                dateController.formattedDate.value,
+                style: const TextStyle(
+                    color: Colors.black54, fontWeight: FontWeight.w600),
+              ),
+            ),
           ],
         ),
       ),

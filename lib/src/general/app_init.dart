@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sweetsheet/sweetsheet.dart';
@@ -44,6 +45,9 @@ class AppInit {
 
   static Future<void> initializeConstants() async {
     if (!isConstantsInitialised) {
+      await initializeDateFormatting('en_US', null);
+      await initializeDateFormatting('ar', null);
+
       prefs = await SharedPreferences.getInstance();
       isLocaleSet = await getIfLocaleIsSet();
       showOnBoard = await getShowOnBoarding();
