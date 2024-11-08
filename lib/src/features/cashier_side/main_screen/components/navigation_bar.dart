@@ -10,14 +10,21 @@ class SideNavigationBar extends StatelessWidget {
     super.key,
     required SidebarXController controller,
     required bool isLangEnglish,
+    required bool isPhone,
   })  : _controller = controller,
-        _isLangEnglish = isLangEnglish;
+        _isLangEnglish = isLangEnglish,
+        _isPhone = isPhone;
 
   final SidebarXController _controller;
   final bool _isLangEnglish;
+  final bool _isPhone;
   @override
   Widget build(BuildContext context) {
     return SidebarX(
+      showToggleButton: _isPhone ? false : true,
+      animationDuration: _isPhone
+          ? const Duration(milliseconds: 0)
+          : const Duration(milliseconds: 300),
       controller: _controller,
       theme: SidebarXTheme(
         margin: EdgeInsets.only(
@@ -88,33 +95,44 @@ class SideNavigationBar extends StatelessWidget {
         SidebarXItem(
             icon: FontAwesomeIcons.home,
             label: 'home'.tr,
-            onLongPress: () => _controller.toggleExtended(),
+            onLongPress:
+                (!_isPhone) ? () => _controller.toggleExtended() : null,
+            onTap: (_isPhone) ? () => Get.back() : null,
             iconSize: 20),
         SidebarXItem(
             icon: Icons.table_bar,
             label: 'tables'.tr,
-            onLongPress: () => _controller.toggleExtended(),
+            onLongPress:
+                (!_isPhone) ? () => _controller.toggleExtended() : null,
+            onTap: (_isPhone) ? () => Get.back() : null,
             iconSize: 25),
         SidebarXItem(
             icon: FontAwesomeIcons.history,
             label: 'orders'.tr,
-            onLongPress: () => _controller.toggleExtended(),
+            onLongPress:
+                (!_isPhone) ? () => _controller.toggleExtended() : null,
+            onTap: (_isPhone) ? () => Get.back() : null,
             iconSize: 20),
         SidebarXItem(
             icon: FontAwesomeIcons.chartArea,
             label: 'reports'.tr,
-            // onTap: () => _showDisabledAlert(context),
-            onLongPress: () => _controller.toggleExtended(),
+            onTap: (_isPhone) ? () => Get.back() : null,
+            onLongPress:
+                (!_isPhone) ? () => _controller.toggleExtended() : null,
             iconSize: 20),
         SidebarXItem(
             icon: FontAwesomeIcons.user,
             label: 'account'.tr,
-            onLongPress: () => _controller.toggleExtended(),
+            onLongPress:
+                (!_isPhone) ? () => _controller.toggleExtended() : null,
+            onTap: (_isPhone) ? () => Get.back() : null,
             iconSize: 20),
         SidebarXItem(
             icon: Icons.settings,
             label: 'settings'.tr,
-            onLongPress: () => _controller.toggleExtended(),
+            onLongPress:
+                (!_isPhone) ? () => _controller.toggleExtended() : null,
+            onTap: (_isPhone) ? () => Get.back() : null,
             iconSize: 25),
       ],
     );

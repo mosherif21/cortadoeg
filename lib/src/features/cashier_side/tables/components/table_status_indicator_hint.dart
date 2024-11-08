@@ -1,4 +1,5 @@
 import 'package:cortadoeg/src/features/cashier_side/tables/components/table_status_widget.dart';
+import 'package:cortadoeg/src/general/general_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -7,25 +8,31 @@ class TableStatusIndicatorHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        TableStatusWidget(
-          text: 'available'.tr,
-          color: Colors.green,
+    return StretchingOverscrollIndicator(
+      axisDirection: isLangEnglish() ? AxisDirection.right : AxisDirection.left,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            TableStatusWidget(
+              text: 'available'.tr,
+              color: Colors.green,
+            ),
+            TableStatusWidget(
+              text: 'occupied'.tr,
+              color: Colors.amber,
+            ),
+            TableStatusWidget(
+              text: 'billed'.tr,
+              color: Colors.black,
+            ),
+            TableStatusWidget(
+              text: 'unavailable'.tr,
+              color: Colors.grey.shade400,
+            ),
+          ],
         ),
-        TableStatusWidget(
-          text: 'occupied'.tr,
-          color: Colors.amber,
-        ),
-        TableStatusWidget(
-          text: 'billed'.tr,
-          color: Colors.black,
-        ),
-        TableStatusWidget(
-          text: 'unavailable'.tr,
-          color: Colors.grey.shade400,
-        ),
-      ],
+      ),
     );
   }
 }

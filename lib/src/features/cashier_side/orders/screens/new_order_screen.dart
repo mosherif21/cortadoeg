@@ -4,8 +4,8 @@ import 'package:get/get.dart';
 import '../../../../general/general_functions.dart';
 import '../../main_screen/components/main_screen_pages_appbar.dart';
 
-class AccountScreen extends StatelessWidget {
-  const AccountScreen({super.key});
+class NewOrdersScreen extends StatelessWidget {
+  const NewOrdersScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,9 +18,9 @@ class AccountScreen extends StatelessWidget {
           : AppBar(
               elevation: 0,
               title: MainScreenPagesAppbar(
-                appBarTitle: 'account'.tr,
-                unreadNotification: true,
                 isPhone: screenType.isPhone,
+                appBarTitle: 'ordersHistory'.tr,
+                unreadNotification: true,
               ),
               backgroundColor: Colors.white,
               foregroundColor: Colors.white,

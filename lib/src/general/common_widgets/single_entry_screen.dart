@@ -55,11 +55,13 @@ class SingleEntryScreen extends StatelessWidget {
         child: StretchingOverscrollIndicator(
           axisDirection: AxisDirection.down,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.only(
-                top: 15.0,
-                left: kDefaultPaddingSize,
-                right: 60,
-                bottom: kDefaultPaddingSize),
+            padding: screenType.isPhone
+                ? const EdgeInsets.all(25)
+                : const EdgeInsets.only(
+                    top: 15.0,
+                    left: kDefaultPaddingSize,
+                    right: 60,
+                    bottom: kDefaultPaddingSize),
             child: screenType.isPhone
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.center,

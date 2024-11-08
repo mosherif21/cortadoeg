@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hawk_fab_menu/hawk_fab_menu.dart';
 
-import '../../../../constants/colors.dart';
 import '../../../../general/common_widgets/coffee_cup_add_icon.dart';
 import '../../account/screens/account_screen.dart';
 import '../../home_screen/screens/home_screen.dart';
@@ -13,6 +12,7 @@ import '../../orders/screens/orders_screen.dart';
 import '../../reports/screens/reports_screen.dart';
 import '../../settings/screens/settings_screen.dart';
 import '../../tables/screens/tables_screen.dart';
+import '../components/main_screen_pages_appbar.dart';
 import '../components/navigation_bar.dart';
 
 class MainScreen extends StatelessWidget {
@@ -28,19 +28,37 @@ class MainScreen extends StatelessWidget {
       key: mainController.homeScaffoldKey,
       appBar: screenType.isPhone
           ? AppBar(
-              backgroundColor: canvasColor,
+              surfaceTintColor: Colors.white,
+              shadowColor: Colors.white,
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.white,
               leading: IconButton(
                 onPressed: mainController.onDrawerOpen,
                 icon: const Icon(
-                  Icons.menu,
-                  color: Colors.white,
+                  Icons.menu_outlined,
+                  color: Colors.black,
+                  size: 30,
                 ),
               ),
+              title: Obx(
+                () => MainScreenPagesAppbar(
+                  appBarTitle: mainController.pagesTitle.value,
+                  unreadNotification: true,
+                  isPhone: screenType.isPhone,
+                ),
+              ),
+              centerTitle: true,
             )
           : null,
-      drawer: SideNavigationBar(
-        controller: mainController.barController,
-        isLangEnglish: isLangEnglish(),
+      drawer: Container(
+        color: Colors.black,
+        child: SafeArea(
+          child: SideNavigationBar(
+            controller: mainController.barController,
+            isLangEnglish: isLangEnglish(),
+            isPhone: screenType.isPhone,
+          ),
+        ),
       ),
       body: HawkFabMenu(
         isEnglish: isLangEnglish(),
@@ -94,6 +112,7 @@ class MainScreen extends StatelessWidget {
               SideNavigationBar(
                 controller: mainController.barController,
                 isLangEnglish: isLangEnglish(),
+                isPhone: screenType.isPhone,
               ),
             Expanded(
               child: PageView.builder(

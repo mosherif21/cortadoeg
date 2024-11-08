@@ -14,16 +14,19 @@ class HomeScreen extends StatelessWidget {
     final screenWidth = getScreenWidth(context);
     final screenType = GetScreenType(context);
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        title: MainScreenPagesAppbar(
-          appBarTitle: 'activeOrders'.tr,
-          unreadNotification: true,
-        ),
-      ),
+      appBar: screenType.isPhone
+          ? null
+          : AppBar(
+              elevation: 0,
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.white,
+              surfaceTintColor: Colors.white,
+              title: MainScreenPagesAppbar(
+                isPhone: screenType.isPhone,
+                appBarTitle: 'activeOrders'.tr,
+                unreadNotification: true,
+              ),
+            ),
       backgroundColor: Colors.white,
       body: const SafeArea(
         child: StretchingOverscrollIndicator(

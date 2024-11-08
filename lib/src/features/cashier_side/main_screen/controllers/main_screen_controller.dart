@@ -23,6 +23,22 @@ class MainScreenController extends GetxController {
     barController.addListener(() {
       navBarIndex = barController.selectedIndex;
       pageController.jumpToPage(barController.selectedIndex);
+      switch (navBarIndex) {
+        case 0:
+          pagesTitle.value = 'activeOrders'.tr;
+        case 1:
+          pagesTitle.value = 'tablesView'.tr;
+        case 2:
+          pagesTitle.value = 'ordersHistory'.tr;
+        case 3:
+          pagesTitle.value = 'reports'.tr;
+        case 4:
+          pagesTitle.value = 'account'.tr;
+        case 5:
+          pagesTitle.value = 'settings'.tr;
+        default:
+          pagesTitle.value = 'activeOrders'.tr;
+      }
     });
 
     super.onReady();

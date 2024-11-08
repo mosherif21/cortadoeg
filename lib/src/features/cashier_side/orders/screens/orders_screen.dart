@@ -13,16 +13,19 @@ class OrdersScreen extends StatelessWidget {
     final screenWidth = getScreenWidth(context);
     final screenType = GetScreenType(context);
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        title: MainScreenPagesAppbar(
-          appBarTitle: 'ordersHistory'.tr,
-          unreadNotification: true,
-        ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-      ),
+      appBar: screenType.isPhone
+          ? null
+          : AppBar(
+              elevation: 0,
+              title: MainScreenPagesAppbar(
+                isPhone: screenType.isPhone,
+                appBarTitle: 'ordersHistory'.tr,
+                unreadNotification: true,
+              ),
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.white,
+              surfaceTintColor: Colors.white,
+            ),
       backgroundColor: Colors.white,
       body: const SafeArea(
         child: StretchingOverscrollIndicator(

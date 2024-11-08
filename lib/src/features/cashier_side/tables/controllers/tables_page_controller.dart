@@ -71,8 +71,16 @@ class TablesPageController extends GetxController {
       status: tempStatus,
       currentOrderId: tempOrderId,
     );
-    selectedTables.remove(toTableNo);
-    selectedTables.remove(fromTableNo);
+    if (selectedTables.contains(fromTableNo) ||
+        selectedTables.contains(toTableNo)) {
+      if (fromTable.status == TableStatus.available) {
+        selectedTables.remove(fromTableNo);
+        selectedTables.add(toTableNo);
+      } else {
+        selectedTables.remove(toTableNo);
+        selectedTables.add(fromTableNo);
+      }
+    }
     showSnackBar(
         text: 'tablesOrdersSwitched'.tr, snackBarType: SnackBarType.success);
   }

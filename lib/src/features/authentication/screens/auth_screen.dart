@@ -18,29 +18,20 @@ class AuthenticationScreen extends StatelessWidget {
     final screenHeight = getScreenHeight(context);
     final screenWidth = getScreenWidth(context);
     ConnectivityChecker.checkConnection(displayAlert: true);
-    return
-        // WillPopScope(
-        // onWillPop: () async {
-        //   if (AppInit.currentAuthType.value == AuthType.emailRegister) {
-        //     AppInit.currentAuthType.value = AuthType.emailLogin;
-        //     return false;
-        //   } else {
-        //     return true;
-        //   }
-        // },
-        // child:
-        Scaffold(
+    return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: StretchingOverscrollIndicator(
           axisDirection: AxisDirection.down,
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.only(
-                  top: 15.0,
-                  left: kDefaultPaddingSize,
-                  right: 50,
-                  bottom: kDefaultPaddingSize),
+              padding: screenType.isPhone
+                  ? const EdgeInsets.all(25)
+                  : const EdgeInsets.only(
+                      top: 15.0,
+                      left: kDefaultPaddingSize,
+                      right: 50,
+                      bottom: kDefaultPaddingSize),
               child: screenType.isPhone
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -83,7 +74,6 @@ class AuthenticationScreen extends StatelessWidget {
           ),
         ),
       ),
-      // ),
     );
   }
 }
