@@ -25,6 +25,7 @@ class TablesScreen extends StatelessWidget {
     final screenWidth = getScreenWidth(context);
     final screenType = GetScreenType(context);
     final controller = Get.put(TablesPageController());
+    controller.navBarAccess = navBarAccess;
     return Scaffold(
       appBar: screenType.isPhone
           ? !navBarAccess
@@ -32,7 +33,7 @@ class TablesScreen extends StatelessWidget {
                   leading: const RegularBackButton(padding: 0),
                   elevation: 0,
                   title: AutoSizeText(
-                    'tablesView'.tr,
+                    'tables'.tr,
                     style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,

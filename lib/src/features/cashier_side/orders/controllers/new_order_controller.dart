@@ -47,7 +47,12 @@ class NewOrderController extends GetxController {
         : items
             .where((item) => item.categoryId == categories[selectedCatIndex].id)
             .toList();
-    selectedItems.value = categoryFilteredItems;
+    final searchText = searchBarTextController.text.trim().toUpperCase();
+    selectedItems.value = searchText.isEmpty
+        ? categoryFilteredItems
+        : categoryFilteredItems
+            .where((item) => item.name.toUpperCase().contains(searchText))
+            .toList();
   }
 
   @override

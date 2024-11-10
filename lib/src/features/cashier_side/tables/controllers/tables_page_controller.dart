@@ -13,6 +13,7 @@ class TablesPageController extends GetxController {
   final RxList<int> selectedTables = <int>[].obs;
   final loadingTables = true.obs;
   late final StreamSubscription selectedTablesListener;
+  bool navBarAccess = true;
   @override
   void onInit() async {
     //
@@ -56,7 +57,7 @@ class TablesPageController extends GetxController {
     });
     selectedTablesListener = selectedTables.listen((tablesList) {
       final mainScreenController = MainScreenController.instance;
-      if (selectedTables.isNotEmpty) {
+      if (selectedTables.isNotEmpty && navBarAccess) {
         mainScreenController.showNewOrderButton.value = false;
       } else {
         mainScreenController.showNewOrderButton.value = true;
