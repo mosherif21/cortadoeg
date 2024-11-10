@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cortadoeg/src/features/cashier_side/main_screen/controllers/main_screen_controller.dart';
 import 'package:get/get.dart';
 
 import '../../../../constants/enums.dart';
@@ -11,6 +12,7 @@ class TablesPageController extends GetxController {
   final RxList<TableModel> tablesData = <TableModel>[].obs;
   final RxList<int> selectedTables = <int>[].obs;
   final loadingTables = true.obs;
+  late final StreamSubscription selectedTablesListener;
   @override
   void onInit() async {
     //
@@ -51,6 +53,14 @@ class TablesPageController extends GetxController {
     ];
     Timer(const Duration(seconds: 1), () {
       loadingTables.value = false;
+    });
+    selectedTablesListener = selectedTables.listen((tablesList) {
+      final mainScreenController = MainScreenController.instance;
+      if (selectedTables.isNotEmpty) {
+        mainScreenController.showNewOrderButton.value = false;
+      } else {
+        mainScreenController.showNewOrderButton.value = true;
+      }
     });
     super.onReady();
   }
@@ -140,7 +150,7 @@ class TablesPageController extends GetxController {
 
   @override
   void onClose() async {
-    //
+    selectedTablesListener.cancel();
     super.onClose();
   }
 }

@@ -11,7 +11,6 @@ class TableModel {
     this.currentOrderId,
   });
 
-  // Method to convert Firestore document to CafeTable object
   factory TableModel.fromFirestore(Map<String, dynamic> data) {
     return TableModel(
       number: data['number'] ?? 0,
@@ -20,7 +19,6 @@ class TableModel {
     );
   }
 
-  // Method to convert CafeTable object to Firestore document
   Map<String, dynamic> toFirestore() {
     return {
       'number': number,

@@ -8,6 +8,8 @@ const String kUkFlagImage = "assets/gifs/uk_flag.gif";
 const String kLogoImage = "assets/images/logo.png";
 const String kLogoDarkImage = "assets/images/logo_white.png";
 const String kCoffeeCupImage = "assets/images/coffee_cup.png";
+const String kCoffeeCup2Image = "assets/images/coffee_cup2.jpg";
+const String kCostaCupImage = "assets/images/costa_coffee.png";
 
 //--Lottie assets
 const kNoInternetSwitchAnim = "assets/lottie_animations/noInternetAnim.json";

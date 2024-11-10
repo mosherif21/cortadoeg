@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
+import '../../../../general/general_functions.dart';
+
 class NotificationsButton extends StatelessWidget {
   const NotificationsButton({super.key, required this.unreadNotification});
   final bool unreadNotification;
@@ -50,6 +52,7 @@ class NotificationsButton extends StatelessWidget {
           ),
         ),
         onTap: () {
+          displayChangeLang();
           // Get.to(
           //       () => const NotificationsScreen(),
           // );

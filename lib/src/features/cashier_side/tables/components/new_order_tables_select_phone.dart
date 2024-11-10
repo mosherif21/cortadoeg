@@ -1,11 +1,13 @@
 import 'package:cortadoeg/src/features/cashier_side/tables/components/table_selection_widget.dart';
-import 'package:cortadoeg/src/general/common_widgets/icon_text_elevated_button.dart';
 import 'package:cortadoeg/src/general/general_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class NewOrderTablesWidget extends StatefulWidget {
-  const NewOrderTablesWidget({
+import '../../../../general/common_widgets/coffee_cup_add_icon.dart';
+import '../../../../general/common_widgets/widget_elevated_button.dart';
+
+class NewOrderTablesSelectPhone extends StatefulWidget {
+  const NewOrderTablesSelectPhone({
     super.key,
     required this.tablesNo,
     required this.onNewOrderTap,
@@ -14,10 +16,11 @@ class NewOrderTablesWidget extends StatefulWidget {
   final Function onNewOrderTap;
 
   @override
-  NewOrderTablesWidgetState createState() => NewOrderTablesWidgetState();
+  NewOrderTablesSelectPhoneState createState() =>
+      NewOrderTablesSelectPhoneState();
 }
 
-class NewOrderTablesWidgetState extends State<NewOrderTablesWidget>
+class NewOrderTablesSelectPhoneState extends State<NewOrderTablesSelectPhone>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<Offset> _offsetAnimation;
@@ -61,18 +64,15 @@ class NewOrderTablesWidgetState extends State<NewOrderTablesWidget>
   @override
   Widget build(BuildContext context) {
     final screenWidth = getScreenWidth(context);
-    final isEnglish = isLangEnglish();
-
-    // Render the widget conditionally based on `_isVisible`
     return _isVisible
         ? Positioned(
             bottom: 20,
-            left: isEnglish ? 50 : 120,
-            right: isEnglish ? 120 : 50,
+            left: 10,
+            right: 10,
             child: SlideTransition(
               position: _offsetAnimation,
               child: Container(
-                width: screenWidth * 0.7,
+                width: screenWidth,
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   boxShadow: [
@@ -123,29 +123,41 @@ class NewOrderTablesWidgetState extends State<NewOrderTablesWidget>
                         ),
                       ],
                     ),
-                    const SizedBox(width: 20),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: StretchingOverscrollIndicator(
-                        axisDirection: AxisDirection.down,
+                        axisDirection: isLangEnglish()
+                            ? AxisDirection.right
+                            : AxisDirection.left,
                         child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
                           child: Row(
                             children: [
-                              for (int table in widget.tablesNo)
-                                GestureDetector(
-                                  onTap: () => widget.tablesNo.remove(table),
-                                  child: TableSelectionWidget(tableNo: table),
+                              for (int tableNo in widget.tablesNo)
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical:
+                                          widget.tablesNo.length > 2 ? 8 : 0),
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        widget.tablesNo.remove(tableNo),
+                                    child:
+                                        TableSelectionWidget(tableNo: tableNo),
+                                  ),
                                 ),
                             ],
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 20),
-                    IconTextElevatedButton(
-                      icon: Icons.add_shopping_cart_rounded,
-                      text: 'placeOrder'.tr,
+                    const SizedBox(width: 10),
+                    WidgetElevatedButton(
+                      widget: const CoffeeCupAddIcon(
+                        size: 40,
+                        addSize: 8,
+                      ),
                       onClick: () => widget.onNewOrderTap(),
-                    ),
+                    )
                   ],
                 ),
               ),

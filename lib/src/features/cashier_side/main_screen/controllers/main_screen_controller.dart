@@ -1,3 +1,4 @@
+import 'package:cortadoeg/src/features/cashier_side/tables/controllers/tables_page_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sidebarx/sidebarx.dart';
@@ -7,8 +8,8 @@ class MainScreenController extends GetxController {
   late final SidebarXController barController;
   late final GlobalKey<ScaffoldState> homeScaffoldKey;
   late final PageController pageController;
-  final pagesTitle = 'activeOrders'.tr.obs;
-  int navBarIndex = 0;
+  final navBarIndex = 0.obs;
+  final showNewOrderButton = true.obs;
 
   @override
   void onInit() async {
@@ -21,27 +22,41 @@ class MainScreenController extends GetxController {
   @override
   void onReady() {
     barController.addListener(() {
-      navBarIndex = barController.selectedIndex;
+      navBarIndex.value = barController.selectedIndex;
       pageController.jumpToPage(barController.selectedIndex);
-      switch (navBarIndex) {
-        case 0:
-          pagesTitle.value = 'activeOrders'.tr;
-        case 1:
-          pagesTitle.value = 'tablesView'.tr;
-        case 2:
-          pagesTitle.value = 'ordersHistory'.tr;
-        case 3:
-          pagesTitle.value = 'reports'.tr;
-        case 4:
-          pagesTitle.value = 'account'.tr;
-        case 5:
-          pagesTitle.value = 'settings'.tr;
-        default:
-          pagesTitle.value = 'activeOrders'.tr;
-      }
+      newOrderButtonVisibility();
     });
-
     super.onReady();
+  }
+
+  void newOrderButtonVisibility() {
+    if (Get.isRegistered<TablesPageController>()) {
+      final selectedTables = TablesPageController.instance.selectedTables;
+      if (navBarIndex.value != 1 && showNewOrderButton.value == false) {
+        showNewOrderButton.value = true;
+      } else if (navBarIndex.value == 1 && selectedTables.isNotEmpty) {
+        showNewOrderButton.value = false;
+      }
+    }
+  }
+
+  String getPageTitle(int navBarIndex) {
+    switch (navBarIndex) {
+      case 0:
+        return 'activeOrders'.tr;
+      case 1:
+        return 'tablesView'.tr;
+      case 2:
+        return 'ordersHistory'.tr;
+      case 3:
+        return 'reports'.tr;
+      case 4:
+        return 'account'.tr;
+      case 5:
+        return 'settings'.tr;
+      default:
+        return 'activeOrders'.tr;
+    }
   }
 
   @override

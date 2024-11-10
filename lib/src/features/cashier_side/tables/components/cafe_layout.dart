@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:get/get.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -55,27 +56,38 @@ class CafeLayout extends StatelessWidget {
           Expanded(
             child: Container(
               margin: const EdgeInsets.only(top: 100),
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              child: AnimationLimiter(
+                child: GridView.count(
                   crossAxisCount: 5,
-                  mainAxisSpacing: 20,
-                  crossAxisSpacing: 20,
-                ),
-                itemCount: 10,
-                itemBuilder: (context, index) {
-                  return Obx(
-                    () => controller.loadingTables.value
-                        ? const TableLoading()
-                        : InkWell(
-                            onTap: () => controller.onTableSelected(index),
-                            child: Table(
-                              tableModel: controller.tablesData[index],
-                              selected:
-                                  controller.selectedTables.contains(index + 1),
+                  children: List.generate(
+                    10,
+                    (int index) {
+                      return AnimationConfiguration.staggeredGrid(
+                        position: index,
+                        duration: const Duration(milliseconds: 300),
+                        columnCount: 5,
+                        child: ScaleAnimation(
+                          child: FadeInAnimation(
+                            child: Obx(
+                              () => controller.loadingTables.value
+                                  ? const TableLoading()
+                                  : InkWell(
+                                      onTap: () =>
+                                          controller.onTableSelected(index),
+                                      child: Table(
+                                        tableModel:
+                                            controller.tablesData[index],
+                                        selected: controller.selectedTables
+                                            .contains(index + 1),
+                                      ),
+                                    ),
                             ),
                           ),
-                  );
-                },
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
           ),

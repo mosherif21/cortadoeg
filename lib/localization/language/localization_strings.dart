@@ -276,6 +276,8 @@ class Languages extends Translations {
           'deleteAccount': 'حذف الحساب',
           'placeOrder': 'تنفيذ الطلب',
           'tableNumber': 'ط-@number',
+          'orderNumber': 'طلب #@number',
+          'searchItemsHint': 'ابحث عن جميع العناصر هنا...',
         },
         'en_US': {
           'skip': 'Skip',
@@ -558,6 +560,8 @@ class Languages extends Translations {
           'deleteAccount': 'Delete account',
           'placeOrder': 'Place Order',
           'tableNumber': 'T-@number',
+          'orderNumber': 'Order #@number',
+          'searchItemsHint': 'Search all items here...',
         },
       };
 }

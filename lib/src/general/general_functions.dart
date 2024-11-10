@@ -192,6 +192,16 @@ void displayAlertDialog({
 }
 
 Transition getPageTransition() {
+  final context = Get.context;
+  if (context != null) {
+    final isPhone = GetScreenType(context);
+    return !isPhone.isPhone
+        ? Transition.downToUp
+        : AppInit.currentLanguage == Language.english
+            ? Transition.rightToLeft
+            : Transition.leftToRight;
+  }
+
   return AppInit.currentLanguage == Language.english
       ? Transition.rightToLeft
       : Transition.leftToRight;

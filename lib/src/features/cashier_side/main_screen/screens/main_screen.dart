@@ -8,6 +8,8 @@ import 'package:hawk_fab_menu/hawk_fab_menu.dart';
 import '../../../../general/common_widgets/coffee_cup_add_icon.dart';
 import '../../account/screens/account_screen.dart';
 import '../../home_screen/screens/home_screen.dart';
+import '../../orders/screens/new_order_screen.dart';
+import '../../orders/screens/new_order_screen_phone.dart';
 import '../../orders/screens/orders_screen.dart';
 import '../../reports/screens/reports_screen.dart';
 import '../../settings/screens/settings_screen.dart';
@@ -42,7 +44,8 @@ class MainScreen extends StatelessWidget {
               ),
               title: Obx(
                 () => MainScreenPagesAppbar(
-                  appBarTitle: mainController.pagesTitle.value,
+                  appBarTitle: mainController
+                      .getPageTitle(mainController.navBarIndex.value),
                   unreadNotification: true,
                   isPhone: screenType.isPhone,
                 ),
@@ -60,89 +63,106 @@ class MainScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: HawkFabMenu(
-        isEnglish: isLangEnglish(),
-        openIcon: const Padding(
-          padding: EdgeInsets.all(8),
-          child: CoffeeCupAddIcon(size: 50),
-        ),
-        closeIcon: const Padding(
-          padding: EdgeInsets.all(10),
-          child: Icon(
-            Icons.close,
-            color: Colors.white,
-            size: 35,
+      body: Obx(
+        () => HawkFabMenu(
+          isButtonVisible: mainController.showNewOrderButton.value,
+          isEnglish: isLangEnglish(),
+          openIcon: const Padding(
+            padding: EdgeInsets.all(8),
+            child: CoffeeCupAddIcon(size: 50),
           ),
-        ),
-        fabColor: Colors.black,
-        iconColor: Colors.white,
-        items: [
-          HawkFabMenuItem(
-            label: 'dineInOrder'.tr,
-            ontap: () {
-              displayChangeLang();
-            },
-            icon: const Icon(
-              Icons.local_cafe,
+          closeIcon: const Padding(
+            padding: EdgeInsets.all(10),
+            child: Icon(
+              Icons.close,
               color: Colors.white,
               size: 35,
             ),
-            color: Colors.black,
-            labelColor: Colors.white,
-            labelBackgroundColor: Colors.black,
-            labelFontSize: 20,
           ),
-          HawkFabMenuItem(
-            label: 'takeawayOrder'.tr,
-            ontap: () {},
-            icon: const Icon(
-              Icons.delivery_dining_rounded,
-              color: Colors.white,
-              size: 35,
+          fabColor: Colors.black,
+          iconColor: Colors.white,
+          items: [
+            HawkFabMenuItem(
+              label: 'dineInOrder'.tr,
+              ontap: () => Get.to(
+                () => const TablesScreen(
+                  navBarAccess: false,
+                ),
+                transition: getPageTransition(),
+              ),
+              icon: const Icon(
+                Icons.local_cafe,
+                color: Colors.white,
+                size: 35,
+              ),
+              color: Colors.black,
+              labelColor: Colors.white,
+              labelBackgroundColor: Colors.black,
+              labelFontSize: 20,
             ),
-            color: Colors.black,
-            labelColor: Colors.white,
-            labelBackgroundColor: Colors.black,
-            labelFontSize: 20,
-          ),
-        ],
-        body: Row(
-          children: [
-            if (!screenType.isPhone)
-              SideNavigationBar(
-                controller: mainController.barController,
-                isLangEnglish: isLangEnglish(),
-                isPhone: screenType.isPhone,
+            HawkFabMenuItem(
+              label: 'takeawayOrder'.tr,
+              ontap: () => Get.to(
+                () => screenType.isPhone
+                    ? const NewOrdersScreenPhone(
+                        isTakeaway: true,
+                        currentOrderId: '3039',
+                      )
+                    : const NewOrdersScreen(
+                        isTakeaway: true,
+                        currentOrderId: '3039',
+                      ),
+                transition: getPageTransition(),
               ),
-            Expanded(
-              child: PageView.builder(
-                pageSnapping: false,
-                scrollDirection:
-                    screenType.isPhone ? Axis.horizontal : Axis.vertical,
-                physics: const NeverScrollableScrollPhysics(),
-                controller: mainController.pageController,
-                itemCount: 6,
-                itemBuilder: (BuildContext context, int index) {
-                  switch (index) {
-                    case 0:
-                      return const HomeScreen();
-                    case 1:
-                      return const TablesScreen();
-                    case 2:
-                      return const OrdersScreen();
-                    case 3:
-                      return const ReportsScreen();
-                    case 4:
-                      return const AccountScreen();
-                    case 5:
-                      return const SettingsScreen();
-                    default:
-                      return const HomeScreen();
-                  }
-                },
+              icon: const Icon(
+                Icons.delivery_dining_rounded,
+                color: Colors.white,
+                size: 35,
               ),
+              color: Colors.black,
+              labelColor: Colors.white,
+              labelBackgroundColor: Colors.black,
+              labelFontSize: 20,
             ),
           ],
+          body: Row(
+            children: [
+              if (!screenType.isPhone)
+                SideNavigationBar(
+                  controller: mainController.barController,
+                  isLangEnglish: isLangEnglish(),
+                  isPhone: screenType.isPhone,
+                ),
+              Expanded(
+                child: PageView.builder(
+                  pageSnapping: false,
+                  scrollDirection:
+                      screenType.isPhone ? Axis.horizontal : Axis.vertical,
+                  physics: const NeverScrollableScrollPhysics(),
+                  controller: mainController.pageController,
+                  itemCount: 6,
+                  itemBuilder: (BuildContext context, int index) {
+                    switch (index) {
+                      case 0:
+                        return const HomeScreen();
+                      case 1:
+                        return const TablesScreen(navBarAccess: true);
+                      case 2:
+                        return const OrdersScreen();
+                      case 3:
+                        return const ReportsScreen();
+                      case 4:
+                        return const AccountScreen();
+                      case 5:
+                        return const SettingsScreen();
+                      default:
+                        return const HomeScreen();
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

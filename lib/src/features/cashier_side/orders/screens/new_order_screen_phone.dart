@@ -4,13 +4,13 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:get/get.dart';
 
 import '../../../../general/general_functions.dart';
-import '../components/item_widget.dart';
-import '../components/new_order_categories.dart';
+import '../components/item_widget_phone.dart';
+import '../components/new_order_categories_phone.dart';
 import '../components/new_order_screen_appbar.dart';
 import '../controllers/new_order_controller.dart';
 
-class NewOrdersScreen extends StatelessWidget {
-  const NewOrdersScreen(
+class NewOrdersScreenPhone extends StatelessWidget {
+  const NewOrdersScreenPhone(
       {super.key,
       required this.isTakeaway,
       this.tablesNo,
@@ -50,10 +50,10 @@ class NewOrdersScreen extends StatelessWidget {
                       isTakeaway: isTakeaway,
                       currentOrderId: currentOrderId,
                       tablesNo: tablesNo,
-                      titleFontSize: 20,
+                      titleFontSize: 18,
                     ),
                     Obx(
-                      () => CategoryMenu(
+                      () => CategoryMenuPhone(
                         categories: controller.categories,
                         selectedCategory: controller.selectedCategory.value,
                         onSelect: controller.onCategorySelect,
@@ -68,7 +68,7 @@ class NewOrdersScreen extends StatelessWidget {
                             mainAxisSpacing: 20,
                             crossAxisSpacing: 20,
                             physics: const ScrollPhysics(),
-                            crossAxisCount: screenType.isPhone ? 2 : 5,
+                            crossAxisCount: 2,
                             shrinkWrap: true,
                             children: List.generate(
                               controller.selectedItems.length,
@@ -76,11 +76,11 @@ class NewOrdersScreen extends StatelessWidget {
                                 return AnimationConfiguration.staggeredGrid(
                                   position: index,
                                   duration: const Duration(milliseconds: 300),
-                                  columnCount: 5,
+                                  columnCount: 2,
                                   child: ScaleAnimation(
                                     child: FadeInAnimation(
-                                      child: ItemCard(
-                                        imageUrl: kCostaCupImage,
+                                      child: ItemCardPhone(
+                                        imageUrl: kCoffeeCup2Image,
                                         title: controller
                                             .selectedItems[index].name,
                                         price: controller.selectedItems[index]

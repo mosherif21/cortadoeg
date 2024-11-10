@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:get/get.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../constants/enums.dart';
 import '../../../../general/common_widgets/ripple_circle.dart';
-import '../../../../general/general_functions.dart';
 import '../components/models.dart';
 import '../controllers/tables_page_controller.dart';
 
@@ -44,27 +44,37 @@ class CafeLayoutPhone extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Expanded(
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            child: AnimationLimiter(
+              child: GridView.count(
                 crossAxisCount: 2,
-                mainAxisSpacing: 20,
-                crossAxisSpacing: 20,
-              ),
-              itemCount: 10,
-              itemBuilder: (context, index) {
-                return Obx(
-                  () => controller.loadingTables.value
-                      ? const TableLoading()
-                      : InkWell(
-                          onTap: () => controller.onTableSelected(index),
-                          child: Table(
-                            tableModel: controller.tablesData[index],
-                            selected:
-                                controller.selectedTables.contains(index + 1),
+                children: List.generate(
+                  10,
+                  (int index) {
+                    return AnimationConfiguration.staggeredGrid(
+                      position: index,
+                      duration: const Duration(milliseconds: 300),
+                      columnCount: 2,
+                      child: ScaleAnimation(
+                        child: FadeInAnimation(
+                          child: Obx(
+                            () => controller.loadingTables.value
+                                ? const TableLoading()
+                                : InkWell(
+                                    onTap: () =>
+                                        controller.onTableSelected(index),
+                                    child: Table(
+                                      tableModel: controller.tablesData[index],
+                                      selected: controller.selectedTables
+                                          .contains(index + 1),
+                                    ),
+                                  ),
                           ),
                         ),
-                );
-              },
+                      ),
+                    );
+                  },
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 20),
@@ -251,8 +261,8 @@ class TableLoading extends StatelessWidget {
       children: [
         // Chair Left
         Container(
-          width: 30,
-          height: 50,
+          width: 50,
+          height: 30,
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
@@ -261,11 +271,11 @@ class TableLoading extends StatelessWidget {
               )
             ],
             color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(isLangEnglish() ? 15 : 5),
-              topRight: Radius.circular(isLangEnglish() ? 5 : 15),
-              bottomLeft: Radius.circular(isLangEnglish() ? 15 : 5),
-              bottomRight: Radius.circular(isLangEnglish() ? 5 : 15),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(10),
+              topRight: Radius.circular(10),
+              bottomLeft: Radius.circular(5),
+              bottomRight: Radius.circular(5),
             ),
           ),
         ),
@@ -301,8 +311,8 @@ class TableLoading extends StatelessWidget {
         const SizedBox(height: 5),
         // Chair - Right
         Container(
-          width: 30,
-          height: 50,
+          width: 50,
+          height: 30,
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
@@ -311,11 +321,11 @@ class TableLoading extends StatelessWidget {
               )
             ],
             color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(isLangEnglish() ? 5 : 15),
-              topRight: Radius.circular(isLangEnglish() ? 15 : 5),
-              bottomLeft: Radius.circular(isLangEnglish() ? 5 : 15),
-              bottomRight: Radius.circular(isLangEnglish() ? 15 : 5),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(5),
+              topRight: Radius.circular(5),
+              bottomLeft: Radius.circular(10),
+              bottomRight: Radius.circular(10),
             ),
           ),
         ),
