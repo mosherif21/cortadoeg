@@ -154,7 +154,6 @@ class NewOrderTablesSelectPhoneState extends State<NewOrderTablesSelectPhone>
                     WidgetElevatedButton(
                       widget: const CoffeeCupAddIcon(
                         size: 40,
-                        addSize: 8,
                       ),
                       onClick: () => widget.onNewOrderTap(),
                     )

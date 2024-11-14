@@ -14,6 +14,7 @@ class TablesPageController extends GetxController {
   final loadingTables = true.obs;
   late final StreamSubscription selectedTablesListener;
   bool navBarAccess = true;
+
   @override
   void onInit() async {
     //
@@ -59,7 +60,7 @@ class TablesPageController extends GetxController {
       final mainScreenController = MainScreenController.instance;
       if (selectedTables.isNotEmpty && navBarAccess) {
         mainScreenController.showNewOrderButton.value = false;
-      } else {
+      } else if (selectedTables.isEmpty && navBarAccess) {
         mainScreenController.showNewOrderButton.value = true;
       }
     });
@@ -153,5 +154,10 @@ class TablesPageController extends GetxController {
   void onClose() async {
     selectedTablesListener.cancel();
     super.onClose();
+  }
+
+  void onBackPressed() {
+    if (selectedTables.isNotEmpty) selectedTables.value = [];
+    Get.back();
   }
 }

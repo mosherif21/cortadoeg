@@ -25,7 +25,10 @@ class NewOrdersScreenPhone extends StatelessWidget {
     final screenHeight = getScreenHeight(context);
     final screenWidth = getScreenWidth(context);
     final screenType = GetScreenType(context);
-    final controller = Get.put(NewOrderController());
+    final controller = Get.put(NewOrderController(
+        isTakeaway: isTakeaway,
+        currentOrderId: currentOrderId,
+        tablesNo: tablesNo));
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       body: SafeArea(

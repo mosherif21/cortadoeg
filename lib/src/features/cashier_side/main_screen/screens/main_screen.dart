@@ -88,7 +88,7 @@ class MainScreen extends StatelessWidget {
                 () => const TablesScreen(
                   navBarAccess: false,
                 ),
-                transition: getPageTransition(),
+                transition: Transition.noTransition,
               ),
               icon: const Icon(
                 Icons.local_cafe,
@@ -112,7 +112,7 @@ class MainScreen extends StatelessWidget {
                         isTakeaway: true,
                         currentOrderId: '3039',
                       ),
-                transition: getPageTransition(),
+                transition: Transition.noTransition,
               ),
               icon: const Icon(
                 Icons.delivery_dining_rounded,

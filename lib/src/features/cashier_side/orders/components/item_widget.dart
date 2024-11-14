@@ -1,8 +1,10 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../constants/assets_strings.dart';
+
 class ItemCard extends StatelessWidget {
-  final String imageUrl;
+  final String? imageUrl;
   final String title;
   final double price;
   final Function onSelected;
@@ -26,17 +28,17 @@ class ItemCard extends StatelessWidget {
         onTap: () => onSelected(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             ClipRRect(
               borderRadius: const BorderRadius.all(Radius.circular(15)),
               child: Image.asset(
-                imageUrl,
+                imageUrl ?? kCostaCupImage,
                 height: 150,
                 width: double.infinity,
                 fit: BoxFit.cover,
               ),
             ),
-            const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.all(10),
               child: Row(

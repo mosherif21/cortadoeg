@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class RegularBackButton extends StatelessWidget {
-  const RegularBackButton({Key? key, required this.padding}) : super(key: key);
+  const RegularBackButton({Key? key, required this.padding, this.backOverride})
+      : super(key: key);
   final double padding;
+  final Function? backOverride;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -19,7 +21,7 @@ class RegularBackButton extends StatelessWidget {
             size: 28,
           ),
         ),
-        onPressed: () => Get.back(),
+        onPressed: () => backOverride != null ? backOverride!() : Get.back(),
       ),
     );
   }

@@ -27,28 +27,27 @@ class CategoryItem extends StatelessWidget {
           onTap: isSelected ? null : () => onSelect(),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Icon(
-                  icon,
-                  size: 18,
-                  color: isSelected ? Colors.white : Colors.black54,
-                ),
-                Tooltip(
-                  message: categoryTitle,
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    borderRadius: BorderRadius.circular(8),
+            child: Tooltip(
+              message: categoryTitle,
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              textStyle: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+              margin: const EdgeInsets.all(5),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Icon(
+                    icon,
+                    size: 18,
+                    color: isSelected ? Colors.white : Colors.black54,
                   ),
-                  textStyle: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  margin: const EdgeInsets.all(5),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  child: ConstrainedBox(
+                  ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 70),
                     child: Text(
                       categoryTitle,
@@ -59,8 +58,8 @@ class CategoryItem extends StatelessWidget {
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

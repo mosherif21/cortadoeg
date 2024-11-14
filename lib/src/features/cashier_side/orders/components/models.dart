@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+import '../../../../constants/enums.dart';
 
 class CategoryModel {
   final String id;
@@ -28,21 +31,169 @@ class CategoryModel {
   }
 }
 
+class OrderModel {
+  final String id;
+  final List<String> tableIds;
+  final List<OrderItemModel> items;
+  final OrderStatus status;
+  final Timestamp timestamp;
+  final String? discountType;
+  final double? discountValue;
+  final double? customerId;
+  final double totalAmount;
+  final double? tips;
+
+  OrderModel({
+    required this.id,
+    required this.tableIds,
+    required this.items,
+    required this.status,
+    required this.timestamp,
+    this.discountType,
+    this.discountValue,
+    this.customerId,
+    required this.totalAmount,
+    this.tips,
+  });
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'id': id,
+      'tableIds': tableIds,
+      'items': items.map((item) => item.toFirestore()).toList(),
+      'status': status.name,
+      'orderDate': timestamp,
+      'discountType': discountType,
+      'customerId': customerId,
+      'discountValue': discountValue,
+      'totalAmount': totalAmount,
+      'tips': tips,
+    };
+  }
+
+  factory OrderModel.fromFirestore(Map<String, dynamic> map) {
+    return OrderModel(
+      id: map['id'],
+      tableIds: List<String>.from(map['tableIds']),
+      items: (map['items'] as List)
+          .map((itemMap) => OrderItemModel.fromFirestore(itemMap))
+          .toList(),
+      status: OrderStatus.values.firstWhere((e) => e.name == map['status']),
+      timestamp: map['orderDate'],
+      discountType: map['discountType'],
+      customerId: map['customerId'],
+      discountValue: map['discountValue']?.toDouble(),
+      totalAmount: map['totalAmount'].toDouble(),
+      tips: map['tips']?.toDouble(),
+    );
+  }
+}
+
+class OrderItemModel {
+  final String itemId;
+  final String? itemImageUrl;
+  final String name;
+  final String size;
+  final int quantity;
+  final Map<String, String> options;
+  final String sugarLevel;
+  final String note;
+  final double price;
+
+  OrderItemModel({
+    required this.itemId,
+    required this.name,
+    required this.size,
+    required this.quantity,
+    required this.options,
+    required this.sugarLevel,
+    required this.note,
+    this.itemImageUrl,
+    required this.price,
+  });
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'itemId': itemId,
+      'itemImageUrl': itemImageUrl,
+      'name': name,
+      'size': size,
+      'quantity': quantity,
+      'options': options,
+      'sugarLevel': sugarLevel,
+      'note': note,
+      'price': price,
+    };
+  }
+
+  factory OrderItemModel.fromFirestore(Map<String, dynamic> map) {
+    return OrderItemModel(
+      itemId: map['itemId'],
+      itemImageUrl: map['itemImageUrl'],
+      name: map['name'],
+      size: map['size'],
+      quantity: map['quantity'],
+      options: Map<String, String>.from(map['options']),
+      sugarLevel: map['sugarLevel'],
+      note: map['note'],
+      price: map['price'].toDouble(),
+    );
+  }
+}
+
+class CustomerModel {
+  final String customerId;
+  final String name;
+  final String number;
+  final String discountType;
+  final int discountValue;
+
+  CustomerModel({
+    required this.customerId,
+    required this.name,
+    required this.number,
+    required this.discountType,
+    required this.discountValue,
+  });
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'customerId': customerId,
+      'name': name,
+      'number': number,
+      'discountType': discountType,
+      'discountValue': discountValue,
+    };
+  }
+
+  factory CustomerModel.fromFirestore(Map<String, dynamic> map) {
+    return CustomerModel(
+      customerId: map['customerId'],
+      name: map['name'],
+      number: map['number'],
+      discountType: map['discountType'],
+      discountValue: map['discountValue'],
+    );
+  }
+}
+
 class ItemModel {
   final String id;
   final String name;
-  final String categoryId; // Reference to the category the item belongs to
+  final String description;
+  final String? imageUrl;
+  final String categoryId;
   final List<ItemSizeModel> sizes;
-  final List<String>
-      ingredientIds; // IDs of ingredients from the Inventory collection
-  final Map<String, List<String>>
-      options; // Example: {'milk': ['skimmed', 'almond', 'soy']}
-  final List<String> sugarLevels; // Example: ['no sugar', '1 tsp', '2 tsp']
+  final List<String> ingredientIds;
+  final Map<String, List<String>> options;
+  final List<String> sugarLevels;
 
   ItemModel({
     required this.id,
     required this.name,
     required this.categoryId,
+    required this.description,
+    this.imageUrl,
     this.sizes = const [],
     this.ingredientIds = const [],
     this.options = const {},
@@ -54,6 +205,8 @@ class ItemModel {
       id: id,
       name: data['name'] ?? '',
       categoryId: data['categoryId'] ?? '',
+      imageUrl: data['imageUrl'],
+      description: data['description'] ?? '',
       sizes: (data['sizes'] as List<dynamic>?)
               ?.map((size) => ItemSizeModel.fromFirestore(size))
               .toList() ??
@@ -67,11 +220,13 @@ class ItemModel {
   Map<String, dynamic> toFirestore() {
     return {
       'name': name,
+      'imageUrl': imageUrl,
       'categoryId': categoryId,
       'sizes': sizes.map((size) => size.toFirestore()).toList(),
       'ingredientIds': ingredientIds,
       'options': options,
       'sugarLevels': sugarLevels,
+      'description': description,
     };
   }
 }
@@ -107,280 +262,161 @@ class ItemSizeModel {
 List<ItemModel> cafeItemsExample = [
   ItemModel(
     id: "item1",
-    name: "Coffee Item 1",
+    name: "Espresso",
     categoryId: "3",
     sizes: [
-      ItemSizeModel(name: "Small", price: 3.0, costPrice: 1.5),
-      ItemSizeModel(name: "Medium", price: 4.0, costPrice: 2.0),
-      ItemSizeModel(name: "Large", price: 5.0, costPrice: 2.5),
+      ItemSizeModel(name: "Single", price: 2.5, costPrice: 1.0),
+      ItemSizeModel(name: "Double", price: 3.5, costPrice: 1.8),
     ],
-    ingredientIds: ['vanilla', 'sugar', 'flour'],
-    options: {
-      'milk': ['full fat', 'almond', 'soy', 'skimmed'],
-      'flavor': ['mango', 'strawberry', 'chocolate', 'mint', 'vanilla'],
-      'syrup': ['hazelnut', 'chocolate'],
-    },
-    sugarLevels: ['2 tsp'],
+    ingredientIds: ['coffeeBeans', 'water'],
+    sugarLevels: ['no sugar', '1 tsp'],
+    description:
+        'A rich, intense shot of espresso made from freshly ground coffee beans.',
   ),
   ItemModel(
     id: "item2",
-    name: "Cakes Item 2",
-    categoryId: "4",
+    name: "Cappuccino",
+    categoryId: "3",
     sizes: [
-      ItemSizeModel(name: "Small", price: 3.0, costPrice: 1.5),
-      ItemSizeModel(name: "Medium", price: 4.0, costPrice: 2.0),
-      ItemSizeModel(name: "Large", price: 5.0, costPrice: 2.5),
+      ItemSizeModel(name: "Small", price: 3.5, costPrice: 1.5),
+      ItemSizeModel(name: "Medium", price: 4.5, costPrice: 2.2),
+      ItemSizeModel(name: "Large", price: 5.5, costPrice: 3.0),
     ],
-    ingredientIds: ['cream', 'chocolate', 'milk'],
+    ingredientIds: ['coffeeBeans', 'milk', 'water'],
     options: {
-      'milk': ['full fat', 'skimmed'],
-      'flavor': ['strawberry', 'mint', 'vanilla', 'chocolate', 'mango'],
-      'syrup': ['chocolate', 'hazelnut'],
+      'milk': ['full fat', 'almond', 'oat'],
+      'flavor': ['vanilla', 'caramel'],
+      'syrup': ['chocolate', 'caramel'],
     },
-    sugarLevels: ['no sugar', '3 tsp'],
+    sugarLevels: ['1 tsp', '2 tsp'],
+    description:
+        'A classic Italian coffee with a rich, velvety foam and a sprinkle of chocolate.',
   ),
   ItemModel(
     id: "item3",
-    name: "Cakes Item 3",
+    name: "Muffin",
     categoryId: "4",
     sizes: [
-      ItemSizeModel(name: "Medium", price: 4.0, costPrice: 2.0),
-      ItemSizeModel(name: "Large", price: 5.0, costPrice: 2.5),
+      ItemSizeModel(name: "Regular", price: 2.5, costPrice: 1.2),
     ],
-    ingredientIds: ['nuts', 'milk', 'vanilla'],
+    ingredientIds: ['flour', 'sugar', 'milk', 'blueberries'],
     options: {
-      'milk': ['soy'],
-      'flavor': ['mint', 'mango', 'vanilla', 'strawberry', 'chocolate'],
-      'syrup': ['caramel', 'hazelnut'],
+      'flavor': ['blueberry', 'chocolate chip', 'banana nut'],
     },
-    sugarLevels: ['2 tsp', '1 tsp'],
+    sugarLevels: ['default'],
+    description:
+        'A soft, fluffy muffin filled with real blueberries or other seasonal flavors.',
   ),
   ItemModel(
     id: "item4",
-    name: "Cakes Item 4",
-    categoryId: "4",
+    name: "Lemonade",
+    categoryId: "1",
     sizes: [
-      ItemSizeModel(name: "Small", price: 3.0, costPrice: 1.5),
-      ItemSizeModel(name: "Large", price: 5.0, costPrice: 2.5),
+      ItemSizeModel(name: "Small", price: 2.0, costPrice: 0.8),
+      ItemSizeModel(name: "Large", price: 3.0, costPrice: 1.2),
     ],
-    ingredientIds: ['sugar', 'coffeeBeans'],
+    ingredientIds: ['lemon', 'sugar', 'water'],
     options: {
-      'milk': ['almond', 'skimmed', 'soy'],
-      'flavor': ['mango', 'strawberry', 'vanilla'],
-      'syrup': ['hazelnut'],
+      'flavor': ['mint', 'ginger'],
     },
-    sugarLevels: ['2 tsp'],
+    sugarLevels: ['no sugar', '1 tsp', '2 tsp'],
+    description:
+        'A refreshing lemonade made from freshly squeezed lemons and a touch of sweetness.',
   ),
   ItemModel(
     id: "item5",
-    name: "Cakes Item 5",
+    name: "Avocado Toast",
     categoryId: "4",
     sizes: [
-      ItemSizeModel(name: "Small", price: 3.0, costPrice: 1.5),
-      ItemSizeModel(name: "Large", price: 5.0, costPrice: 2.5),
+      ItemSizeModel(name: "Regular", price: 6.0, costPrice: 3.0),
     ],
-    ingredientIds: ['sugar', 'milk'],
+    ingredientIds: ['bread', 'avocado', 'olive oil', 'seasoning'],
     options: {
-      'milk': ['almond', 'full fat', 'skimmed'],
-      'flavor': ['vanilla', 'strawberry'],
-      'syrup': ['caramel', 'chocolate'],
+      'toppings': ['egg', 'smoked salmon', 'feta cheese'],
     },
-    sugarLevels: ['1 tsp', '2 tsp'],
+    sugarLevels: ['none'],
+    description:
+        'Toasted whole grain bread topped with creamy avocado and a variety of toppings.',
   ),
   ItemModel(
     id: "item6",
-    name: "Coffee Item 6",
+    name: "Iced Latte",
     categoryId: "3",
     sizes: [
-      ItemSizeModel(name: "Small", price: 3.0, costPrice: 1.5),
-      ItemSizeModel(name: "Medium", price: 4.5, costPrice: 2.2),
-      ItemSizeModel(name: "Large", price: 5.5, costPrice: 2.8),
+      ItemSizeModel(name: "Medium", price: 4.0, costPrice: 2.0),
+      ItemSizeModel(name: "Large", price: 5.0, costPrice: 2.5),
     ],
-    ingredientIds: ['sugar', 'coffeeBeans'],
+    ingredientIds: ['coffeeBeans', 'milk', 'ice'],
     options: {
-      'milk': ['almond', 'skimmed'],
-      'flavor': ['chocolate', 'vanilla'],
-      'syrup': ['caramel'],
+      'milk': ['full fat', 'skimmed', 'almond', 'oat'],
+      'syrup': ['vanilla', 'caramel', 'hazelnut'],
     },
-    sugarLevels: ['2 tsp', '1 tsp'],
+    sugarLevels: ['1 tsp', '2 tsp', '3 tsp'],
+    description:
+        'A chilled espresso drink blended with milk over ice and customizable with flavors.',
   ),
   ItemModel(
     id: "item7",
-    name: "Cakes Item 6",
+    name: "Bagel",
     categoryId: "4",
     sizes: [
-      ItemSizeModel(name: "Medium", price: 4.0, costPrice: 2.1),
-      ItemSizeModel(name: "Large", price: 5.0, costPrice: 2.6),
+      ItemSizeModel(name: "Single", price: 3.0, costPrice: 1.5),
     ],
-    ingredientIds: ['cream', 'chocolate', 'sugar'],
+    ingredientIds: ['flour', 'yeast', 'sugar', 'salt'],
     options: {
-      'milk': ['full fat', 'skimmed'],
-      'flavor': ['chocolate', 'mint'],
-      'syrup': ['chocolate'],
+      'toppings': ['cream cheese', 'smoked salmon', 'tomato', 'cucumber'],
     },
-    sugarLevels: ['no sugar', '3 tsp'],
+    sugarLevels: ['default'],
+    description:
+        'A fresh, chewy bagel with the option of various delicious toppings.',
   ),
   ItemModel(
     id: "item8",
-    name: "Ice Cream Item 6",
+    name: "Smoothie Bowl",
     categoryId: "2",
     sizes: [
-      ItemSizeModel(name: "Small", price: 3.0, costPrice: 1.4),
-      ItemSizeModel(name: "Large", price: 5.0, costPrice: 2.5),
+      ItemSizeModel(name: "Regular", price: 6.5, costPrice: 3.5),
     ],
-    ingredientIds: ['milk', 'chocolate'],
+    ingredientIds: ['banana', 'berries', 'yogurt', 'granola'],
     options: {
-      'milk': ['full fat', 'almond'],
-      'flavor': ['vanilla', 'chocolate'],
-      'syrup': ['caramel', 'hazelnut'],
+      'toppings': ['chia seeds', 'coconut flakes', 'honey'],
     },
-    sugarLevels: ['2 tsp', '3 tsp'],
+    sugarLevels: ['no sugar', '1 tsp'],
+    description:
+        'A nutritious smoothie bowl topped with fresh fruits, granola, and superfoods.',
   ),
   ItemModel(
     id: "item9",
-    name: "Cakes Item 7",
-    categoryId: "4",
+    name: "Hot Chocolate",
+    categoryId: "3",
     sizes: [
-      ItemSizeModel(name: "Small", price: 3.5, costPrice: 1.7),
-      ItemSizeModel(name: "Large", price: 5.5, costPrice: 2.9),
+      ItemSizeModel(name: "Small", price: 3.0, costPrice: 1.5),
+      ItemSizeModel(name: "Medium", price: 4.0, costPrice: 2.0),
+      ItemSizeModel(name: "Large", price: 5.0, costPrice: 2.5),
     ],
-    ingredientIds: ['cream', 'vanilla'],
+    ingredientIds: ['milk', 'chocolate', 'sugar'],
     options: {
-      'milk': ['soy', 'skimmed'],
-      'flavor': ['vanilla', 'strawberry'],
-      'syrup': ['hazelnut'],
+      'milk': ['full fat', 'almond', 'soy'],
+      'toppings': ['whipped cream', 'marshmallows', 'chocolate shavings'],
     },
-    sugarLevels: ['no sugar', '2 tsp'],
+    sugarLevels: ['1 tsp', '2 tsp', 'no sugar'],
+    description:
+        'A rich, creamy hot chocolate with optional toppings for added sweetness.',
   ),
   ItemModel(
     id: "item10",
-    name: "Ice Cream Item 7",
-    categoryId: "2",
-    sizes: [
-      ItemSizeModel(name: "Medium", price: 4.0, costPrice: 2.0),
-      ItemSizeModel(name: "Large", price: 5.5, costPrice: 2.8),
-    ],
-    ingredientIds: ['cream', 'milk'],
-    options: {
-      'milk': ['full fat', 'soy'],
-      'flavor': ['chocolate', 'mint'],
-      'syrup': ['chocolate'],
-    },
-    sugarLevels: ['1 tsp', '2 tsp'],
-  ),
-  ItemModel(
-    id: "item11",
-    name: "Coffee Item 7",
-    categoryId: "3",
-    sizes: [
-      ItemSizeModel(name: "Small", price: 2.8, costPrice: 1.4),
-      ItemSizeModel(name: "Medium", price: 4.2, costPrice: 2.0),
-      ItemSizeModel(name: "Large", price: 5.3, costPrice: 2.5),
-    ],
-    ingredientIds: ['sugar', 'coffeeBeans', 'milk'],
-    options: {
-      'milk': ['almond', 'full fat', 'soy'],
-      'flavor': ['vanilla', 'mint'],
-      'syrup': ['hazelnut'],
-    },
-    sugarLevels: ['3 tsp', '2 tsp'],
-  ),
-  ItemModel(
-    id: "item12",
-    name: "Cakes Item 8",
+    name: "Croissant",
     categoryId: "4",
     sizes: [
-      ItemSizeModel(name: "Small", price: 3.5, costPrice: 1.8),
-      ItemSizeModel(name: "Medium", price: 4.8, costPrice: 2.4),
-      ItemSizeModel(name: "Large", price: 5.9, costPrice: 3.1),
+      ItemSizeModel(name: "Single", price: 3.0, costPrice: 1.8),
     ],
-    ingredientIds: ['cream', 'sugar', 'coffeeBeans'],
+    ingredientIds: ['flour', 'butter', 'sugar', 'salt'],
     options: {
-      'milk': ['soy', 'skimmed'],
-      'flavor': ['chocolate', 'mint'],
-      'syrup': ['hazelnut'],
+      'fillings': ['chocolate', 'almond', 'cheese'],
     },
-    sugarLevels: ['1 tsp', '2 tsp'],
-  ),
-  ItemModel(
-    id: "item13",
-    name: "Ice Cream Item 8",
-    categoryId: "2",
-    sizes: [
-      ItemSizeModel(name: "Small", price: 3.0, costPrice: 1.6),
-      ItemSizeModel(name: "Large", price: 5.0, costPrice: 2.7),
-    ],
-    ingredientIds: ['milk', 'chocolate', 'cream'],
-    options: {
-      'milk': ['full fat', 'almond'],
-      'flavor': ['chocolate', 'mint'],
-      'syrup': ['chocolate', 'hazelnut'],
-    },
-    sugarLevels: ['2 tsp', '3 tsp'],
-  ),
-  ItemModel(
-    id: "item14",
-    name: "Coffee Item 8",
-    categoryId: "3",
-    sizes: [
-      ItemSizeModel(name: "Medium", price: 4.0, costPrice: 2.0),
-      ItemSizeModel(name: "Large", price: 5.0, costPrice: 2.3),
-    ],
-    ingredientIds: ['coffeeBeans', 'sugar'],
-    options: {
-      'milk': ['full fat', 'soy'],
-      'flavor': ['chocolate', 'vanilla'],
-      'syrup': ['hazelnut', 'caramel'],
-    },
-    sugarLevels: ['1 tsp', '2 tsp'],
-  ),
-  ItemModel(
-    id: "item15",
-    name: "Ice Cream Item 9",
-    categoryId: "2",
-    sizes: [
-      ItemSizeModel(name: "Small", price: 3.0, costPrice: 1.4),
-      ItemSizeModel(name: "Large", price: 5.0, costPrice: 2.5),
-    ],
-    ingredientIds: ['milk', 'cream'],
-    options: {
-      'milk': ['soy', 'full fat'],
-      'flavor': ['vanilla', 'chocolate'],
-      'syrup': ['caramel'],
-    },
-    sugarLevels: ['no sugar', '3 tsp'],
-  ),
-  ItemModel(
-    id: "item16",
-    name: "Cakes Item 9",
-    categoryId: "4",
-    sizes: [
-      ItemSizeModel(name: "Medium", price: 4.0, costPrice: 2.2),
-      ItemSizeModel(name: "Large", price: 5.5, costPrice: 2.8),
-    ],
-    ingredientIds: ['chocolate', 'milk'],
-    options: {
-      'milk': ['almond', 'soy'],
-      'flavor': ['mint', 'chocolate'],
-      'syrup': ['caramel'],
-    },
-    sugarLevels: ['2 tsp'],
-  ),
-  ItemModel(
-    id: "item17",
-    name: "Ice Cream Item 10",
-    categoryId: "2",
-    sizes: [
-      ItemSizeModel(name: "Medium", price: 3.5, costPrice: 1.7),
-      ItemSizeModel(name: "Large", price: 5.5, costPrice: 2.8),
-    ],
-    ingredientIds: ['milk', 'cream', 'chocolate'],
-    options: {
-      'milk': ['full fat', 'soy'],
-      'flavor': ['mint', 'vanilla'],
-      'syrup': ['caramel'],
-    },
-    sugarLevels: ['no sugar', '1 tsp'],
+    sugarLevels: ['default'],
+    description:
+        'A flaky, buttery croissant with options for sweet or savory fillings.',
   ),
 ];
 

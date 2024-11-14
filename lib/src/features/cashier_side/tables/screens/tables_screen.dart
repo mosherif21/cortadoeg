@@ -27,35 +27,38 @@ class TablesScreen extends StatelessWidget {
     final controller = Get.put(TablesPageController());
     controller.navBarAccess = navBarAccess;
     return Scaffold(
-      appBar: screenType.isPhone
-          ? !navBarAccess
-              ? AppBar(
-                  leading: const RegularBackButton(padding: 0),
-                  elevation: 0,
-                  title: AutoSizeText(
-                    'tables'.tr,
-                    style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black),
-                    maxLines: 1,
-                  ),
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.white,
-                  surfaceTintColor: Colors.white,
-                )
-              : null
-          : AppBar(
+      appBar: !navBarAccess
+          ? AppBar(
+              leading: RegularBackButton(
+                padding: 0,
+                backOverride: controller.onBackPressed,
+              ),
               elevation: 0,
-              title: MainScreenPagesAppbar(
-                isPhone: screenType.isPhone,
-                appBarTitle: 'tablesView'.tr,
-                unreadNotification: true,
+              title: AutoSizeText(
+                'tables'.tr,
+                style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black),
+                maxLines: 1,
               ),
               backgroundColor: Colors.white,
               foregroundColor: Colors.white,
               surfaceTintColor: Colors.white,
-            ),
+            )
+          : screenType.isPhone
+              ? null
+              : AppBar(
+                  elevation: 0,
+                  title: MainScreenPagesAppbar(
+                    isPhone: screenType.isPhone,
+                    appBarTitle: 'tablesView'.tr,
+                    unreadNotification: true,
+                  ),
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.white,
+                  surfaceTintColor: Colors.white,
+                ),
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Stack(

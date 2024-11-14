@@ -53,7 +53,7 @@ String formatOrderDetails({
   required bool isTakeaway,
   required List<int>? tablesNo,
 }) {
-  String orderStr = 'orderNumber'.trParams({
+  final orderStr = 'orderNumber'.trParams({
     'number': currentOrderId.toString(),
   });
   String locationStr;

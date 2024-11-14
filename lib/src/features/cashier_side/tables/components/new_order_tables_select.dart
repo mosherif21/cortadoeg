@@ -159,7 +159,6 @@ class NewOrderTablesSelectState extends State<NewOrderTablesSelect>
                           children: [
                             const CoffeeCupAddIcon(
                               size: 40,
-                              addSize: 8,
                             ),
                             const SizedBox(width: 5),
                             AutoSizeText(

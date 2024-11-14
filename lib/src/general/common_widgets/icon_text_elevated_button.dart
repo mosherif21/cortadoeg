@@ -12,6 +12,8 @@ class IconTextElevatedButton extends StatelessWidget {
     this.buttonColor = Colors.black,
     this.fontSize = 15,
     this.iconSize = 22,
+    this.borderRadius = 25,
+    this.elevation = 2,
   });
   final IconData icon;
   final String text;
@@ -21,15 +23,17 @@ class IconTextElevatedButton extends StatelessWidget {
   final Color? buttonColor;
   final double? fontSize;
   final double? iconSize;
+  final double borderRadius;
+  final double elevation;
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      elevation: 2,
-      borderRadius: BorderRadius.circular(25),
+      elevation: elevation,
+      borderRadius: BorderRadius.circular(borderRadius),
       color: buttonColor,
       child: InkWell(
-        borderRadius: BorderRadius.circular(25),
+        borderRadius: BorderRadius.circular(borderRadius),
         splashFactory: InkSparkle.splashFactory,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -40,7 +44,7 @@ class IconTextElevatedButton extends StatelessWidget {
                 color: iconColor,
                 size: iconSize,
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 5),
               AutoSizeText(
                 text,
                 style: TextStyle(
