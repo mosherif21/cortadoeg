@@ -6,25 +6,28 @@ import 'package:get/get.dart';
 import '../../../../general/common_widgets/section_divider.dart';
 import '../../../../general/general_functions.dart';
 import '../../main_screen/components/main_screen_pages_appbar.dart';
-import '../../orders/screens/new_order_screen.dart';
-import '../../orders/screens/new_order_screen_phone.dart';
 import '../components/cafe_layout.dart';
 import '../components/cafe_layout_phone.dart';
+import '../components/models.dart';
 import '../components/new_order_tables_select.dart';
 import '../components/new_order_tables_select_phone.dart';
 import '../components/table_status_indicator_hint.dart';
 import '../controllers/tables_page_controller.dart';
 
 class TablesScreen extends StatelessWidget {
-  const TablesScreen({super.key, required this.navBarAccess});
+  const TablesScreen({
+    super.key,
+    required this.navBarAccess,
+    required this.tablesData,
+  });
   final bool navBarAccess;
-
+  final List<TableModel> tablesData;
   @override
   Widget build(BuildContext context) {
     final screenHeight = getScreenHeight(context);
     final screenWidth = getScreenWidth(context);
     final screenType = GetScreenType(context);
-    final controller = Get.put(TablesPageController());
+    final controller = Get.put(TablesPageController(tablesInsert: tablesData));
     controller.navBarAccess = navBarAccess;
     return Scaffold(
       appBar: !navBarAccess
@@ -83,29 +86,13 @@ class TablesScreen extends StatelessWidget {
                   ? screenType.isPhone
                       ? NewOrderTablesSelectPhone(
                           tablesNo: controller.selectedTables,
-                          onNewOrderTap: () {
-                            Get.to(
-                              () => NewOrdersScreenPhone(
-                                isTakeaway: false,
-                                currentOrderId: '8392',
-                                tablesNo: controller.selectedTables,
-                              ),
-                              transition: Transition.noTransition,
-                            );
-                          },
+                          onNewOrderTap: () => controller.onNewOrder(
+                              isPhone: screenType.isPhone),
                         )
                       : NewOrderTablesSelect(
                           tablesNo: controller.selectedTables,
-                          onNewOrderTap: () {
-                            Get.to(
-                              () => NewOrdersScreen(
-                                isTakeaway: false,
-                                currentOrderId: '8392',
-                                tablesNo: controller.selectedTables,
-                              ),
-                              transition: Transition.noTransition,
-                            );
-                          },
+                          onNewOrderTap: () => controller.onNewOrder(
+                              isPhone: screenType.isPhone),
                         )
                   : const SizedBox.shrink(),
             ),

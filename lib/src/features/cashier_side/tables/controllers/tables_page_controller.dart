@@ -1,20 +1,25 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cortadoeg/src/features/cashier_side/main_screen/controllers/main_screen_controller.dart';
 import 'package:get/get.dart';
 
 import '../../../../constants/enums.dart';
 import '../../../../general/general_functions.dart';
+import '../../orders/components/models.dart';
+import '../../orders/screens/order_screen.dart';
+import '../../orders/screens/order_screen_phone.dart';
 import '../components/models.dart';
 
 class TablesPageController extends GetxController {
   static TablesPageController get instance => Get.find();
-  final RxList<TableModel> tablesData = <TableModel>[].obs;
+  final RxList<TableModel> tablesList = <TableModel>[].obs;
+  final List<TableModel> tablesInsert;
   final RxList<int> selectedTables = <int>[].obs;
   final loadingTables = true.obs;
   late final StreamSubscription selectedTablesListener;
   bool navBarAccess = true;
-
+  TablesPageController({required this.tablesInsert});
   @override
   void onInit() async {
     //
@@ -23,39 +28,10 @@ class TablesPageController extends GetxController {
 
   @override
   void onReady() {
-    tablesData.value = [
-      TableModel(
-          number: 1, status: TableStatus.available, currentOrderId: null),
-      TableModel(
-          number: 2, status: TableStatus.available, currentOrderId: null),
-      TableModel(
-          number: 3, status: TableStatus.available, currentOrderId: null),
-      TableModel(
-          number: 4,
-          status: TableStatus.occupied,
-          currentOrderId: 'order_8778'),
-      TableModel(
-          number: 5,
-          status: TableStatus.occupied,
-          currentOrderId: 'order_8006'),
-      TableModel(
-          number: 6, status: TableStatus.available, currentOrderId: null),
-      TableModel(
-          number: 7,
-          status: TableStatus.occupied,
-          currentOrderId: 'order_9162'),
-      TableModel(
-          number: 8, status: TableStatus.billed, currentOrderId: 'order_9169'),
-      TableModel(
-          number: 9,
-          status: TableStatus.occupied,
-          currentOrderId: 'order_5504'),
-      TableModel(
-          number: 10, status: TableStatus.unavailable, currentOrderId: null),
-    ];
     Timer(const Duration(seconds: 1), () {
       loadingTables.value = false;
     });
+    tablesList.value = tablesInsert;
     selectedTablesListener = selectedTables.listen((tablesList) {
       final mainScreenController = MainScreenController.instance;
       if (selectedTables.isNotEmpty && navBarAccess) {
@@ -68,17 +44,19 @@ class TablesPageController extends GetxController {
   }
 
   void switchTables(int fromTableNo, int toTableNo) {
-    final fromTable = tablesData[fromTableNo - 1];
-    final toTable = tablesData[toTableNo - 1];
+    final fromTable = tablesList[fromTableNo - 1];
+    final toTable = tablesList[toTableNo - 1];
     final tempStatus = fromTable.status;
     final tempOrderId = fromTable.currentOrderId;
-    tablesData[fromTableNo - 1] = TableModel(
+    tablesList[fromTableNo - 1] = TableModel(
+      tableId: fromTable.tableId,
       number: fromTable.number,
       status: toTable.status,
       currentOrderId: toTable.currentOrderId,
     );
 
-    tablesData[toTableNo - 1] = TableModel(
+    tablesList[toTableNo - 1] = TableModel(
+      tableId: toTable.tableId,
       number: toTable.number,
       status: tempStatus,
       currentOrderId: tempOrderId,
@@ -101,8 +79,8 @@ class TablesPageController extends GetxController {
     if (fromTableNo == toTableNo) {
       return false;
     }
-    final fromTable = tablesData[fromTableNo - 1];
-    final toTable = tablesData[toTableNo - 1];
+    final fromTable = tablesList[fromTableNo - 1];
+    final toTable = tablesList[toTableNo - 1];
     final noOrderToSwitch =
         fromTable.currentOrderId == null && toTable.currentOrderId == null;
     final sameOrder = fromTable.currentOrderId == toTable.currentOrderId;
@@ -125,19 +103,26 @@ class TablesPageController extends GetxController {
     }
   }
 
-  void onTableSelected(int tableIndex) {
-    final tableStatus = tablesData[tableIndex].status;
+  void onTableSelected(int tableIndex, bool isPhone) {
+    final tableStatus = tablesList[tableIndex].status;
     if (selectedTables.contains(tableIndex + 1)) {
       selectedTables.remove(tableIndex + 1);
     } else if (tableStatus == TableStatus.available) {
       selectedTables.add(tableIndex + 1);
     } else if (tableStatus == TableStatus.occupied && selectedTables.isEmpty) {
-      final currentOrderID = tablesData[tableIndex].currentOrderId;
-      showSnackBar(
-          text: 'Occupied order id $currentOrderID selected',
-          snackBarType: SnackBarType.success);
+      final currentOrderID = tablesList[tableIndex].currentOrderId;
+      final orderModel =
+          MainScreenController.instance.ordersList.where((order) {
+        return order.orderId == currentOrderID;
+      }).first;
+      Get.to(
+        () => isPhone
+            ? OrderScreenPhone(orderModel: orderModel)
+            : OrderScreen(orderModel: orderModel),
+        transition: Transition.noTransition,
+      );
     } else if (tableStatus == TableStatus.billed && selectedTables.isEmpty) {
-      final currentOrderID = tablesData[tableIndex].currentOrderId;
+      final currentOrderID = tablesList[tableIndex].currentOrderId;
       showSnackBar(
           text: 'Billed order id $currentOrderID selected',
           snackBarType: SnackBarType.success);
@@ -159,5 +144,54 @@ class TablesPageController extends GetxController {
   void onBackPressed() {
     if (selectedTables.isNotEmpty) selectedTables.value = [];
     Get.back();
+  }
+
+  onNewOrder({required bool isPhone}) {
+    final currentTimestamp = Timestamp.now();
+    final newOrder = OrderModel(
+      orderId: currentTimestamp.seconds.toString(),
+      tableNumbers: selectedTables.value,
+      items: [],
+      status: OrderStatus.active,
+      timestamp: currentTimestamp,
+      totalAmount: 0.0,
+      isTakeaway: false,
+    );
+
+    MainScreenController.instance.ordersList.add(newOrder);
+
+    final mainTablesList = MainScreenController.instance.tablesList;
+    updateTableStatuses(selectedTables, mainTablesList, newOrder.orderId);
+
+    selectedTables.value = [];
+    tablesList.value = mainTablesList;
+
+    navigateToOrderScreen(isPhone, newOrder);
+  }
+
+  void updateTableStatuses(List<int> selectedTableNumbers,
+      List<TableModel> mainTablesList, String orderId) {
+    for (int tableNo in selectedTableNumbers) {
+      final tableIndex =
+          mainTablesList.indexWhere((table) => table.number == tableNo);
+      if (tableIndex != -1) {
+        final table = mainTablesList[tableIndex];
+        mainTablesList[tableIndex] = TableModel(
+          tableId: table.tableId,
+          number: table.number,
+          status: TableStatus.occupied,
+          currentOrderId: orderId,
+        );
+      }
+    }
+  }
+
+  void navigateToOrderScreen(bool isPhone, OrderModel newOrder) {
+    Get.to(
+      () => isPhone
+          ? OrderScreenPhone(orderModel: newOrder)
+          : OrderScreen(orderModel: newOrder),
+      transition: Transition.noTransition,
+    );
   }
 }

@@ -100,7 +100,7 @@ class ItemDetails extends StatelessWidget {
                                 width: 10,
                               ),
                               onQtyChanged: (quantity) =>
-                                  controller.itemQuantity = quantity,
+                                  controller.itemQuantity.value = quantity,
                             ),
                           ],
                         ),
@@ -194,9 +194,8 @@ class ItemDetails extends StatelessWidget {
                             const SizedBox(height: 24),
                             RoundedElevatedButton(
                               enabled: true,
-                              buttonText: orderItem != null
-                                  ? 'updateOrder'.tr
-                                  : 'addToOrder'.tr,
+                              buttonText:
+                                  '${orderItem != null ? 'updateOrder'.tr : 'addToOrder'.tr} | \$${(controller.selectedSize.value.price * controller.itemQuantity.value).toStringAsFixed(2)}',
                               onPressed: () => controller.onAddTap(),
                               color: Colors.black,
                               borderRadius: 10,

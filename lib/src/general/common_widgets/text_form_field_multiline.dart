@@ -22,8 +22,13 @@ class TextFormFieldMultiline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
+      padding: const EdgeInsets.all(8.0),
       width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(10),
+      ),
       child: TextFormField(
         textInputAction: textInputAction,
         maxLines: 5,
@@ -32,19 +37,14 @@ class TextFormFieldMultiline extends StatelessWidget {
         inputFormatters: inputFormatter != null ? [inputFormatter!] : [],
         controller: textController,
         keyboardType: TextInputType.multiline,
-        cursorColor: Colors.black54,
+        cursorColor: Colors.black,
         decoration: InputDecoration(
-          labelStyle: const TextStyle(color: Colors.black),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          focusedBorder: const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(10)),
-            borderSide: BorderSide(color: Colors.black54),
-          ),
+          labelStyle: const TextStyle(color: Colors.black87),
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          filled: true,
+          fillColor: Colors.grey[200],
           labelText: labelText,
           hintText: hintText,
         ),

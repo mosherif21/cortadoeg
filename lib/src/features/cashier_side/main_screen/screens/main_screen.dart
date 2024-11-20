@@ -1,4 +1,5 @@
 import 'package:cortadoeg/src/connectivity/connectivity.dart';
+import 'package:cortadoeg/src/features/cashier_side/customers/screens/customers_screen.dart';
 import 'package:cortadoeg/src/features/cashier_side/main_screen/controllers/main_screen_controller.dart';
 import 'package:cortadoeg/src/general/general_functions.dart';
 import 'package:flutter/material.dart';
@@ -8,8 +9,6 @@ import 'package:hawk_fab_menu/hawk_fab_menu.dart';
 import '../../../../general/common_widgets/coffee_cup_add_icon.dart';
 import '../../account/screens/account_screen.dart';
 import '../../home_screen/screens/home_screen.dart';
-import '../../orders/screens/new_order_screen.dart';
-import '../../orders/screens/new_order_screen_phone.dart';
 import '../../orders/screens/orders_screen.dart';
 import '../../reports/screens/reports_screen.dart';
 import '../../settings/screens/settings_screen.dart';
@@ -85,8 +84,9 @@ class MainScreen extends StatelessWidget {
             HawkFabMenuItem(
               label: 'dineInOrder'.tr,
               ontap: () => Get.to(
-                () => const TablesScreen(
+                () => TablesScreen(
                   navBarAccess: false,
+                  tablesData: mainController.tablesList,
                 ),
                 transition: Transition.noTransition,
               ),
@@ -102,18 +102,8 @@ class MainScreen extends StatelessWidget {
             ),
             HawkFabMenuItem(
               label: 'takeawayOrder'.tr,
-              ontap: () => Get.to(
-                () => screenType.isPhone
-                    ? const NewOrdersScreenPhone(
-                        isTakeaway: true,
-                        currentOrderId: '3039',
-                      )
-                    : const NewOrdersScreen(
-                        isTakeaway: true,
-                        currentOrderId: '3039',
-                      ),
-                transition: Transition.noTransition,
-              ),
+              ontap: () =>
+                  mainController.onTakeawayOrderTap(screenType.isPhone),
               icon: const Icon(
                 Icons.delivery_dining_rounded,
                 color: Colors.white,
@@ -140,20 +130,25 @@ class MainScreen extends StatelessWidget {
                       screenType.isPhone ? Axis.horizontal : Axis.vertical,
                   physics: const NeverScrollableScrollPhysics(),
                   controller: mainController.pageController,
-                  itemCount: 6,
+                  itemCount: 7,
                   itemBuilder: (BuildContext context, int index) {
                     switch (index) {
                       case 0:
                         return const HomeScreen();
                       case 1:
-                        return const TablesScreen(navBarAccess: true);
+                        return TablesScreen(
+                          navBarAccess: true,
+                          tablesData: mainController.tablesList,
+                        );
                       case 2:
                         return const OrdersScreen();
                       case 3:
-                        return const ReportsScreen();
+                        return const CustomersScreen();
                       case 4:
-                        return const AccountScreen();
+                        return const ReportsScreen();
                       case 5:
+                        return const AccountScreen();
+                      case 6:
                         return const SettingsScreen();
                       default:
                         return const HomeScreen();

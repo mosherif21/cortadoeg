@@ -14,9 +14,11 @@ class IconTextElevatedButton extends StatelessWidget {
     this.iconSize = 22,
     this.borderRadius = 25,
     this.elevation = 2,
+    this.enabled = true,
   });
   final IconData icon;
   final String text;
+  final bool enabled;
   final Function onClick;
   final Color? textColor;
   final Color? iconColor;
@@ -31,13 +33,15 @@ class IconTextElevatedButton extends StatelessWidget {
     return Material(
       elevation: elevation,
       borderRadius: BorderRadius.circular(borderRadius),
-      color: buttonColor,
+      color: enabled ? buttonColor : Colors.grey,
       child: InkWell(
         borderRadius: BorderRadius.circular(borderRadius),
         splashFactory: InkSparkle.splashFactory,
+        onTap: enabled ? () => onClick() : null,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 icon,
@@ -55,7 +59,6 @@ class IconTextElevatedButton extends StatelessWidget {
             ],
           ),
         ),
-        onTap: () => onClick(),
       ),
     );
   }

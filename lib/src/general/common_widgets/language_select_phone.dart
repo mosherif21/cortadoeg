@@ -33,7 +33,7 @@ class LanguageSelectPhone extends StatelessWidget {
             child: OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
                 shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                    borderRadius: BorderRadius.all(Radius.circular(10))),
                 splashFactory: InkSparkle.splashFactory,
                 foregroundColor: Colors.black54,
               ),
@@ -58,7 +58,7 @@ class LanguageSelectPhone extends StatelessWidget {
             child: OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
                 shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(25.0))),
+                    borderRadius: BorderRadius.all(Radius.circular(10))),
                 splashFactory: InkSparkle.splashFactory,
                 foregroundColor: Colors.black54,
               ),

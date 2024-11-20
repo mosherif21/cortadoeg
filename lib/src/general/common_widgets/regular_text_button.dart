@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 
 class RegularTextButton extends StatelessWidget {
   const RegularTextButton(
-      {super.key, required this.buttonText, required this.onPressed});
+      {super.key,
+      required this.buttonText,
+      required this.onPressed,
+      this.textColor = Colors.black87});
   final String buttonText;
   final Function onPressed;
+  final Color textColor;
   @override
   Widget build(BuildContext context) {
     return TextButton(
@@ -13,7 +17,7 @@ class RegularTextButton extends StatelessWidget {
       onPressed: () => onPressed(),
       child: Text(
         buttonText,
-        style: const TextStyle(color: Colors.black87),
+        style: TextStyle(color: textColor),
       ),
     );
   }

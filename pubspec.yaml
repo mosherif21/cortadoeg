@@ -60,6 +60,9 @@ dependencies:
   input_quantity: ^2.5.0
   expansion_tile_group: ^2.1.0
   flutter_slidable: ^3.1.1
+  intl_phone_field: ^3.2.0
+  draggable_bottom_sheet: ^1.0.2
+  bottom_sheet: ^4.0.4
 
   #state management dependencies
   get: ^4.6.6

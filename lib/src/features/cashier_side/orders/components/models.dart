@@ -32,8 +32,9 @@ class CategoryModel {
 }
 
 class OrderModel {
-  final String id;
-  final List<String> tableIds;
+  final String orderId;
+  final bool isTakeaway;
+  final List<int>? tableNumbers;
   final List<OrderItemModel> items;
   final OrderStatus status;
   final Timestamp timestamp;
@@ -41,11 +42,11 @@ class OrderModel {
   final double? discountValue;
   final double? customerId;
   final double totalAmount;
-  final double? tips;
 
   OrderModel({
-    required this.id,
-    required this.tableIds,
+    required this.orderId,
+    required this.isTakeaway,
+    this.tableNumbers,
     required this.items,
     required this.status,
     required this.timestamp,
@@ -53,13 +54,12 @@ class OrderModel {
     this.discountValue,
     this.customerId,
     required this.totalAmount,
-    this.tips,
   });
 
   Map<String, dynamic> toFirestore() {
     return {
-      'id': id,
-      'tableIds': tableIds,
+      'isTakeaway': isTakeaway,
+      'tableNumbers': tableNumbers,
       'items': items.map((item) => item.toFirestore()).toList(),
       'status': status.name,
       'orderDate': timestamp,
@@ -67,14 +67,14 @@ class OrderModel {
       'customerId': customerId,
       'discountValue': discountValue,
       'totalAmount': totalAmount,
-      'tips': tips,
     };
   }
 
-  factory OrderModel.fromFirestore(Map<String, dynamic> map) {
+  factory OrderModel.fromFirestore(Map<String, dynamic> map, String id) {
     return OrderModel(
-      id: map['id'],
-      tableIds: List<String>.from(map['tableIds']),
+      orderId: id,
+      isTakeaway: map['isTakeaway'],
+      tableNumbers: List<int>.from(map['tableNumbers']),
       items: (map['items'] as List)
           .map((itemMap) => OrderItemModel.fromFirestore(itemMap))
           .toList(),
@@ -84,12 +84,12 @@ class OrderModel {
       customerId: map['customerId'],
       discountValue: map['discountValue']?.toDouble(),
       totalAmount: map['totalAmount'].toDouble(),
-      tips: map['tips']?.toDouble(),
     );
   }
 }
 
 class OrderItemModel {
+  final String orderItemId;
   final String itemId;
   final String? itemImageUrl;
   final String name;
@@ -101,6 +101,7 @@ class OrderItemModel {
   final double price;
 
   OrderItemModel({
+    required this.orderItemId,
     required this.itemId,
     required this.name,
     required this.size,
@@ -114,6 +115,7 @@ class OrderItemModel {
 
   Map<String, dynamic> toFirestore() {
     return {
+      'orderItemId': orderItemId,
       'itemId': itemId,
       'itemImageUrl': itemImageUrl,
       'name': name,
@@ -128,6 +130,7 @@ class OrderItemModel {
 
   factory OrderItemModel.fromFirestore(Map<String, dynamic> map) {
     return OrderItemModel(
+      orderItemId: map['orderItemId'],
       itemId: map['itemId'],
       itemImageUrl: map['itemImageUrl'],
       name: map['name'],
@@ -146,7 +149,7 @@ class CustomerModel {
   final String name;
   final String number;
   final String discountType;
-  final int discountValue;
+  final double discountValue;
 
   CustomerModel({
     required this.customerId,
@@ -158,7 +161,6 @@ class CustomerModel {
 
   Map<String, dynamic> toFirestore() {
     return {
-      'customerId': customerId,
       'name': name,
       'number': number,
       'discountType': discountType,
@@ -166,9 +168,9 @@ class CustomerModel {
     };
   }
 
-  factory CustomerModel.fromFirestore(Map<String, dynamic> map) {
+  factory CustomerModel.fromFirestore(Map<String, dynamic> map, String id) {
     return CustomerModel(
-      customerId: map['customerId'],
+      customerId: id,
       name: map['name'],
       number: map['number'],
       discountType: map['discountType'],
@@ -178,7 +180,7 @@ class CustomerModel {
 }
 
 class ItemModel {
-  final String id;
+  final String itemId;
   final String name;
   final String description;
   final String? imageUrl;
@@ -189,7 +191,7 @@ class ItemModel {
   final List<String> sugarLevels;
 
   ItemModel({
-    required this.id,
+    required this.itemId,
     required this.name,
     required this.categoryId,
     required this.description,
@@ -202,7 +204,7 @@ class ItemModel {
 
   factory ItemModel.fromFirestore(Map<String, dynamic> data, String id) {
     return ItemModel(
-      id: id,
+      itemId: id,
       name: data['name'] ?? '',
       categoryId: data['categoryId'] ?? '',
       imageUrl: data['imageUrl'],
@@ -259,9 +261,128 @@ class ItemSizeModel {
   }
 }
 
+List<OrderModel> ordersExample = [
+  OrderModel(
+    orderId: '30123',
+    tableNumbers: [4],
+    items: [],
+    status: OrderStatus.active,
+    timestamp: Timestamp.now(),
+    totalAmount: 0.0,
+    isTakeaway: false,
+  ),
+  OrderModel(
+    orderId: '30124',
+    tableNumbers: [7],
+    items: [],
+    status: OrderStatus.active,
+    timestamp: Timestamp.now(),
+    totalAmount: 0.0,
+    isTakeaway: false,
+  ),
+  OrderModel(
+    orderId: '30125',
+    tableNumbers: [8],
+    items: [],
+    status: OrderStatus.active,
+    timestamp: Timestamp.now(),
+    totalAmount: 0.0,
+    isTakeaway: false,
+  ),
+  OrderModel(
+    orderId: '30126',
+    tableNumbers: [9],
+    items: [],
+    status: OrderStatus.active,
+    timestamp: Timestamp.now(),
+    totalAmount: 0.0,
+    isTakeaway: false,
+  ),
+];
+
+List<CategoryModel> categoriesExample = [
+  CategoryModel(id: '1', name: 'All Menu', iconName: 'allMenu'),
+  CategoryModel(id: '2', name: 'Ice Cream', iconName: 'fa_ice_cream'),
+  CategoryModel(id: '3', name: 'Coffee', iconName: 'coffee'),
+  CategoryModel(id: '4', name: 'Cakes', iconName: 'fa_birthday_cake'),
+  CategoryModel(id: '4', name: 'Special Cakes', iconName: 'fa_birthday_cake'),
+];
+List<CustomerModel> customersExample = [
+  CustomerModel(
+    customerId: 'C001',
+    name: 'Ali Ahmed',
+    number: '0501234567',
+    discountType: 'percentage',
+    discountValue: 10,
+  ),
+  CustomerModel(
+    customerId: 'C002',
+    name: 'Sara Khalid',
+    number: '0559876543',
+    discountType: 'value',
+    discountValue: 15,
+  ),
+  CustomerModel(
+    customerId: 'C003',
+    name: 'Mona Hassan',
+    number: '0523345678',
+    discountType: 'percentage',
+    discountValue: 20,
+  ),
+  CustomerModel(
+    customerId: 'C004',
+    name: 'Omar Saleh',
+    number: '0537654321',
+    discountType: 'value',
+    discountValue: 25,
+  ),
+  CustomerModel(
+    customerId: 'C005',
+    name: 'Reem Youssef',
+    number: '0501122334',
+    discountType: 'percentage',
+    discountValue: 5,
+  ),
+  CustomerModel(
+    customerId: 'C006',
+    name: 'Hassan Ali',
+    number: '0582233445',
+    discountType: 'value',
+    discountValue: 30,
+  ),
+  CustomerModel(
+    customerId: 'C007',
+    name: 'Noura Abdulaziz',
+    number: '0564433221',
+    discountType: 'percentage',
+    discountValue: 15,
+  ),
+  CustomerModel(
+    customerId: 'C008',
+    name: 'Yasir Faris',
+    number: '0573344556',
+    discountType: 'value',
+    discountValue: 20,
+  ),
+  CustomerModel(
+    customerId: 'C009',
+    name: 'Laila Mohammed',
+    number: '0545566778',
+    discountType: 'percentage',
+    discountValue: 8,
+  ),
+  CustomerModel(
+    customerId: 'C010',
+    name: 'Faisal Majed',
+    number: '0599988776',
+    discountType: 'value',
+    discountValue: 10,
+  ),
+];
+
 List<ItemModel> cafeItemsExample = [
   ItemModel(
-    id: "item1",
+    itemId: "item1",
     name: "Espresso",
     categoryId: "3",
     sizes: [
@@ -274,7 +395,7 @@ List<ItemModel> cafeItemsExample = [
         'A rich, intense shot of espresso made from freshly ground coffee beans.',
   ),
   ItemModel(
-    id: "item2",
+    itemId: "item2",
     name: "Cappuccino",
     categoryId: "3",
     sizes: [
@@ -293,7 +414,7 @@ List<ItemModel> cafeItemsExample = [
         'A classic Italian coffee with a rich, velvety foam and a sprinkle of chocolate.',
   ),
   ItemModel(
-    id: "item3",
+    itemId: "item3",
     name: "Muffin",
     categoryId: "4",
     sizes: [
@@ -308,7 +429,7 @@ List<ItemModel> cafeItemsExample = [
         'A soft, fluffy muffin filled with real blueberries or other seasonal flavors.',
   ),
   ItemModel(
-    id: "item4",
+    itemId: "item4",
     name: "Lemonade",
     categoryId: "1",
     sizes: [
@@ -324,7 +445,7 @@ List<ItemModel> cafeItemsExample = [
         'A refreshing lemonade made from freshly squeezed lemons and a touch of sweetness.',
   ),
   ItemModel(
-    id: "item5",
+    itemId: "item5",
     name: "Avocado Toast",
     categoryId: "4",
     sizes: [
@@ -339,7 +460,7 @@ List<ItemModel> cafeItemsExample = [
         'Toasted whole grain bread topped with creamy avocado and a variety of toppings.',
   ),
   ItemModel(
-    id: "item6",
+    itemId: "item6",
     name: "Iced Latte",
     categoryId: "3",
     sizes: [
@@ -356,7 +477,7 @@ List<ItemModel> cafeItemsExample = [
         'A chilled espresso drink blended with milk over ice and customizable with flavors.',
   ),
   ItemModel(
-    id: "item7",
+    itemId: "item7",
     name: "Bagel",
     categoryId: "4",
     sizes: [
@@ -371,7 +492,7 @@ List<ItemModel> cafeItemsExample = [
         'A fresh, chewy bagel with the option of various delicious toppings.',
   ),
   ItemModel(
-    id: "item8",
+    itemId: "item8",
     name: "Smoothie Bowl",
     categoryId: "2",
     sizes: [
@@ -386,7 +507,7 @@ List<ItemModel> cafeItemsExample = [
         'A nutritious smoothie bowl topped with fresh fruits, granola, and superfoods.',
   ),
   ItemModel(
-    id: "item9",
+    itemId: "item9",
     name: "Hot Chocolate",
     categoryId: "3",
     sizes: [
@@ -404,7 +525,7 @@ List<ItemModel> cafeItemsExample = [
         'A rich, creamy hot chocolate with optional toppings for added sweetness.',
   ),
   ItemModel(
-    id: "item10",
+    itemId: "item10",
     name: "Croissant",
     categoryId: "4",
     sizes: [

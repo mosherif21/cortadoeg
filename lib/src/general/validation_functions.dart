@@ -11,6 +11,32 @@ String? validateTextOnly(String? value) {
   return null;
 }
 
+String? textNotEmpty(String? value) {
+  if (value == null || value.isEmpty) {
+    return 'textEmpty'.tr;
+  }
+  return null;
+}
+
+String? validateNumbersOnly(String? value) {
+  if (value == null || value.isEmpty) {
+    return 'textEmpty'.tr;
+  }
+  // Check if the value is a valid number (integer or double)
+  final isNumberOnly = RegExp(r'^\d+(\.\d+)?$').hasMatch(value);
+  if (!isNumberOnly) {
+    return 'enterNumber'.tr;
+  }
+  return null;
+}
+
+String? numberNotEmpty(String? value) {
+  if (value == null || value.isEmpty) {
+    return 'textEmpty'.tr;
+  }
+  return null;
+}
+
 String? validatePassword(String? value) {
   if (value == null || value.isEmpty) {
     return 'passwordRequired'.tr;

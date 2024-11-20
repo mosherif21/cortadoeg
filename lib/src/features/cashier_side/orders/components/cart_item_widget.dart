@@ -16,7 +16,7 @@ class CartItemWidget extends StatelessWidget {
     required this.onDismissed,
     required this.index,
   });
-  final GlobalKey<ExpansionTileCoreState> key0 = GlobalKey();
+
   final GlobalKey<ExpansionTileCoreState> key1 = GlobalKey();
   final int index;
   final OrderItemModel orderItemModel;
@@ -24,6 +24,7 @@ class CartItemWidget extends StatelessWidget {
   final Function onDeleteTap;
   final Function onDismissed;
   final RxBool extended = false.obs;
+  final GlobalKey<ExpansionTileCoreState> key0 = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +78,7 @@ class CartItemWidget extends StatelessWidget {
         ClipRRect(
           borderRadius: const BorderRadius.all(Radius.circular(10)),
           child: Image.asset(
-            kCoffeeCup2Image,
+            orderItemModel.itemImageUrl ?? kCostaCupImage,
             height: 70,
             width: 70,
             fit: BoxFit.cover,
@@ -124,6 +125,7 @@ class CartItemWidget extends StatelessWidget {
                         extended.value
                             ? Icons.keyboard_arrow_up_rounded
                             : Icons.keyboard_arrow_down_rounded,
+                        color: Colors.grey,
                       ),
                     ),
                     Text(

@@ -61,9 +61,9 @@ class CafeLayoutPhone extends StatelessWidget {
                                 ? const TableLoading()
                                 : InkWell(
                                     onTap: () =>
-                                        controller.onTableSelected(index),
+                                        controller.onTableSelected(index, true),
                                     child: Table(
-                                      tableModel: controller.tablesData[index],
+                                      tableModel: controller.tablesList[index],
                                       selected: controller.selectedTables
                                           .contains(index + 1),
                                     ),

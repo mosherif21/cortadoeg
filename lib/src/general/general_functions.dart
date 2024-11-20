@@ -194,8 +194,8 @@ void displayAlertDialog({
 Transition getPageTransition() {
   final context = Get.context;
   if (context != null) {
-    final isPhone = GetScreenType(context);
-    return !isPhone.isPhone
+    final screenType = GetScreenType(context);
+    return !screenType.isPhone
         ? Transition.downToUp
         : AppInit.currentLanguage == Language.english
             ? Transition.rightToLeft
@@ -211,7 +211,7 @@ void displayChangeLang() {
   if (Get.context != null) {
     final screenType = GetScreenType(Get.context!);
     screenType.isPhone
-        ? RegularBottomSheet.showRegularBottomSheet(
+        ? showRegularBottomSheet(
             LanguageSelectPhone(
               onEnglishLanguagePress: () {
                 setLocaleLanguageButton(
