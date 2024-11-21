@@ -31,11 +31,7 @@ class TablesScreen extends StatelessWidget {
     controller.navBarAccess = navBarAccess;
     return PopScope(
       canPop: true,
-      onPopInvoked: (pop) {
-        if (!navBarAccess) {
-          controller.navBarAccess = true;
-        }
-      },
+      onPopInvoked: (pop) => controller.onTablesScreenPop(),
       child: Scaffold(
         appBar: !navBarAccess
             ? AppBar(

@@ -3,7 +3,9 @@ import 'package:cortadoeg/src/features/cashier_side/orders/components/models.dar
 import 'package:draggable_bottom_sheet/draggable_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 
+import '../../../../constants/assets_strings.dart';
 import '../../../../general/common_widgets/back_button.dart';
 import '../../../../general/common_widgets/icon_text_elevated_button.dart';
 import '../../../../general/general_functions.dart';
@@ -365,41 +367,70 @@ class ChargeScreenPhone extends StatelessWidget {
           children: [
             Expanded(
               child: Obx(
-                () => StretchingOverscrollIndicator(
-                  axisDirection: AxisDirection.down,
-                  child: ListView.builder(
-                    scrollDirection: Axis.vertical,
-                    itemCount: controller.orderItems.length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.all(10),
-                        child: CheckOutItemPhone(
-                          orderItemModel: controller.orderItems[index],
-                          onEditTap: () => controller.onEditItem(
-                              index, context, screenType.isPhone),
-                          onDeleteTap: () => controller.onDeleteItem(index),
-                          onDismissed: () => controller.onDeleteItem(index),
-                          index: index,
-                          onQuantityChanged: (newQuantity) {
-                            final orderItem = controller.orderItems[index];
-                            controller.orderItems[index] = OrderItemModel(
-                              name: orderItem.name,
-                              size: orderItem.size,
-                              quantity: newQuantity,
-                              options: orderItem.options,
-                              sugarLevel: orderItem.sugarLevel,
-                              note: orderItem.note,
-                              price: orderItem.price,
-                              orderItemId: orderItem.orderItemId,
-                              itemId: orderItem.itemId,
+                () => controller.orderItems.isNotEmpty
+                    ? StretchingOverscrollIndicator(
+                        axisDirection: AxisDirection.down,
+                        child: ListView.builder(
+                          scrollDirection: Axis.vertical,
+                          itemCount: controller.orderItems.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: CheckOutItemPhone(
+                                orderItemModel: controller.orderItems[index],
+                                onEditTap: () => controller.onEditItem(
+                                    index, context, screenType.isPhone),
+                                onDeleteTap: () =>
+                                    controller.onDeleteItem(index),
+                                onDismissed: () =>
+                                    controller.onDeleteItem(index),
+                                index: index,
+                                onQuantityChanged: (newQuantity) {
+                                  final orderItem =
+                                      controller.orderItems[index];
+                                  controller.orderItems[index] = OrderItemModel(
+                                    name: orderItem.name,
+                                    size: orderItem.size,
+                                    quantity: newQuantity,
+                                    options: orderItem.options,
+                                    sugarLevel: orderItem.sugarLevel,
+                                    note: orderItem.note,
+                                    price: orderItem.price,
+                                    orderItemId: orderItem.orderItemId,
+                                    itemId: orderItem.itemId,
+                                  );
+                                  controller.calculateTotalAmount();
+                                },
+                              ),
                             );
-                            controller.calculateTotalAmount();
                           },
                         ),
-                      );
-                    },
-                  ),
-                ),
+                      )
+                    : Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(50),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Lottie.asset(
+                                kEmptyCartAnim,
+                                fit: BoxFit.contain,
+                                height: screenHeight * 0.25,
+                              ),
+                              const SizedBox(height: 10),
+                              AutoSizeText(
+                                'noItemsCart'.tr,
+                                style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.w800),
+                                maxLines: 1,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
               ),
             ),
             const SizedBox(height: 115),

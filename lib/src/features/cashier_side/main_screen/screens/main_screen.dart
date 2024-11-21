@@ -8,7 +8,6 @@ import 'package:hawk_fab_menu/hawk_fab_menu.dart';
 
 import '../../../../general/common_widgets/coffee_cup_add_icon.dart';
 import '../../account/screens/account_screen.dart';
-import '../../home_screen/screens/home_screen.dart';
 import '../../orders/screens/orders_screen.dart';
 import '../../reports/screens/reports_screen.dart';
 import '../../settings/screens/settings_screen.dart';
@@ -130,28 +129,29 @@ class MainScreen extends StatelessWidget {
                       screenType.isPhone ? Axis.horizontal : Axis.vertical,
                   physics: const NeverScrollableScrollPhysics(),
                   controller: mainController.pageController,
-                  itemCount: 7,
+                  itemCount: 6,
                   itemBuilder: (BuildContext context, int index) {
                     switch (index) {
                       case 0:
-                        return const HomeScreen();
-                      case 1:
                         return TablesScreen(
                           navBarAccess: true,
                           tablesData: mainController.tablesList,
                         );
-                      case 2:
+                      case 1:
                         return const OrdersScreen();
-                      case 3:
+                      case 2:
                         return const CustomersScreen();
-                      case 4:
+                      case 3:
                         return const ReportsScreen();
-                      case 5:
+                      case 4:
                         return const AccountScreen();
-                      case 6:
+                      case 5:
                         return const SettingsScreen();
                       default:
-                        return const HomeScreen();
+                        return TablesScreen(
+                          navBarAccess: true,
+                          tablesData: mainController.tablesList,
+                        );
                     }
                   },
                 ),

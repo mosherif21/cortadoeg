@@ -209,4 +209,11 @@ class TablesPageController extends GetxController {
       transition: Transition.noTransition,
     );
   }
+
+  onTablesScreenPop() {
+    if (!navBarAccess) {
+      navBarAccess = true;
+      if (selectedTables.isNotEmpty) selectedTables.value = [];
+    }
+  }
 }

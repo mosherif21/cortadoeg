@@ -43,9 +43,9 @@ class MainScreenController extends GetxController {
   void newOrderButtonVisibility() {
     if (Get.isRegistered<TablesPageController>()) {
       final selectedTables = TablesPageController.instance.selectedTables;
-      if (navBarIndex.value != 1 && showNewOrderButton.value == false) {
+      if (navBarIndex.value != 0 && showNewOrderButton.value == false) {
         showNewOrderButton.value = true;
-      } else if (navBarIndex.value == 1 && selectedTables.isNotEmpty) {
+      } else if (navBarIndex.value == 0 && selectedTables.isNotEmpty) {
         showNewOrderButton.value = false;
       }
     }
@@ -54,19 +54,17 @@ class MainScreenController extends GetxController {
   String getPageTitle(int navBarIndex) {
     switch (navBarIndex) {
       case 0:
-        return 'activeOrders'.tr;
+        return 'tables'.tr;
       case 1:
-        return 'tablesView'.tr;
-      case 2:
         return 'ordersHistory'.tr;
-      case 3:
+      case 2:
         return 'reports'.tr;
-      case 4:
+      case 3:
         return 'account'.tr;
-      case 5:
+      case 4:
         return 'settings'.tr;
       default:
-        return 'activeOrders'.tr;
+        return 'tablesView'.tr;
     }
   }
 

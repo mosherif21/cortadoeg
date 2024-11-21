@@ -40,6 +40,8 @@ class OrderController extends GetxController {
   final RxDouble discountAmount = 0.0.obs;
   final RxDouble orderTotal = 0.0.obs;
   final RxDouble orderTax = 0.0.obs;
+  final double taxRate = 14;
+
   @override
   void onInit() async {
     searchBarTextController = TextEditingController();
@@ -127,19 +129,19 @@ class OrderController extends GetxController {
   double calculateTotalAmount() {
     orderSubtotal.value = orderItems.fold(
         0, (addition, item) => addition + item.price * item.quantity);
-
     discountAmount.value = 0.0;
     if (discountType != null && discountValue != null) {
       if (discountType == 'percentage') {
-        discountAmount.value = orderSubtotal * (discountValue! / 100);
+        discountAmount.value = orderSubtotal.value * (discountValue! / 100);
       } else if (discountType == 'value') {
         discountAmount.value = discountValue!;
       }
     }
-
-    return orderTotal.value = (orderSubtotal.value - discountAmount.value) < 0
+    final taxableAmount = (orderSubtotal.value - discountAmount.value) < 0
         ? 0
         : (orderSubtotal.value - discountAmount.value);
+    orderTax.value = taxableAmount * (taxRate / 100);
+    return orderTotal.value = taxableAmount + orderTax.value;
   }
 
   void onDeleteItem(int itemIndex) {

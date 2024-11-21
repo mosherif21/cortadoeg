@@ -93,13 +93,6 @@ class SideNavigationBar extends StatelessWidget {
       },
       items: [
         SidebarXItem(
-            icon: FontAwesomeIcons.home,
-            label: 'home'.tr,
-            onLongPress:
-                (!_isPhone) ? () => _controller.toggleExtended() : null,
-            onTap: (_isPhone) ? () => Get.back() : null,
-            iconSize: 20),
-        SidebarXItem(
             icon: Icons.table_bar,
             label: 'tables'.tr,
             onLongPress:
