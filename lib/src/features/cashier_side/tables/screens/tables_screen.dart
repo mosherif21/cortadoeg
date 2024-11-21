@@ -29,74 +29,82 @@ class TablesScreen extends StatelessWidget {
     final screenType = GetScreenType(context);
     final controller = Get.put(TablesPageController(tablesInsert: tablesData));
     controller.navBarAccess = navBarAccess;
-    return Scaffold(
-      appBar: !navBarAccess
-          ? AppBar(
-              leading: RegularBackButton(
-                padding: 0,
-                backOverride: controller.onBackPressed,
-              ),
-              elevation: 0,
-              title: AutoSizeText(
-                'tables'.tr,
-                style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black),
-                maxLines: 1,
-              ),
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.white,
-              surfaceTintColor: Colors.white,
-            )
-          : screenType.isPhone
-              ? null
-              : AppBar(
-                  elevation: 0,
-                  title: MainScreenPagesAppbar(
-                    isPhone: screenType.isPhone,
-                    appBarTitle: 'tablesView'.tr,
-                    unreadNotification: true,
-                  ),
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.white,
-                  surfaceTintColor: Colors.white,
+    return PopScope(
+      canPop: true,
+      onPopInvoked: (pop) {
+        if (!navBarAccess) {
+          controller.navBarAccess = true;
+        }
+      },
+      child: Scaffold(
+        appBar: !navBarAccess
+            ? AppBar(
+                leading: RegularBackButton(
+                  padding: 0,
+                  backOverride: controller.onBackPressed,
                 ),
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SectionDivider(),
-                const TableStatusIndicatorHint(),
-                Expanded(
-                  child: Container(
-                    color: Colors.grey.shade100,
-                    child: screenType.isPhone
-                        ? CafeLayoutPhone(controller: controller)
-                        : CafeLayout(controller: controller),
+                elevation: 0,
+                title: AutoSizeText(
+                  'tables'.tr,
+                  style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
+                  maxLines: 1,
+                ),
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.white,
+                surfaceTintColor: Colors.white,
+              )
+            : screenType.isPhone
+                ? null
+                : AppBar(
+                    elevation: 0,
+                    title: MainScreenPagesAppbar(
+                      isPhone: screenType.isPhone,
+                      appBarTitle: 'tablesView'.tr,
+                      unreadNotification: true,
+                    ),
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.white,
+                    surfaceTintColor: Colors.white,
                   ),
-                )
-              ],
-            ),
-            Obx(
-              () => controller.selectedTables.isNotEmpty
-                  ? screenType.isPhone
-                      ? NewOrderTablesSelectPhone(
-                          tablesNo: controller.selectedTables,
-                          onNewOrderTap: () => controller.onNewOrder(
-                              isPhone: screenType.isPhone),
-                        )
-                      : NewOrderTablesSelect(
-                          tablesNo: controller.selectedTables,
-                          onNewOrderTap: () => controller.onNewOrder(
-                              isPhone: screenType.isPhone),
-                        )
-                  : const SizedBox.shrink(),
-            ),
-          ],
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Stack(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SectionDivider(),
+                  const TableStatusIndicatorHint(),
+                  Expanded(
+                    child: Container(
+                      color: Colors.grey.shade100,
+                      child: screenType.isPhone
+                          ? CafeLayoutPhone(controller: controller)
+                          : CafeLayout(controller: controller),
+                    ),
+                  )
+                ],
+              ),
+              Obx(
+                () => controller.selectedTables.isNotEmpty
+                    ? screenType.isPhone
+                        ? NewOrderTablesSelectPhone(
+                            tablesNo: controller.selectedTables,
+                            onNewOrderTap: () => controller.onNewOrder(
+                                isPhone: screenType.isPhone),
+                          )
+                        : NewOrderTablesSelect(
+                            tablesNo: controller.selectedTables,
+                            onNewOrderTap: () => controller.onNewOrder(
+                                isPhone: screenType.isPhone),
+                          )
+                    : const SizedBox.shrink(),
+              ),
+            ],
+          ),
         ),
       ),
     );

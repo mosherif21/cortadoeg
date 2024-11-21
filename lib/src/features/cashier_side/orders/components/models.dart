@@ -34,7 +34,7 @@ class CategoryModel {
 class OrderModel {
   final String orderId;
   final bool isTakeaway;
-  final List<int>? tableNumbers;
+  List<int>? tableNumbers;
   final List<OrderItemModel> items;
   final OrderStatus status;
   final Timestamp timestamp;

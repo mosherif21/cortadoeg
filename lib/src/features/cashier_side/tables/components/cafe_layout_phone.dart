@@ -45,34 +45,42 @@ class CafeLayoutPhone extends StatelessWidget {
           const SizedBox(height: 20),
           Expanded(
             child: AnimationLimiter(
-              child: GridView.count(
-                crossAxisCount: 2,
-                children: List.generate(
-                  10,
-                  (int index) {
-                    return AnimationConfiguration.staggeredGrid(
-                      position: index,
-                      duration: const Duration(milliseconds: 300),
-                      columnCount: 2,
-                      child: ScaleAnimation(
-                        child: FadeInAnimation(
-                          child: Obx(
-                            () => controller.loadingTables.value
+              child: Obx(
+                () => GridView.count(
+                  crossAxisCount: 2,
+                  children: List.generate(
+                    controller.tablesList.length,
+                    (int phoneIndex) {
+                      final isFirstColumn = phoneIndex % 2 == 0;
+                      final logicalRow = phoneIndex ~/ 2;
+                      final tabletIndex =
+                          isFirstColumn ? 5 + logicalRow : logicalRow;
+                      if (tabletIndex >= controller.tablesList.length) {
+                        return const SizedBox();
+                      }
+                      final table = controller.tablesList[tabletIndex];
+                      return AnimationConfiguration.staggeredGrid(
+                        position: phoneIndex,
+                        duration: const Duration(milliseconds: 300),
+                        columnCount: 2,
+                        child: ScaleAnimation(
+                          child: FadeInAnimation(
+                            child: controller.loadingTables.value
                                 ? const TableLoading()
                                 : InkWell(
-                                    onTap: () =>
-                                        controller.onTableSelected(index, true),
+                                    onTap: () => controller.onTableSelected(
+                                        tabletIndex, true),
                                     child: Table(
-                                      tableModel: controller.tablesList[index],
+                                      tableModel: table,
                                       selected: controller.selectedTables
-                                          .contains(index + 1),
+                                          .contains(tabletIndex + 1),
                                     ),
                                   ),
                           ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
               ),
             ),

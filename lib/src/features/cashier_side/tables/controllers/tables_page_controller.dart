@@ -20,6 +20,7 @@ class TablesPageController extends GetxController {
   late final StreamSubscription selectedTablesListener;
   bool navBarAccess = true;
   TablesPageController({required this.tablesInsert});
+
   @override
   void onInit() async {
     //
@@ -46,21 +47,36 @@ class TablesPageController extends GetxController {
   void switchTables(int fromTableNo, int toTableNo) {
     final fromTable = tablesList[fromTableNo - 1];
     final toTable = tablesList[toTableNo - 1];
-    final tempStatus = fromTable.status;
-    final tempOrderId = fromTable.currentOrderId;
+    final fromTableStatus = fromTable.status;
+    final fromTableOrderId = fromTable.currentOrderId;
+    final toTableOrderId = toTable.currentOrderId;
+
     tablesList[fromTableNo - 1] = TableModel(
       tableId: fromTable.tableId,
       number: fromTable.number,
       status: toTable.status,
-      currentOrderId: toTable.currentOrderId,
+      currentOrderId: toTableOrderId,
     );
 
     tablesList[toTableNo - 1] = TableModel(
       tableId: toTable.tableId,
       number: toTable.number,
-      status: tempStatus,
-      currentOrderId: tempOrderId,
+      status: fromTableStatus,
+      currentOrderId: fromTableOrderId,
     );
+    MainScreenController.instance.tablesList = tablesList;
+    for (var order in MainScreenController.instance.ordersList) {
+      if (order.tableNumbers != null) {
+        if (order.tableNumbers!.contains(fromTableNo)) {
+          order.tableNumbers!.remove(fromTableNo);
+          order.tableNumbers!.add(toTableNo);
+        } else if (order.tableNumbers!.contains(toTableNo)) {
+          order.tableNumbers!.remove(toTableNo);
+          order.tableNumbers!.add(fromTableNo);
+        }
+      }
+    }
+
     if (selectedTables.contains(fromTableNo) ||
         selectedTables.contains(toTableNo)) {
       if (fromTable.status == TableStatus.available) {
@@ -71,8 +87,11 @@ class TablesPageController extends GetxController {
         selectedTables.add(fromTableNo);
       }
     }
+
     showSnackBar(
-        text: 'tablesOrdersSwitched'.tr, snackBarType: SnackBarType.success);
+      text: 'tablesOrdersSwitched'.tr,
+      snackBarType: SnackBarType.success,
+    );
   }
 
   bool acceptSwitchTable(int fromTableNo, int toTableNo) {
@@ -157,14 +176,10 @@ class TablesPageController extends GetxController {
       totalAmount: 0.0,
       isTakeaway: false,
     );
-
     MainScreenController.instance.ordersList.add(newOrder);
-
-    final mainTablesList = MainScreenController.instance.tablesList;
-    updateTableStatuses(selectedTables, mainTablesList, newOrder.orderId);
-
+    updateTableStatuses(selectedTables, tablesList, newOrder.orderId);
     selectedTables.value = [];
-    tablesList.value = mainTablesList;
+    MainScreenController.instance.tablesList = tablesList;
 
     navigateToOrderScreen(isPhone, newOrder);
   }

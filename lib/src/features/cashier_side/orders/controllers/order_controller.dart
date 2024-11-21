@@ -215,7 +215,7 @@ class OrderController extends GetxController {
             ) {
               return ItemDetailsPhone(
                 item: items.where((item) {
-                  return item.itemId == selectedOrderItem.orderItemId;
+                  return item.itemId == selectedOrderItem.itemId;
                 }).first,
                 orderItem: selectedOrderItem,
               );
