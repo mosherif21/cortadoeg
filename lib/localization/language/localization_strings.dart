@@ -627,6 +627,8 @@ class Languages extends Translations {
           'noReturnedOrdersBody': 'There are no Returned orders',
           'noOrdersTitle': 'No Orders',
           'noOrdersBody': 'There are no orders',
+          'guest': 'Guest',
+          'customer': 'Customer',
         },
       };
 }

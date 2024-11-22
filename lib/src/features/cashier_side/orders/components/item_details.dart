@@ -131,6 +131,13 @@ class ItemDetails extends StatelessWidget {
                                             1,
                                         onChanged: (value) {
                                           controller.selectedSizeString = value;
+                                          controller.selectedSize.value = item
+                                              .sizes
+                                              .where((size) =>
+                                                  controller.formattedSize(
+                                                      size.name, size.price) ==
+                                                  value)
+                                              .first;
                                         },
                                       ),
                                       Column(
@@ -192,13 +199,15 @@ class ItemDetails extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 24),
-                            RoundedElevatedButton(
-                              enabled: true,
-                              buttonText:
-                                  '${orderItem != null ? 'updateOrder'.tr : 'addToOrder'.tr} | \$${(controller.selectedSize.value.price * controller.itemQuantity.value).toStringAsFixed(2)}',
-                              onPressed: () => controller.onAddTap(),
-                              color: Colors.black,
-                              borderRadius: 10,
+                            Obx(
+                              () => RoundedElevatedButton(
+                                enabled: true,
+                                buttonText:
+                                    '${orderItem != null ? 'updateOrder'.tr : 'addToOrder'.tr} | \$${(controller.selectedSize.value.price * controller.itemQuantity.value).toStringAsFixed(2)}',
+                                onPressed: () => controller.onAddTap(),
+                                color: Colors.black,
+                                borderRadius: 10,
+                              ),
                             ),
                           ],
                         ),

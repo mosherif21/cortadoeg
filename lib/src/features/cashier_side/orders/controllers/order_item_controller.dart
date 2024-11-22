@@ -13,7 +13,7 @@ class OrderItemController extends GetxController {
   String? selectedSizeString;
   Map<String, String> selectedOptions = {};
   String? selectedSugarLevel;
-  late final Rx<ItemSizeModel> selectedSize = itemModel.sizes[0].obs;
+  late final Rx<ItemSizeModel> selectedSize;
   final RxInt itemQuantity = 1.obs;
   late final List<String> itemSizesStringList;
   late final List<String> sugarLevelsStringList;
@@ -30,12 +30,19 @@ class OrderItemController extends GetxController {
     if (orderItemModel != null) {
       selectedSizeString =
           formattedSize(orderItemModel!.size, orderItemModel!.price);
+      selectedSize = itemModel.sizes
+          .where((size) =>
+              formattedSize(size.name, size.price) ==
+              formattedSize(orderItemModel!.size, orderItemModel!.price))
+          .first
+          .obs;
       selectedSugarLevel = orderItemModel!.sugarLevel;
       notesTextController.text = orderItemModel!.note;
       itemQuantity.value = orderItemModel!.quantity;
     } else {
       selectedSizeString = itemSizesStringList[0];
       selectedSugarLevel = sugarLevelsStringList[0];
+      selectedSize = itemModel.sizes[0].obs;
     }
     super.onInit();
   }

@@ -19,6 +19,7 @@ class MainScreenController extends GetxController {
   final showNewOrderButton = true.obs;
   List<OrderModel> ordersList = <OrderModel>[];
   List<TableModel> tablesList = <TableModel>[];
+  List<CustomerModel> customersList = <CustomerModel>[];
 
   @override
   void onInit() async {
@@ -27,6 +28,7 @@ class MainScreenController extends GetxController {
     homeScaffoldKey = GlobalKey<ScaffoldState>();
     tablesList = tablesDataExample;
     ordersList = ordersExample;
+    customersList = customersExample;
     super.onInit();
   }
 

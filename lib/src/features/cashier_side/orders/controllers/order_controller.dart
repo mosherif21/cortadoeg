@@ -49,7 +49,7 @@ class OrderController extends GetxController {
     discountTextController = TextEditingController();
     categories.value = categoriesExample;
     items = cafeItemsExample;
-    customers.value = customersExample;
+    customers.value = MainScreenController.instance.customersList;
     currentCustomerName.value = 'noCustomer'.tr;
     categoryFilteredItems = cafeItemsExample;
     filteredItems.value = items;
@@ -195,6 +195,7 @@ class OrderController extends GetxController {
       calculateTotalAmount();
       if (!customers.contains(customer)) {
         customers.add(customer);
+        MainScreenController.instance.customersList = customers;
       }
       AppInit.logger.i('Customer Added');
       final ordersList = MainScreenController.instance.ordersList;
