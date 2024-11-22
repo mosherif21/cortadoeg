@@ -1,4 +1,5 @@
 import 'package:bottom_sheet/bottom_sheet.dart';
+import 'package:cortadoeg/src/features/cashier_side/main_screen/controllers/main_screen_controller.dart';
 import 'package:cortadoeg/src/features/cashier_side/orders/components/choose_customer.dart';
 import 'package:cortadoeg/src/features/cashier_side/orders/components/choose_customer_phone.dart';
 import 'package:cortadoeg/src/general/app_init.dart';
@@ -24,7 +25,7 @@ class OrderController extends GetxController {
   final RxString currentCustomerName = ''.obs;
   CustomerModel? currentCustomer;
   late List<ItemModel> categoryFilteredItems;
-  final RxList<ItemModel> selectedItems = <ItemModel>[].obs;
+  final RxList<ItemModel> filteredItems = <ItemModel>[].obs;
   final RxList<OrderItemModel> orderItems = <OrderItemModel>[].obs;
   List<String> tableIds = [];
   late final TextEditingController discountTextController;
@@ -40,7 +41,7 @@ class OrderController extends GetxController {
   final RxDouble discountAmount = 0.0.obs;
   final RxDouble orderTotal = 0.0.obs;
   final RxDouble orderTax = 0.0.obs;
-  final double taxRate = 14;
+  final double taxRate = 0;
 
   @override
   void onInit() async {
@@ -51,7 +52,24 @@ class OrderController extends GetxController {
     customers.value = customersExample;
     currentCustomerName.value = 'noCustomer'.tr;
     categoryFilteredItems = cafeItemsExample;
-    selectedItems.value = items;
+    filteredItems.value = items;
+    if (orderModel.customerId != null) {
+      currentCustomer = customers.where((customer) {
+        return customer.customerId == orderModel.customerId;
+      }).first;
+      if (currentCustomer != null) {
+        currentCustomerName.value = currentCustomer!.name;
+      }
+    }
+    if (orderModel.discountType != null && orderModel.discountValue != null) {
+      discountType = orderModel.discountType!;
+      discountValue = orderModel.discountValue!;
+    }
+    if (orderModel.items.isNotEmpty) {
+      orderItems.value = orderModel.items;
+      calculateTotalAmount();
+    }
+
     super.onInit();
   }
 
@@ -59,7 +77,7 @@ class OrderController extends GetxController {
   void onReady() {
     searchBarTextController.addListener(() {
       final searchText = searchBarTextController.text.trim().toUpperCase();
-      selectedItems.value = searchText.isEmpty
+      filteredItems.value = searchText.isEmpty
           ? categoryFilteredItems
           : categoryFilteredItems
               .where((item) => item.name.toUpperCase().contains(searchText))
@@ -76,7 +94,7 @@ class OrderController extends GetxController {
             .where((item) => item.categoryId == categories[selectedCatIndex].id)
             .toList();
     final searchText = searchBarTextController.text.trim().toUpperCase();
-    selectedItems.value = searchText.isEmpty
+    filteredItems.value = searchText.isEmpty
         ? categoryFilteredItems
         : categoryFilteredItems
             .where((item) => item.name.toUpperCase().contains(searchText))
@@ -96,7 +114,7 @@ class OrderController extends GetxController {
             context: context,
             builder: (context) {
               return ItemDetails(
-                item: selectedItems[index],
+                item: filteredItems[index],
               );
             },
           )
@@ -114,7 +132,7 @@ class OrderController extends GetxController {
               double bottomSheetOffset,
             ) {
               return ItemDetailsPhone(
-                item: selectedItems[index],
+                item: filteredItems[index],
               );
             },
           );
@@ -123,6 +141,11 @@ class OrderController extends GetxController {
       orderItems.add(orderItem);
       calculateTotalAmount();
       AppInit.logger.i('Order Total is $orderTotal');
+      final ordersList = MainScreenController.instance.ordersList;
+      final orderIndex = ordersList.indexWhere((order) {
+        return order.orderId == orderModel.orderId;
+      });
+      ordersList[orderIndex].items = orderItems;
     }
   }
 
@@ -141,7 +164,8 @@ class OrderController extends GetxController {
         ? 0
         : (orderSubtotal.value - discountAmount.value);
     orderTax.value = taxableAmount * (taxRate / 100);
-    return orderTotal.value = taxableAmount + orderTax.value;
+    orderTotal.value = taxableAmount + orderTax.value;
+    return orderTotal.value;
   }
 
   void onDeleteItem(int itemIndex) {
@@ -151,7 +175,7 @@ class OrderController extends GetxController {
 
   void onCustomerChoose(BuildContext context) async {
     final isPhone = GetScreenType(context).isPhone;
-    final customer = isPhone
+    final CustomerModel? customer = isPhone
         ? await Get.to(
             () => ChooseCustomerPhone(customers: customers),
             transition: getPageTransition(),
@@ -173,6 +197,13 @@ class OrderController extends GetxController {
         customers.add(customer);
       }
       AppInit.logger.i('Customer Added');
+      final ordersList = MainScreenController.instance.ordersList;
+      final orderIndex = ordersList.indexWhere((order) {
+        return order.orderId == orderModel.orderId;
+      });
+      ordersList[orderIndex].customerId = customer.customerId;
+      ordersList[orderIndex].discountValue = customer.discountValue;
+      ordersList[orderIndex].discountType = customer.discountType;
     }
   }
 
@@ -184,12 +215,19 @@ class OrderController extends GetxController {
     percentageChosen.value = true;
     discountTextController.text = '';
     calculateTotalAmount();
+    final ordersList = MainScreenController.instance.ordersList;
+    final orderIndex = ordersList.indexWhere((order) {
+      return order.orderId == orderModel.orderId;
+    });
+    ordersList[orderIndex].customerId = null;
+    ordersList[orderIndex].discountValue = null;
+    ordersList[orderIndex].discountType = null;
   }
 
   void onEditItem(int index, BuildContext context, bool isPhone) async {
     final selectedOrderItem = orderItems[index];
 
-    final orderItem = !isPhone
+    final editedOrderItem = !isPhone
         ? await showDialog(
             useSafeArea: true,
             context: context,
@@ -223,10 +261,15 @@ class OrderController extends GetxController {
               );
             },
           );
-    if (orderItem != null) {
-      orderItems[index] = orderItem;
+    if (editedOrderItem != null) {
+      orderItems[index] = editedOrderItem;
       calculateTotalAmount();
       AppInit.logger.i('Order Total is $orderTotal');
+      final ordersList = MainScreenController.instance.ordersList;
+      final orderIndex = ordersList.indexWhere((order) {
+        return order.orderId == orderModel.orderId;
+      });
+      ordersList[orderIndex].items = orderItems;
     }
   }
 
@@ -235,6 +278,12 @@ class OrderController extends GetxController {
     discountValue = value;
     addingDiscount.value = false;
     calculateTotalAmount();
+    final ordersList = MainScreenController.instance.ordersList;
+    final orderIndex = ordersList.indexWhere((order) {
+      return order.orderId == orderModel.orderId;
+    });
+    ordersList[orderIndex].discountValue = discountValue;
+    ordersList[orderIndex].discountType = discountType;
   }
 
   onCancelDiscount() {
@@ -243,6 +292,12 @@ class OrderController extends GetxController {
     percentageChosen.value = true;
     discountTextController.text = '';
     calculateTotalAmount();
+    final ordersList = MainScreenController.instance.ordersList;
+    final orderIndex = ordersList.indexWhere((order) {
+      return order.orderId == orderModel.orderId;
+    });
+    ordersList[orderIndex].discountValue = null;
+    ordersList[orderIndex].discountType = null;
   }
 
   addDiscount() {
@@ -278,6 +333,12 @@ class OrderController extends GetxController {
               discountType = type;
               discountValue = value;
               calculateTotalAmount();
+              final ordersList = MainScreenController.instance.ordersList;
+              final orderIndex = ordersList.indexWhere((order) {
+                return order.orderId == orderModel.orderId;
+              });
+              ordersList[orderIndex].discountValue = discountValue;
+              ordersList[orderIndex].discountType = discountType;
               Get.back();
             },
             onCancel: () => Get.back(),
@@ -290,5 +351,15 @@ class OrderController extends GetxController {
       discountTextController.text =
           discountValue! > 0 ? discountValue.toString() : '';
     }
+  }
+
+  onQuantityChangedPhone(int newQuantity, int index) {
+    orderItems[index].quantity = newQuantity;
+    calculateTotalAmount();
+    final ordersList = MainScreenController.instance.ordersList;
+    final orderIndex = ordersList.indexWhere((order) {
+      return order.orderId == orderModel.orderId;
+    });
+    ordersList[orderIndex].items = orderItems;
   }
 }

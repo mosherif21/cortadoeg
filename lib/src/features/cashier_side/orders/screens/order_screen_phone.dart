@@ -280,7 +280,7 @@ class OrderScreenPhone extends StatelessWidget {
                             crossAxisCount: 2,
                             shrinkWrap: true,
                             children: List.generate(
-                              controller.selectedItems.length,
+                              controller.filteredItems.length,
                               (int index) {
                                 return AnimationConfiguration.staggeredGrid(
                                   position: index,
@@ -291,8 +291,8 @@ class OrderScreenPhone extends StatelessWidget {
                                       child: ItemCardPhone(
                                         imageUrl: kCoffeeCup2Image,
                                         title: controller
-                                            .selectedItems[index].name,
-                                        price: controller.selectedItems[index]
+                                            .filteredItems[index].name,
+                                        price: controller.filteredItems[index]
                                             .sizes[0].price,
                                         onSelected: () =>
                                             controller.onItemSelected(context,

@@ -35,12 +35,12 @@ class OrderModel {
   final String orderId;
   final bool isTakeaway;
   List<int>? tableNumbers;
-  final List<OrderItemModel> items;
-  final OrderStatus status;
+  List<OrderItemModel> items;
+  OrderStatus status;
   final Timestamp timestamp;
-  final String? discountType;
-  final double? discountValue;
-  final double? customerId;
+  String? discountType;
+  double? discountValue;
+  String? customerId;
   final double totalAmount;
 
   OrderModel({
@@ -94,7 +94,7 @@ class OrderItemModel {
   final String? itemImageUrl;
   final String name;
   final String size;
-  final int quantity;
+  int quantity;
   final Map<String, String> options;
   final String sugarLevel;
   final String note;

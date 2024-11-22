@@ -82,7 +82,7 @@ class OrderScreen extends StatelessWidget {
                                           controller.orderItems.isEmpty ? 5 : 4,
                                       shrinkWrap: true,
                                       children: List.generate(
-                                        controller.selectedItems.length,
+                                        controller.filteredItems.length,
                                         (int index) {
                                           return AnimationConfiguration
                                               .staggeredGrid(
@@ -94,13 +94,13 @@ class OrderScreen extends StatelessWidget {
                                               child: FadeInAnimation(
                                                 child: ItemCard(
                                                   imageUrl: controller
-                                                      .selectedItems[index]
+                                                      .filteredItems[index]
                                                       .imageUrl,
                                                   title: controller
-                                                      .selectedItems[index]
+                                                      .filteredItems[index]
                                                       .name,
                                                   price: controller
-                                                      .selectedItems[index]
+                                                      .filteredItems[index]
                                                       .sizes[0]
                                                       .price,
                                                   onSelected: () =>

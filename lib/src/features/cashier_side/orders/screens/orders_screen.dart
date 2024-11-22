@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../general/general_functions.dart';
 import '../../main_screen/components/main_screen_pages_appbar.dart';
+import '../controllers/orders_controller.dart';
 
 class OrdersScreen extends StatelessWidget {
   const OrdersScreen({super.key});
@@ -12,6 +13,7 @@ class OrdersScreen extends StatelessWidget {
     final screenHeight = getScreenHeight(context);
     final screenWidth = getScreenWidth(context);
     final screenType = GetScreenType(context);
+    final controller = Get.put(OrdersController());
     return Scaffold(
       appBar: screenType.isPhone
           ? null

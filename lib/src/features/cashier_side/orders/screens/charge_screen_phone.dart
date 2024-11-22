@@ -1,5 +1,4 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:cortadoeg/src/features/cashier_side/orders/components/models.dart';
 import 'package:draggable_bottom_sheet/draggable_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -385,22 +384,8 @@ class ChargeScreenPhone extends StatelessWidget {
                                 onDismissed: () =>
                                     controller.onDeleteItem(index),
                                 index: index,
-                                onQuantityChanged: (newQuantity) {
-                                  final orderItem =
-                                      controller.orderItems[index];
-                                  controller.orderItems[index] = OrderItemModel(
-                                    name: orderItem.name,
-                                    size: orderItem.size,
-                                    quantity: newQuantity,
-                                    options: orderItem.options,
-                                    sugarLevel: orderItem.sugarLevel,
-                                    note: orderItem.note,
-                                    price: orderItem.price,
-                                    orderItemId: orderItem.orderItemId,
-                                    itemId: orderItem.itemId,
-                                  );
-                                  controller.calculateTotalAmount();
-                                },
+                                onQuantityChanged: (newQuantity) => controller
+                                    .onQuantityChangedPhone(newQuantity, index),
                               ),
                             );
                           },

@@ -619,6 +619,14 @@ class Languages extends Translations {
           'paymentDetails': 'Payment Details',
           'size': 'Size',
           'customers': 'Customers',
+          'noCompletedOrdersTitle': 'No Completed Orders',
+          'noCompletedOrdersBody': 'There are no completed orders',
+          'noCanceledOrdersTitle': 'No Canceled Orders',
+          'noCanceledOrdersBody': 'There are no Canceled orders',
+          'noReturnedOrdersTitle': 'No Returned Orders',
+          'noReturnedOrdersBody': 'There are no Returned orders',
+          'noOrdersTitle': 'No Orders',
+          'noOrdersBody': 'There are no orders',
         },
       };
 }

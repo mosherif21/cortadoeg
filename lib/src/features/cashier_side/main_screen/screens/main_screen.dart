@@ -24,43 +24,6 @@ class MainScreen extends StatelessWidget {
     final screenType = GetScreenType(context);
     ConnectivityChecker.checkConnection(displayAlert: true);
     return Scaffold(
-      backgroundColor: Colors.white,
-      key: mainController.homeScaffoldKey,
-      appBar: screenType.isPhone
-          ? AppBar(
-              surfaceTintColor: Colors.white,
-              shadowColor: Colors.white,
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.white,
-              leading: IconButton(
-                onPressed: mainController.onDrawerOpen,
-                icon: const Icon(
-                  Icons.menu_outlined,
-                  color: Colors.black,
-                  size: 30,
-                ),
-              ),
-              title: Obx(
-                () => MainScreenPagesAppbar(
-                  appBarTitle: mainController
-                      .getPageTitle(mainController.navBarIndex.value),
-                  unreadNotification: true,
-                  isPhone: screenType.isPhone,
-                ),
-              ),
-              centerTitle: true,
-            )
-          : null,
-      drawer: Container(
-        color: Colors.black,
-        child: SafeArea(
-          child: SideNavigationBar(
-            controller: mainController.barController,
-            isLangEnglish: isLangEnglish(),
-            isPhone: screenType.isPhone,
-          ),
-        ),
-      ),
       body: Obx(
         () => HawkFabMenu(
           isButtonVisible: mainController.showNewOrderButton.value,
@@ -114,49 +77,88 @@ class MainScreen extends StatelessWidget {
               labelFontSize: 20,
             ),
           ],
-          body: Row(
-            children: [
-              if (!screenType.isPhone)
-                SideNavigationBar(
+          body: Scaffold(
+            backgroundColor: Colors.white,
+            key: mainController.homeScaffoldKey,
+            appBar: screenType.isPhone
+                ? AppBar(
+                    surfaceTintColor: Colors.white,
+                    shadowColor: Colors.white,
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.white,
+                    leading: IconButton(
+                      onPressed: mainController.onDrawerOpen,
+                      icon: const Icon(
+                        Icons.menu_outlined,
+                        color: Colors.black,
+                        size: 30,
+                      ),
+                    ),
+                    title: Obx(
+                      () => MainScreenPagesAppbar(
+                        appBarTitle: mainController
+                            .getPageTitle(mainController.navBarIndex.value),
+                        unreadNotification: true,
+                        isPhone: screenType.isPhone,
+                      ),
+                    ),
+                    centerTitle: true,
+                  )
+                : null,
+            drawer: Container(
+              color: Colors.black,
+              child: SafeArea(
+                child: SideNavigationBar(
                   controller: mainController.barController,
                   isLangEnglish: isLangEnglish(),
                   isPhone: screenType.isPhone,
                 ),
-              Expanded(
-                child: PageView.builder(
-                  pageSnapping: false,
-                  scrollDirection:
-                      screenType.isPhone ? Axis.horizontal : Axis.vertical,
-                  physics: const NeverScrollableScrollPhysics(),
-                  controller: mainController.pageController,
-                  itemCount: 6,
-                  itemBuilder: (BuildContext context, int index) {
-                    switch (index) {
-                      case 0:
-                        return TablesScreen(
-                          navBarAccess: true,
-                          tablesData: mainController.tablesList,
-                        );
-                      case 1:
-                        return const OrdersScreen();
-                      case 2:
-                        return const CustomersScreen();
-                      case 3:
-                        return const ReportsScreen();
-                      case 4:
-                        return const AccountScreen();
-                      case 5:
-                        return const SettingsScreen();
-                      default:
-                        return TablesScreen(
-                          navBarAccess: true,
-                          tablesData: mainController.tablesList,
-                        );
-                    }
-                  },
-                ),
               ),
-            ],
+            ),
+            body: Row(
+              children: [
+                if (!screenType.isPhone)
+                  SideNavigationBar(
+                    controller: mainController.barController,
+                    isLangEnglish: isLangEnglish(),
+                    isPhone: screenType.isPhone,
+                  ),
+                Expanded(
+                  child: PageView.builder(
+                    pageSnapping: false,
+                    scrollDirection:
+                        screenType.isPhone ? Axis.horizontal : Axis.vertical,
+                    physics: const NeverScrollableScrollPhysics(),
+                    controller: mainController.pageController,
+                    itemCount: 6,
+                    itemBuilder: (BuildContext context, int index) {
+                      switch (index) {
+                        case 0:
+                          return TablesScreen(
+                            navBarAccess: true,
+                            tablesData: mainController.tablesList,
+                          );
+                        case 1:
+                          return const OrdersScreen();
+                        case 2:
+                          return const CustomersScreen();
+                        case 3:
+                          return const ReportsScreen();
+                        case 4:
+                          return const AccountScreen();
+                        case 5:
+                          return const SettingsScreen();
+                        default:
+                          return TablesScreen(
+                            navBarAccess: true,
+                            tablesData: mainController.tablesList,
+                          );
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
