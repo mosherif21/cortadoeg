@@ -55,12 +55,12 @@ List<TableModel> tablesDataExample = [
   TableModel(
       tableId: '12342415',
       number: 5,
-      status: TableStatus.unavailable,
+      status: TableStatus.available,
       currentOrderId: null),
   TableModel(
       tableId: '12342416',
       number: 6,
-      status: TableStatus.available,
+      status: TableStatus.unavailable,
       currentOrderId: null),
   TableModel(
       tableId: '12342417',

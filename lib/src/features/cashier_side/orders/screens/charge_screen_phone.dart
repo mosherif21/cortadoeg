@@ -39,7 +39,7 @@ class ChargeScreenPhone extends StatelessWidget {
         barrierDismissible: false,
         useSafeArea: false,
         curve: Curves.easeIn,
-        maxExtent: screenHeight * 0.47,
+        maxExtent: screenHeight * 0.52,
         barrierColor: Colors.transparent,
         duration: const Duration(milliseconds: 200),
         onDragging: (pos) {},
@@ -273,12 +273,17 @@ class ChargeScreenPhone extends StatelessWidget {
                                       fontSize: 20,
                                     ),
                                   ),
-                                  Text(
-                                    '${controller.currentCustomerName}',
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 20,
+                                  ConstrainedBox(
+                                    constraints:
+                                        const BoxConstraints(maxWidth: 160),
+                                    child: Text(
+                                      '${controller.currentCustomerName}',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -347,17 +352,17 @@ class ChargeScreenPhone extends StatelessWidget {
                             borderRadius: 15,
                             elevation: 0,
                             icon: controller.currentCustomerName.value ==
-                                    'noCustomer'.tr
+                                    'guest'.tr
                                 ? Icons.person
                                 : Icons.close_rounded,
                             iconColor: Colors.white,
                             text: controller.currentCustomerName.value ==
-                                    'noCustomer'.tr
+                                    'guest'.tr
                                 ? 'addCustomer'.tr
                                 : 'removeCustomer'.tr,
                             onClick: () =>
                                 controller.currentCustomerName.value ==
-                                        'noCustomer'.tr
+                                        'guest'.tr
                                     ? controller.onCustomerChoose(context)
                                     : controller.onRemoveCustomer(),
                           ),

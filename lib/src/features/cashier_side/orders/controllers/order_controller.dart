@@ -50,7 +50,7 @@ class OrderController extends GetxController {
     categories.value = categoriesExample;
     items = cafeItemsExample;
     customers.value = MainScreenController.instance.customersList;
-    currentCustomerName.value = 'noCustomer'.tr;
+    currentCustomerName.value = 'guest'.tr;
     categoryFilteredItems = cafeItemsExample;
     filteredItems.value = items;
     if (orderModel.customerId != null) {
@@ -210,7 +210,7 @@ class OrderController extends GetxController {
 
   void onRemoveCustomer() async {
     currentCustomer = null;
-    currentCustomerName.value = 'noCustomer'.tr;
+    currentCustomerName.value = 'guest'.tr;
     discountValue = null;
     discountType = null;
     percentageChosen.value = true;
