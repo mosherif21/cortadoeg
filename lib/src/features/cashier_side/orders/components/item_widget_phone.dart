@@ -26,7 +26,7 @@ class ItemCardPhone extends StatelessWidget {
           image: AssetImage(
             imageUrl,
           ),
-          fit: BoxFit.cover,
+          fit: BoxFit.contain,
         ),
       ),
       child: Material(

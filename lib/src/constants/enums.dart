@@ -12,7 +12,7 @@ enum FunctionStatus { success, failure }
 
 enum SnackBarType { success, error, info, warning }
 
-enum UserType { admin, cashier, waiter, takeaway }
+enum Role { admin, cashier, waiter, takeaway }
 
 enum AuthType { emailLogin, emailRegister, facebook, google, phone }
 

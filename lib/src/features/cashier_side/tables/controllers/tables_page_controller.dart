@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cortadoeg/src/features/cashier_side/main_screen/controllers/main_screen_controller.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
 import '../../../../constants/enums.dart';
+import '../../../../general/app_init.dart';
 import '../../../../general/general_functions.dart';
 import '../../orders/components/models.dart';
 import '../../orders/screens/order_screen.dart';
@@ -14,12 +16,11 @@ import '../components/models.dart';
 class TablesPageController extends GetxController {
   static TablesPageController get instance => Get.find();
   final RxList<TableModel> tablesList = <TableModel>[].obs;
-  final List<TableModel> tablesInsert;
   final RxList<int> selectedTables = <int>[].obs;
   final loadingTables = true.obs;
   late final StreamSubscription selectedTablesListener;
+  late final StreamSubscription tablesListener;
   bool navBarAccess = true;
-  TablesPageController({required this.tablesInsert});
 
   @override
   void onInit() async {
@@ -29,10 +30,16 @@ class TablesPageController extends GetxController {
 
   @override
   void onReady() {
-    Timer(const Duration(seconds: 1), () {
+    tablesListener = listenToTables().listen((tables) {
+      tablesList.value = tables;
       loadingTables.value = false;
+      for (TableModel table in tables) {
+        if (selectedTables.contains(table.number) &&
+            table.status != TableStatus.available) {
+          selectedTables.remove(table.number);
+        }
+      }
     });
-    tablesList.value = tablesInsert;
     selectedTablesListener = selectedTables.listen((tablesList) {
       final mainScreenController = MainScreenController.instance;
       if (selectedTables.isNotEmpty && navBarAccess) {
@@ -44,54 +51,149 @@ class TablesPageController extends GetxController {
     super.onReady();
   }
 
-  void switchTables(int fromTableNo, int toTableNo) {
+  void switchTables(int fromTableNo, int toTableNo) async {
+    showLoadingScreen();
     final fromTable = tablesList[fromTableNo - 1];
     final toTable = tablesList[toTableNo - 1];
-    final fromTableStatus = fromTable.status;
-    final fromTableOrderId = fromTable.currentOrderId;
-    final toTableOrderId = toTable.currentOrderId;
-
-    tablesList[fromTableNo - 1] = TableModel(
-      tableId: fromTable.tableId,
-      number: fromTable.number,
-      status: toTable.status,
-      currentOrderId: toTableOrderId,
-    );
-
-    tablesList[toTableNo - 1] = TableModel(
-      tableId: toTable.tableId,
-      number: toTable.number,
-      status: fromTableStatus,
-      currentOrderId: fromTableOrderId,
-    );
-    MainScreenController.instance.tablesList = tablesList;
-    for (var order in MainScreenController.instance.ordersList) {
-      if (order.tableNumbers != null) {
-        if (order.tableNumbers!.contains(fromTableNo)) {
-          order.tableNumbers!.remove(fromTableNo);
-          order.tableNumbers!.add(toTableNo);
-        } else if (order.tableNumbers!.contains(toTableNo)) {
-          order.tableNumbers!.remove(toTableNo);
-          order.tableNumbers!.add(fromTableNo);
+    final switchStatus =
+        await switchTableNumbers(fromTable: fromTable, toTable: toTable);
+    hideLoadingScreen();
+    if (switchStatus == FunctionStatus.success) {
+      if (selectedTables.contains(fromTableNo) ||
+          selectedTables.contains(toTableNo)) {
+        if (fromTable.status == TableStatus.available) {
+          selectedTables.remove(fromTableNo);
+          selectedTables.add(toTableNo);
+        } else {
+          selectedTables.remove(toTableNo);
+          selectedTables.add(fromTableNo);
         }
       }
+      showSnackBar(
+        text: 'tablesOrdersSwitched'.tr,
+        snackBarType: SnackBarType.success,
+      );
+    } else {
+      showSnackBar(
+        text: 'errorOccurred'.tr,
+        snackBarType: SnackBarType.error,
+      );
     }
+  }
 
-    if (selectedTables.contains(fromTableNo) ||
-        selectedTables.contains(toTableNo)) {
-      if (fromTable.status == TableStatus.available) {
-        selectedTables.remove(fromTableNo);
-        selectedTables.add(toTableNo);
-      } else {
-        selectedTables.remove(toTableNo);
-        selectedTables.add(fromTableNo);
+  Future<FunctionStatus> switchTableNumbers({
+    required TableModel fromTable,
+    required TableModel toTable,
+  }) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      if (fromTable.currentOrderId == null && toTable.currentOrderId == null) {
+        return FunctionStatus.failure;
       }
-    }
 
-    showSnackBar(
-      text: 'tablesOrdersSwitched'.tr,
-      snackBarType: SnackBarType.success,
-    );
+      final batch = firestore.batch();
+      DocumentSnapshot<Map<String, dynamic>>? fromOrderSnapshot;
+      DocumentSnapshot<Map<String, dynamic>>? toOrderSnapshot;
+
+      if (fromTable.currentOrderId != null) {
+        fromOrderSnapshot = await firestore
+            .collection('orders')
+            .doc(fromTable.currentOrderId)
+            .get();
+      }
+
+      if (toTable.currentOrderId != null) {
+        toOrderSnapshot = await firestore
+            .collection('orders')
+            .doc(toTable.currentOrderId)
+            .get();
+      }
+      final fromTableStatus = fromTable.status;
+      final fromTableOrderId = fromTable.currentOrderId;
+      final toTableStatus = toTable.status;
+      final toTableOrderId = toTable.currentOrderId;
+
+      final updatedFromTable = TableModel(
+        tableId: fromTable.tableId,
+        number: fromTable.number,
+        status: toTableStatus,
+        currentOrderId: toTableOrderId,
+      );
+
+      final updatedToTable = TableModel(
+        tableId: toTable.tableId,
+        number: toTable.number,
+        status: fromTableStatus,
+        currentOrderId: fromTableOrderId,
+      );
+      batch.update(
+        firestore.collection('tables').doc(fromTable.tableId),
+        updatedFromTable.toFirestore(),
+      );
+      batch.update(
+        firestore.collection('tables').doc(toTable.tableId),
+        updatedToTable.toFirestore(),
+      );
+      if (fromOrderSnapshot?.exists == true &&
+          toOrderSnapshot?.exists == true) {
+        final fromOrderData = fromOrderSnapshot!.data()!;
+        final toOrderData = toOrderSnapshot!.data()!;
+
+        List<int> fromTableNumbers =
+            List<int>.from(fromOrderData['tableNumbers'] ?? []);
+        List<int> toTableNumbers =
+            List<int>.from(toOrderData['tableNumbers'] ?? []);
+        if (fromTableNumbers.contains(fromTable.number)) {
+          fromTableNumbers.remove(fromTable.number);
+          toTableNumbers.add(fromTable.number);
+        }
+
+        if (toTableNumbers.contains(toTable.number)) {
+          toTableNumbers.remove(toTable.number);
+          fromTableNumbers.add(toTable.number);
+        }
+        batch.update(
+            fromOrderSnapshot.reference, {'tableNumbers': fromTableNumbers});
+        batch.update(
+            toOrderSnapshot.reference, {'tableNumbers': toTableNumbers});
+      } else if (fromOrderSnapshot?.exists == true) {
+        final fromOrderData = fromOrderSnapshot!.data()!;
+        List<int> fromTableNumbers =
+            List<int>.from(fromOrderData['tableNumbers'] ?? []);
+
+        if (fromTableNumbers.contains(fromTable.number)) {
+          fromTableNumbers.remove(fromTable.number);
+          fromTableNumbers.add(toTable.number);
+
+          batch.update(
+              fromOrderSnapshot.reference, {'tableNumbers': fromTableNumbers});
+        }
+      } else if (toOrderSnapshot?.exists == true) {
+        final toOrderData = toOrderSnapshot!.data()!;
+        List<int> toTableNumbers =
+            List<int>.from(toOrderData['tableNumbers'] ?? []);
+
+        if (toTableNumbers.contains(toTable.number)) {
+          toTableNumbers.remove(toTable.number);
+          toTableNumbers.add(fromTable.number);
+
+          batch.update(
+              toOrderSnapshot.reference, {'tableNumbers': toTableNumbers});
+        }
+      }
+      await batch.commit();
+      return FunctionStatus.success;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+      return FunctionStatus.failure;
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+      return FunctionStatus.failure;
+    }
   }
 
   bool acceptSwitchTable(int fromTableNo, int toTableNo) {
@@ -122,24 +224,32 @@ class TablesPageController extends GetxController {
     }
   }
 
-  void onTableSelected(int tableIndex, bool isPhone) {
+  void onTableSelected(int tableIndex, bool isPhone) async {
     final tableStatus = tablesList[tableIndex].status;
     if (selectedTables.contains(tableIndex + 1)) {
       selectedTables.remove(tableIndex + 1);
     } else if (tableStatus == TableStatus.available) {
       selectedTables.add(tableIndex + 1);
     } else if (tableStatus == TableStatus.occupied && selectedTables.isEmpty) {
+      showLoadingScreen();
       final currentOrderID = tablesList[tableIndex].currentOrderId;
-      final orderModel =
-          MainScreenController.instance.ordersList.where((order) {
-        return order.orderId == currentOrderID;
-      }).first;
-      Get.to(
-        () => isPhone
-            ? OrderScreenPhone(orderModel: orderModel)
-            : OrderScreen(orderModel: orderModel),
-        transition: Transition.noTransition,
-      );
+      if (currentOrderID != null) {
+        final orderModel = await getOrder(orderId: currentOrderID);
+        hideLoadingScreen();
+        if (orderModel != null) {
+          Get.to(
+            () => isPhone
+                ? OrderScreenPhone(orderModel: orderModel)
+                : OrderScreen(orderModel: orderModel),
+            transition: Transition.noTransition,
+          );
+        } else {
+          showSnackBar(
+            text: 'errorOccurred'.tr,
+            snackBarType: SnackBarType.error,
+          );
+        }
+      }
     } else if (tableStatus == TableStatus.billed && selectedTables.isEmpty) {
       final currentOrderID = tablesList[tableIndex].currentOrderId;
       showSnackBar(
@@ -154,9 +264,46 @@ class TablesPageController extends GetxController {
     }
   }
 
+  Future<OrderModel?> getOrder({required String orderId}) async {
+    try {
+      final orderSnapshot = await FirebaseFirestore.instance
+          .collection('orders')
+          .doc(orderId)
+          .get();
+      if (orderSnapshot.exists) {
+        final orderModel =
+            OrderModel.fromFirestore(orderSnapshot.data()!, orderSnapshot.id);
+        return orderModel;
+      }
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+    }
+    return null;
+  }
+
+  Stream<List<TableModel>> listenToTables() {
+    final CollectionReference tablesRef =
+        FirebaseFirestore.instance.collection('tables');
+    return tablesRef.snapshots().map((snapshot) {
+      List<TableModel> tables = snapshot.docs.map((doc) {
+        return TableModel.fromFirestore(
+            doc.data() as Map<String, dynamic>, doc.id);
+      }).toList();
+      tables.sort((a, b) => a.number.compareTo(b.number));
+      return tables;
+    });
+  }
+
   @override
   void onClose() async {
     selectedTablesListener.cancel();
+    tablesListener.cancel();
     super.onClose();
   }
 
@@ -165,40 +312,79 @@ class TablesPageController extends GetxController {
     Get.back();
   }
 
-  onNewOrder({required bool isPhone}) {
-    final currentTimestamp = Timestamp.now();
-    final newOrder = OrderModel(
-      orderId: currentTimestamp.seconds.toString(),
-      tableNumbers: selectedTables.value,
-      items: [],
-      status: OrderStatus.active,
-      timestamp: currentTimestamp,
-      totalAmount: 0.0,
-      isTakeaway: false,
-    );
-    MainScreenController.instance.ordersList.add(newOrder);
-    updateTableStatuses(selectedTables, tablesList, newOrder.orderId);
-    selectedTables.value = [];
-    MainScreenController.instance.tablesList = tablesList;
-
-    navigateToOrderScreen(isPhone, newOrder);
+  onNewOrder({required bool isPhone}) async {
+    showLoadingScreen();
+    final newOrderModel =
+        await addTableOrder(orderTables: selectedTables.toList());
+    hideLoadingScreen();
+    if (newOrderModel != null) {
+      selectedTables.value = [];
+      navigateToOrderScreen(isPhone, newOrderModel);
+    } else {
+      showSnackBar(
+        text: 'errorOccurred'.tr,
+        snackBarType: SnackBarType.error,
+      );
+    }
   }
 
-  void updateTableStatuses(List<int> selectedTableNumbers,
-      List<TableModel> mainTablesList, String orderId) {
-    for (int tableNo in selectedTableNumbers) {
-      final tableIndex =
-          mainTablesList.indexWhere((table) => table.number == tableNo);
-      if (tableIndex != -1) {
-        final table = mainTablesList[tableIndex];
-        mainTablesList[tableIndex] = TableModel(
-          tableId: table.tableId,
-          number: table.number,
-          status: TableStatus.occupied,
-          currentOrderId: orderId,
-        );
+  Future<OrderModel?> addTableOrder(
+      {required List<int> orderTables, bool isTakeaway = false}) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final orderDoc = firestore.collection('orders').doc();
+      final newOrder = OrderModel(
+        orderId: orderDoc.id,
+        tableNumbers: orderTables,
+        items: [],
+        status: OrderStatus.active,
+        timestamp: Timestamp.now(),
+        totalAmount: 0.0,
+        discountAmount: 0.0,
+        subtotalAmount: 0.0,
+        taxTotalAmount: 0.0,
+        isTakeaway: isTakeaway,
+      );
+      await firestore.runTransaction((transaction) async {
+        transaction.set(orderDoc, newOrder.toFirestore());
+        for (int tableNo in orderTables) {
+          final tableQuery = await firestore
+              .collection('tables')
+              .where('number', isEqualTo: tableNo)
+              .limit(1)
+              .get();
+          if (tableQuery.docs.isNotEmpty) {
+            final tableDoc = tableQuery.docs.first;
+            final tableData = tableDoc.data();
+            if (tableData['status'] == TableStatus.available.name) {
+              transaction.update(tableDoc.reference, {
+                'status': TableStatus.occupied.name,
+                'currentOrderId': newOrder.orderId,
+              });
+            } else {
+              showSnackBar(
+                  text: 'tableNotAvailable'
+                      .trParams({'tableNo': tableNo.toString()}),
+                  snackBarType: SnackBarType.error);
+            }
+          } else {
+            showSnackBar(
+                text: 'errorOccurred'.tr, snackBarType: SnackBarType.error);
+          }
+        }
+      });
+
+      return newOrder;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        print('FirebaseException: ${error.message}');
+      }
+    } catch (err) {
+      if (kDebugMode) {
+        print('Exception: ${err.toString()}');
       }
     }
+    return null;
   }
 
   void navigateToOrderScreen(bool isPhone, OrderModel newOrder) {

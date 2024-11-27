@@ -47,7 +47,12 @@ class CartItemWidget extends StatelessWidget {
           key: key1,
           endActionPane: ActionPane(
             motion: const DrawerMotion(),
-            dismissible: DismissiblePane(onDismissed: () => onDismissed()),
+            dismissible: DismissiblePane(
+              onDismissed: () {},
+              confirmDismiss: () async {
+                return await onDismissed();
+              },
+            ),
             children: [
               SlidableAction(
                 onPressed: (context) => onEditTap(),
@@ -78,10 +83,10 @@ class CartItemWidget extends StatelessWidget {
         ClipRRect(
           borderRadius: const BorderRadius.all(Radius.circular(10)),
           child: Image.asset(
-            orderItemModel.itemImageUrl ?? kCostaCupImage,
+            orderItemModel.itemImageUrl ?? kLogoImage,
             height: 70,
             width: 70,
-            fit: BoxFit.cover,
+            fit: BoxFit.contain,
           ),
         ),
         const SizedBox(width: 10),

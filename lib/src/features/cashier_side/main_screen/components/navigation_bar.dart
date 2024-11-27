@@ -1,3 +1,4 @@
+import 'package:cortadoeg/src/constants/assets_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
@@ -84,10 +85,10 @@ class SideNavigationBar extends StatelessWidget {
       ),
       headerBuilder: (context, extended) {
         return SizedBox(
-          height: 150,
+          height: 180,
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Image.asset('assets/images/logo_white.png'),
+            padding: const EdgeInsets.all(5),
+            child: Image.asset(kLogoDarkImage),
           ),
         );
       },

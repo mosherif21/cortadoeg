@@ -15,7 +15,7 @@ class ButtonLanguageSelect extends StatelessWidget {
     return Align(
       alignment: isLangEnglish() ? Alignment.centerLeft : Alignment.centerRight,
       child: SizedBox(
-        width: isLangEnglish() ? 130.0 : 80.0,
+        width: isLangEnglish() ? 130.0 : 90.0,
         child: TextButton(
           style: TextButton.styleFrom(
             splashFactory: InkSparkle.splashFactory,

@@ -30,17 +30,19 @@ class ItemCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
+            const SizedBox(height: 5),
             ClipRRect(
               borderRadius: const BorderRadius.all(Radius.circular(15)),
               child: Image.asset(
-                imageUrl ?? kCostaCupImage,
+                imageUrl ?? kLogoImage,
                 height: 150,
                 width: double.infinity,
-                fit: BoxFit.cover,
+                fit: BoxFit.contain,
               ),
             ),
+            const SizedBox(height: 10),
             Padding(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -64,6 +66,7 @@ class ItemCard extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 10),
           ],
         ),
       ),

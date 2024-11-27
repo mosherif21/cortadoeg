@@ -145,47 +145,53 @@ class OrderScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Obx(
-                                  () => Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      ConstrainedBox(
-                                        constraints:
-                                            const BoxConstraints(maxWidth: 100),
-                                        child: Text(
-                                          controller.currentCustomerName.value,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.black87,
+                                  () => Padding(
+                                    padding: const EdgeInsets.all(10),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        ConstrainedBox(
+                                          constraints: const BoxConstraints(
+                                              maxWidth: 80),
+                                          child: Text(
+                                            controller
+                                                .currentCustomerName.value,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.black87,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      controller.currentCustomer != null
-                                          ? IconTextElevatedButton(
-                                              buttonColor: Colors.grey.shade100,
-                                              textColor: Colors.black87,
-                                              borderRadius: 10,
-                                              elevation: 0,
-                                              icon: Icons.close_rounded,
-                                              iconColor: Colors.black87,
-                                              text: 'removeCustomer'.tr,
-                                              onClick: () =>
-                                                  controller.onRemoveCustomer(),
-                                            )
-                                          : IconTextElevatedButton(
-                                              buttonColor: Colors.grey.shade100,
-                                              textColor: Colors.black87,
-                                              borderRadius: 10,
-                                              elevation: 0,
-                                              icon: Icons.add_rounded,
-                                              iconColor: Colors.black87,
-                                              text: 'addCustomer'.tr,
-                                              onClick: () => controller
-                                                  .onCustomerChoose(context),
-                                            ),
-                                    ],
+                                        controller.currentCustomer != null
+                                            ? IconTextElevatedButton(
+                                                buttonColor:
+                                                    Colors.grey.shade100,
+                                                textColor: Colors.black87,
+                                                borderRadius: 10,
+                                                elevation: 0,
+                                                icon: Icons.close_rounded,
+                                                iconColor: Colors.black87,
+                                                text: 'removeCustomer'.tr,
+                                                onClick: () => controller
+                                                    .onRemoveCustomer(),
+                                              )
+                                            : IconTextElevatedButton(
+                                                buttonColor:
+                                                    Colors.grey.shade100,
+                                                textColor: Colors.black87,
+                                                borderRadius: 10,
+                                                elevation: 0,
+                                                icon: Icons.add_rounded,
+                                                iconColor: Colors.black87,
+                                                text: 'addCustomer'.tr,
+                                                onClick: () => controller
+                                                    .onCustomerChoose(context),
+                                              ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 5),
@@ -205,10 +211,16 @@ class OrderScreen extends StatelessWidget {
                                               controller.onEditItem(index,
                                                   context, screenType.isPhone),
                                           onDeleteTap: () =>
-                                              controller.onDeleteItem(index),
+                                              controller.onDeleteItem(index,
+                                                  controller.orderItems[index]),
                                           index: index,
-                                          onDismissed: () =>
-                                              controller.onDeleteItem(index),
+                                          onDismissed: () async {
+                                            return await controller
+                                                .onDeleteItem(
+                                                    index,
+                                                    controller
+                                                        .orderItems[index]);
+                                          },
                                         );
                                       },
                                     ),

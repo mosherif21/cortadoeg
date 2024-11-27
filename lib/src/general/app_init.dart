@@ -149,18 +149,20 @@ class AppInit {
 
   static Future<void> goToInitPage() async {
     final authRepo = AuthenticationRepository.instance;
-    if (AuthenticationRepository.instance.isUserLoggedIn) {
-      final functionStatus = await AuthenticationRepository.instance.userInit();
+    if (authRepo.isUserLoggedIn) {
+      final functionStatus = await authRepo.userInit();
       removeSplashScreen();
-      Get.offAll(
-        () => const MainScreen(),
-        transition: Transition.circularReveal,
-      );
       if (functionStatus == FunctionStatus.success) {
-        if (authRepo.userType == UserType.admin) {
-        } else if (authRepo.userType == UserType.cashier ||
-            authRepo.userType == UserType.waiter ||
-            authRepo.userType == UserType.takeaway) {}
+        if (authRepo.userRole == Role.admin) {
+          //
+        } else if (authRepo.userRole == Role.cashier ||
+            authRepo.userRole == Role.waiter ||
+            authRepo.userRole == Role.takeaway) {
+          Get.offAll(
+            () => const MainScreen(),
+            transition: Transition.circularReveal,
+          );
+        }
       } else {
         hideLoadingScreen();
         await authRepo.logoutAuthUser();

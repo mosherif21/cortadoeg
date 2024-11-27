@@ -55,37 +55,40 @@ class CafeLayout extends StatelessWidget {
           const SizedBox(width: 20),
           Expanded(
             child: Container(
-              margin: const EdgeInsets.only(top: 100),
+              margin: EdgeInsets.only(top: getScreenHeight(context) * 0.21),
               child: AnimationLimiter(
-                child: GridView.count(
-                  crossAxisCount: 5,
-                  children: List.generate(
-                    10,
-                    (int index) {
-                      return AnimationConfiguration.staggeredGrid(
-                        position: index,
-                        duration: const Duration(milliseconds: 300),
-                        columnCount: 5,
-                        child: ScaleAnimation(
-                          child: FadeInAnimation(
-                            child: Obx(
-                              () => controller.loadingTables.value
-                                  ? const TableLoading()
-                                  : InkWell(
-                                      onTap: () => controller.onTableSelected(
-                                          index, false),
-                                      child: Table(
-                                        tableModel:
-                                            controller.tablesList[index],
-                                        selected: controller.selectedTables
-                                            .contains(index + 1),
-                                      ),
-                                    ),
-                            ),
+                child: Obx(
+                  () => StretchingOverscrollIndicator(
+                    axisDirection: isLangEnglish()
+                        ? AxisDirection.right
+                        : AxisDirection.left,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              buildTable(0),
+                              buildTable(1),
+                              buildTable(2),
+                            ],
                           ),
-                        ),
-                      );
-                    },
+                          const SizedBox(height: 50),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              buildTable(3),
+                              buildTable(4),
+                              buildTable(5),
+                              buildTable(6),
+                              buildTable(7),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -99,7 +102,7 @@ class CafeLayout extends StatelessWidget {
             decoration: BoxDecoration(
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.shade300, //New
+                  color: Colors.grey.shade300,
                   blurRadius: 5.0,
                 )
               ],
@@ -126,6 +129,36 @@ class CafeLayout extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget buildTable(int index) {
+    if (index >= controller.tablesList.length) {
+      return const SizedBox();
+    }
+    final table = controller.tablesList[index];
+    return AnimationConfiguration.staggeredGrid(
+      position: index,
+      duration: const Duration(milliseconds: 300),
+      columnCount: 3,
+      child: ScaleAnimation(
+        child: FadeInAnimation(
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Obx(
+              () => controller.loadingTables.value
+                  ? const TableLoading()
+                  : InkWell(
+                      onTap: () => controller.onTableSelected(index, false),
+                      child: Table(
+                        tableModel: table,
+                        selected: controller.selectedTables.contains(index + 1),
+                      ),
+                    ),
+            ),
+          ),
+        ),
       ),
     );
   }

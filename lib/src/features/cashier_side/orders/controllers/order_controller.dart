@@ -1,12 +1,14 @@
 import 'package:bottom_sheet/bottom_sheet.dart';
-import 'package:cortadoeg/src/features/cashier_side/main_screen/controllers/main_screen_controller.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cortadoeg/src/features/cashier_side/orders/components/choose_customer.dart';
 import 'package:cortadoeg/src/features/cashier_side/orders/components/choose_customer_phone.dart';
 import 'package:cortadoeg/src/general/app_init.dart';
 import 'package:cortadoeg/src/general/general_functions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../constants/enums.dart';
 import '../components/discount_widget.dart';
 import '../components/item_details.dart';
 import '../components/item_details_phone.dart';
@@ -47,20 +49,11 @@ class OrderController extends GetxController {
   void onInit() async {
     searchBarTextController = TextEditingController();
     discountTextController = TextEditingController();
+
     categories.value = categoriesExample;
     items = cafeItemsExample;
-    customers.value = MainScreenController.instance.customersList;
-    currentCustomerName.value = 'guest'.tr;
     categoryFilteredItems = cafeItemsExample;
     filteredItems.value = items;
-    if (orderModel.customerId != null) {
-      currentCustomer = customers.where((customer) {
-        return customer.customerId == orderModel.customerId;
-      }).first;
-      if (currentCustomer != null) {
-        currentCustomerName.value = currentCustomer!.name;
-      }
-    }
     if (orderModel.discountType != null && orderModel.discountValue != null) {
       discountType = orderModel.discountType!;
       discountValue = orderModel.discountValue!;
@@ -69,7 +62,16 @@ class OrderController extends GetxController {
       orderItems.value = orderModel.items;
       calculateTotalAmount();
     }
-
+    customers.value = customersExample;
+    currentCustomerName.value = 'guest'.tr;
+    if (orderModel.customerId != null) {
+      currentCustomer = customers.where((customer) {
+        return customer.customerId == orderModel.customerId;
+      }).first;
+      if (currentCustomer != null) {
+        currentCustomerName.value = currentCustomer!.name;
+      }
+    }
     super.onInit();
   }
 
@@ -138,14 +140,61 @@ class OrderController extends GetxController {
           );
 
     if (orderItem != null) {
-      orderItems.add(orderItem);
-      calculateTotalAmount();
-      AppInit.logger.i('Order Total is $orderTotal');
-      final ordersList = MainScreenController.instance.ordersList;
-      final orderIndex = ordersList.indexWhere((order) {
-        return order.orderId == orderModel.orderId;
+      showLoadingScreen();
+      final addItemStatus =
+          await addOrderItem(orderItem: orderItem, orderId: orderModel.orderId);
+      hideLoadingScreen();
+      if (addItemStatus == FunctionStatus.success) {
+        orderItems.add(orderItem);
+        calculateTotalAmount();
+      } else {
+        showSnackBar(
+          text: 'errorOccurred'.tr,
+          snackBarType: SnackBarType.error,
+        );
+      }
+    }
+  }
+
+  Future<FunctionStatus> addOrderItem(
+      {required OrderItemModel orderItem, required String orderId}) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      await firestore.collection('orders').doc(orderId).update({
+        'items': FieldValue.arrayUnion([orderItem.toFirestore()]),
       });
-      ordersList[orderIndex].items = orderItems;
+      return FunctionStatus.success;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+      return FunctionStatus.failure;
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+      return FunctionStatus.failure;
+    }
+  }
+
+  Future<FunctionStatus> deleteOrderItem(
+      {required OrderItemModel orderItem, required String orderId}) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      await firestore.collection('orders').doc(orderId).update({
+        'items': FieldValue.arrayRemove([orderItem.toFirestore()]),
+      });
+      return FunctionStatus.success;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+      return FunctionStatus.failure;
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+      return FunctionStatus.failure;
     }
   }
 
@@ -165,12 +214,30 @@ class OrderController extends GetxController {
         : (orderSubtotal.value - discountAmount.value);
     orderTax.value = taxableAmount * (taxRate / 100);
     orderTotal.value = taxableAmount + orderTax.value;
+
     return orderTotal.value;
   }
 
-  void onDeleteItem(int itemIndex) {
-    orderItems.removeAt(itemIndex);
-    calculateTotalAmount();
+  Future<bool> onDeleteItem(int itemIndex, OrderItemModel orderItem) async {
+    showLoadingScreen();
+    final addItemStatus = await deleteOrderItem(
+        orderItem: orderItem, orderId: orderModel.orderId);
+    hideLoadingScreen();
+    if (addItemStatus == FunctionStatus.success) {
+      orderItems.removeAt(itemIndex);
+      calculateTotalAmount();
+      showSnackBar(
+        text: 'orderItemDeletedSuccess'.tr,
+        snackBarType: SnackBarType.success,
+      );
+      return true;
+    } else {
+      showSnackBar(
+        text: 'errorOccurred'.tr,
+        snackBarType: SnackBarType.error,
+      );
+      return false;
+    }
   }
 
   void onCustomerChoose(BuildContext context) async {
@@ -188,41 +255,106 @@ class OrderController extends GetxController {
             },
           );
     if (customer != null) {
-      currentCustomer = customer;
-      currentCustomerName.value = currentCustomer!.name;
-      discountValue = currentCustomer!.discountValue;
-      discountType = currentCustomer!.discountType;
-      calculateTotalAmount();
-      if (!customers.contains(customer)) {
-        customers.add(customer);
-        MainScreenController.instance.customersList = customers;
+      showLoadingScreen();
+      final addStatus = await addCustomerToOrder(
+          customer: customer, orderId: orderModel.orderId);
+      hideLoadingScreen();
+      if (addStatus == FunctionStatus.success) {
+        currentCustomer = customer;
+        currentCustomerName.value = currentCustomer!.name;
+        discountValue = currentCustomer!.discountValue;
+        discountType = currentCustomer!.discountType;
+        calculateTotalAmount();
+        if (!customers.contains(customer)) {
+          customers.add(customer);
+        }
+      } else {
+        showSnackBar(
+          text: 'errorOccurred'.tr,
+          snackBarType: SnackBarType.error,
+        );
       }
-      AppInit.logger.i('Customer Added');
-      final ordersList = MainScreenController.instance.ordersList;
-      final orderIndex = ordersList.indexWhere((order) {
-        return order.orderId == orderModel.orderId;
+    }
+  }
+
+  Future<FunctionStatus> addCustomerToOrder(
+      {required CustomerModel customer, required String orderId}) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final batch = firestore.batch();
+      batch.update(
+        firestore.collection('orders').doc(orderId),
+        {
+          'customerId': customer.customerId,
+          'discountValue': customer.discountValue,
+          'discountType': customer.discountType,
+        },
+      );
+      if (!customers.contains(customer)) {
+        final newCustomerDoc = firestore.collection('customers').doc();
+        customer.customerId = newCustomerDoc.id;
+        batch.set(
+          newCustomerDoc,
+          customer.toFirestore(),
+        );
+      }
+      await batch.commit();
+      return FunctionStatus.success;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+      return FunctionStatus.failure;
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+      return FunctionStatus.failure;
+    }
+  }
+
+  Future<FunctionStatus> removeCustomerFromOrder(
+      {required String orderId}) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      await firestore.collection('orders').doc(orderId).update({
+        'customerId': null,
+        'discountValue': null,
+        'discountType': null,
       });
-      ordersList[orderIndex].customerId = customer.customerId;
-      ordersList[orderIndex].discountValue = customer.discountValue;
-      ordersList[orderIndex].discountType = customer.discountType;
+      return FunctionStatus.success;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+      return FunctionStatus.failure;
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+      return FunctionStatus.failure;
     }
   }
 
   void onRemoveCustomer() async {
-    currentCustomer = null;
-    currentCustomerName.value = 'guest'.tr;
-    discountValue = null;
-    discountType = null;
-    percentageChosen.value = true;
-    discountTextController.text = '';
-    calculateTotalAmount();
-    final ordersList = MainScreenController.instance.ordersList;
-    final orderIndex = ordersList.indexWhere((order) {
-      return order.orderId == orderModel.orderId;
-    });
-    ordersList[orderIndex].customerId = null;
-    ordersList[orderIndex].discountValue = null;
-    ordersList[orderIndex].discountType = null;
+    showLoadingScreen();
+    final removeStatus =
+        await removeCustomerFromOrder(orderId: orderModel.orderId);
+    hideLoadingScreen();
+    if (removeStatus == FunctionStatus.success) {
+      currentCustomer = null;
+      currentCustomerName.value = 'guest'.tr;
+      discountValue = null;
+      discountType = null;
+      percentageChosen.value = true;
+      discountTextController.text = '';
+      calculateTotalAmount();
+    } else {
+      showSnackBar(
+        text: 'errorOccurred'.tr,
+        snackBarType: SnackBarType.error,
+      );
+    }
   }
 
   void onEditItem(int index, BuildContext context, bool isPhone) async {
@@ -263,42 +395,134 @@ class OrderController extends GetxController {
             },
           );
     if (editedOrderItem != null) {
-      orderItems[index] = editedOrderItem;
-      calculateTotalAmount();
-      AppInit.logger.i('Order Total is $orderTotal');
-      final ordersList = MainScreenController.instance.ordersList;
-      final orderIndex = ordersList.indexWhere((order) {
-        return order.orderId == orderModel.orderId;
-      });
-      ordersList[orderIndex].items = orderItems;
+      showLoadingScreen();
+      final editOrderItemStatus = await editOrderItemQuantity(
+        orderId: orderModel.orderId,
+        orderItems: orderItems,
+        editedOrderItem: editedOrderItem,
+        index: index,
+      );
+      hideLoadingScreen();
+      if (editOrderItemStatus == FunctionStatus.success) {
+        orderItems[index] = editedOrderItem;
+        calculateTotalAmount();
+      } else {
+        showSnackBar(
+          text: 'errorOccurred'.tr,
+          snackBarType: SnackBarType.error,
+        );
+      }
     }
   }
 
-  onAddDiscount(type, value) {
-    discountType = type;
-    discountValue = value;
-    addingDiscount.value = false;
-    calculateTotalAmount();
-    final ordersList = MainScreenController.instance.ordersList;
-    final orderIndex = ordersList.indexWhere((order) {
-      return order.orderId == orderModel.orderId;
-    });
-    ordersList[orderIndex].discountValue = discountValue;
-    ordersList[orderIndex].discountType = discountType;
+  Future<FunctionStatus> editOrderItemQuantity({
+    required String orderId,
+    required List<OrderItemModel> orderItems,
+    required OrderItemModel editedOrderItem,
+    required int index,
+  }) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      orderItems[index] = editedOrderItem;
+      await firestore.collection('orders').doc(orderId).update({
+        'items': orderItems.map((item) => item.toFirestore()).toList(),
+      });
+      return FunctionStatus.success;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+      return FunctionStatus.failure;
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+      return FunctionStatus.failure;
+    }
   }
 
-  onCancelDiscount() {
-    discountValue = null;
-    discountType = null;
-    percentageChosen.value = true;
-    discountTextController.text = '';
-    calculateTotalAmount();
-    final ordersList = MainScreenController.instance.ordersList;
-    final orderIndex = ordersList.indexWhere((order) {
-      return order.orderId == orderModel.orderId;
-    });
-    ordersList[orderIndex].discountValue = null;
-    ordersList[orderIndex].discountType = null;
+  onAddDiscount(type, value) async {
+    showLoadingScreen();
+    final addDiscountStatus = await addDiscountDatabase(
+        orderId: orderModel.orderId, discountValue: value, discountType: type);
+    hideLoadingScreen();
+    if (addDiscountStatus == FunctionStatus.success) {
+      discountType = type;
+      discountValue = value;
+      addingDiscount.value = false;
+      calculateTotalAmount();
+    } else {
+      showSnackBar(
+        text: 'errorOccurred'.tr,
+        snackBarType: SnackBarType.error,
+      );
+    }
+  }
+
+  Future<FunctionStatus> addDiscountDatabase({
+    required String orderId,
+    required double discountValue,
+    required String discountType,
+  }) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      await firestore.collection('orders').doc(orderId).update({
+        'discountValue': discountValue,
+        'discountType': discountType,
+      });
+      return FunctionStatus.success;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+      return FunctionStatus.failure;
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+      return FunctionStatus.failure;
+    }
+  }
+
+  onCancelDiscount() async {
+    showLoadingScreen();
+    final removeDiscountStatus =
+        await removeDiscountDatabase(orderId: orderModel.orderId);
+    hideLoadingScreen();
+    if (removeDiscountStatus == FunctionStatus.success) {
+      discountValue = null;
+      discountType = null;
+      percentageChosen.value = true;
+      discountTextController.text = '';
+      calculateTotalAmount();
+    } else {
+      showSnackBar(
+        text: 'errorOccurred'.tr,
+        snackBarType: SnackBarType.error,
+      );
+    }
+  }
+
+  Future<FunctionStatus> removeDiscountDatabase(
+      {required String orderId}) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      await firestore.collection('orders').doc(orderId).update({
+        'discountValue': null,
+        'discountType': null,
+      });
+      return FunctionStatus.success;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+      return FunctionStatus.failure;
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+      return FunctionStatus.failure;
+    }
   }
 
   addDiscount() {
@@ -330,17 +554,24 @@ class OrderController extends GetxController {
             discountTextController: discountTextController,
             initialDiscountType: discountType ?? 'percentage',
             initialDiscountValue: discountValue ?? 0,
-            onAddDiscount: (type, value) {
-              discountType = type;
-              discountValue = value;
-              calculateTotalAmount();
-              final ordersList = MainScreenController.instance.ordersList;
-              final orderIndex = ordersList.indexWhere((order) {
-                return order.orderId == orderModel.orderId;
-              });
-              ordersList[orderIndex].discountValue = discountValue;
-              ordersList[orderIndex].discountType = discountType;
-              Get.back();
+            onAddDiscount: (type, value) async {
+              showLoadingScreen();
+              final addDiscountStatus = await addDiscountDatabase(
+                  orderId: orderModel.orderId,
+                  discountValue: value,
+                  discountType: type);
+              hideLoadingScreen();
+              if (addDiscountStatus == FunctionStatus.success) {
+                discountType = type;
+                discountValue = value;
+                calculateTotalAmount();
+                Get.back();
+              } else {
+                showSnackBar(
+                  text: 'errorOccurred'.tr,
+                  snackBarType: SnackBarType.error,
+                );
+              }
             },
             onCancel: () => Get.back(),
           ),
@@ -354,13 +585,49 @@ class OrderController extends GetxController {
     }
   }
 
-  onQuantityChangedPhone(int newQuantity, int index) {
-    orderItems[index].quantity = newQuantity;
-    calculateTotalAmount();
-    final ordersList = MainScreenController.instance.ordersList;
-    final orderIndex = ordersList.indexWhere((order) {
-      return order.orderId == orderModel.orderId;
-    });
-    ordersList[orderIndex].items = orderItems;
+  Future<FunctionStatus> changeOrderItemQuantity({
+    required String orderId,
+    required List<OrderItemModel> orderItems,
+    required int newQuantity,
+    required int index,
+  }) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      orderItems[index].quantity = newQuantity;
+      await firestore.collection('orders').doc(orderId).update({
+        'items': orderItems.map((item) => item.toFirestore()).toList(),
+      });
+      return FunctionStatus.success;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+      return FunctionStatus.failure;
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+      return FunctionStatus.failure;
+    }
+  }
+
+  onQuantityChangedPhone(int newQuantity, int index) async {
+    showLoadingScreen();
+    final changeQuantityStatus = await changeOrderItemQuantity(
+      orderId: orderModel.orderId,
+      orderItems: orderItems,
+      newQuantity: newQuantity,
+      index: index,
+    );
+    hideLoadingScreen();
+    if (changeQuantityStatus == FunctionStatus.success) {
+      orderItems[index].quantity = newQuantity;
+      calculateTotalAmount();
+    } else {
+      showSnackBar(
+        text: 'errorOccurred'.tr,
+        snackBarType: SnackBarType.error,
+      );
+    }
   }
 }

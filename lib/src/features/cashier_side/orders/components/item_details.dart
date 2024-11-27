@@ -49,44 +49,56 @@ class ItemDetails extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              decoration: BoxDecoration(
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(15)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.shade200,
-                                    blurRadius: 5,
-                                  )
-                                ],
-                              ),
+                              decoration: item.imageUrl != null
+                                  ? BoxDecoration(
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(15)),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.shade200,
+                                          blurRadius: 5,
+                                        )
+                                      ],
+                                    )
+                                  : null,
                               child: ClipRRect(
                                 borderRadius:
                                     const BorderRadius.all(Radius.circular(15)),
                                 child: Image.asset(
-                                  item.imageUrl ?? kCostaCupImage,
-                                  height: 250,
+                                  item.imageUrl ?? kLogoImage,
+                                  height: screenHeight * 0.35,
                                   width: double.infinity,
-                                  fit: BoxFit.cover,
+                                  fit: BoxFit.contain,
                                 ),
                               ),
                             ),
                             const SizedBox(height: 20),
-                            AutoSizeText(
-                              item.name,
-                              maxLines: 2,
-                              style: const TextStyle(
-                                  color: Colors.black87,
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 5),
-                            AutoSizeText(
-                              item.description,
-                              maxLines: 3,
-                              style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold),
+                            StretchingOverscrollIndicator(
+                              axisDirection: AxisDirection.down,
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    AutoSizeText(
+                                      item.name,
+                                      maxLines: 2,
+                                      style: const TextStyle(
+                                          color: Colors.black87,
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    AutoSizeText(
+                                      item.description,
+                                      maxLines: 3,
+                                      style: const TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                             const SizedBox(height: 15),
                             InputQty.int(
@@ -102,6 +114,7 @@ class ItemDetails extends StatelessWidget {
                               onQtyChanged: (quantity) =>
                                   controller.itemQuantity.value = quantity,
                             ),
+                            const SizedBox(height: 20),
                           ],
                         ),
                       ),

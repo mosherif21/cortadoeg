@@ -652,6 +652,8 @@ class Languages extends Translations {
           'noOrdersBody': 'There are no orders',
           'guest': 'Guest',
           'customer': 'Customer',
+          'tableNotAvailable': 'Table number @tableNo is unavailable',
+          'orderItemDeletedSuccess': 'Order Item Deleted Successfully',
         },
       };
 }

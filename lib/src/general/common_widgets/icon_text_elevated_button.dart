@@ -51,6 +51,7 @@ class IconTextElevatedButton extends StatelessWidget {
               const SizedBox(width: 5),
               AutoSizeText(
                 text,
+                maxLines: 1,
                 style: TextStyle(
                     color: textColor,
                     fontWeight: FontWeight.w600,

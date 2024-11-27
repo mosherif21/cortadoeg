@@ -44,43 +44,73 @@ class CafeLayoutPhone extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Expanded(
-            child: AnimationLimiter(
-              child: Obx(
-                () => GridView.count(
-                  crossAxisCount: 2,
-                  children: List.generate(
-                    controller.tablesList.length,
-                    (int phoneIndex) {
-                      final isFirstColumn = phoneIndex % 2 == 0;
-                      final logicalRow = phoneIndex ~/ 2;
-                      final tabletIndex =
-                          isFirstColumn ? 5 + logicalRow : logicalRow;
-                      if (tabletIndex >= controller.tablesList.length) {
-                        return const SizedBox();
-                      }
-                      final table = controller.tablesList[tabletIndex];
-                      return AnimationConfiguration.staggeredGrid(
-                        position: phoneIndex,
-                        duration: const Duration(milliseconds: 300),
-                        columnCount: 2,
-                        child: ScaleAnimation(
-                          child: FadeInAnimation(
-                            child: controller.loadingTables.value
-                                ? const TableLoading()
-                                : InkWell(
-                                    onTap: () => controller.onTableSelected(
-                                        tabletIndex, true),
-                                    child: Table(
-                                      tableModel: table,
-                                      selected: controller.selectedTables
-                                          .contains(tabletIndex + 1),
-                                    ),
-                                  ),
-                          ),
+            child: StretchingOverscrollIndicator(
+              axisDirection: AxisDirection.down,
+              child: SingleChildScrollView(
+                child: Obx(
+                  () {
+                    final rows = [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 60, vertical: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            buildTable(3),
+                            buildTable(0),
+                          ],
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 60, vertical: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            buildTable(4),
+                            buildTable(1),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 60, vertical: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            buildTable(5),
+                            buildTable(2),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 60, vertical: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            buildTable(6),
+                            const SizedBox(),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 60, vertical: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            buildTable(7),
+                            const SizedBox(),
+                          ],
+                        ),
+                      ),
+                    ];
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: rows,
+                    );
+                  },
                 ),
               ),
             ),
@@ -111,6 +141,33 @@ class CafeLayoutPhone extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // Helper function to create a table widget or a loading indicator.
+  Widget buildTable(int index) {
+    if (index >= controller.tablesList.length) {
+      return const SizedBox();
+    }
+
+    final table = controller.tablesList[index];
+    return AnimationConfiguration.staggeredGrid(
+      position: index,
+      duration: const Duration(milliseconds: 300),
+      columnCount: 2,
+      child: ScaleAnimation(
+        child: FadeInAnimation(
+          child: controller.loadingTables.value
+              ? const TableLoading()
+              : InkWell(
+                  onTap: () => controller.onTableSelected(index, true),
+                  child: Table(
+                    tableModel: table,
+                    selected: controller.selectedTables.contains(index + 1),
+                  ),
+                ),
+        ),
       ),
     );
   }

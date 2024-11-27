@@ -42,6 +42,9 @@ class OrderModel {
   double? discountValue;
   String? customerId;
   final double totalAmount;
+  final double discountAmount;
+  final double subtotalAmount;
+  final double taxTotalAmount;
 
   OrderModel({
     required this.orderId,
@@ -54,6 +57,9 @@ class OrderModel {
     this.discountValue,
     this.customerId,
     required this.totalAmount,
+    required this.discountAmount,
+    required this.subtotalAmount,
+    required this.taxTotalAmount,
   });
 
   Map<String, dynamic> toFirestore() {
@@ -66,6 +72,9 @@ class OrderModel {
       'discountType': discountType,
       'customerId': customerId,
       'discountValue': discountValue,
+      'subtotalAmount': subtotalAmount,
+      'discountAmount': discountAmount,
+      'taxTotalAmount': taxTotalAmount,
       'totalAmount': totalAmount,
     };
   }
@@ -83,6 +92,9 @@ class OrderModel {
       discountType: map['discountType'],
       customerId: map['customerId'],
       discountValue: map['discountValue']?.toDouble(),
+      subtotalAmount: map['subtotalAmount'].toDouble(),
+      discountAmount: map['discountAmount'].toDouble(),
+      taxTotalAmount: map['taxTotalAmount'].toDouble(),
       totalAmount: map['totalAmount'].toDouble(),
     );
   }
@@ -145,7 +157,7 @@ class OrderItemModel {
 }
 
 class CustomerModel {
-  final String customerId;
+  String customerId;
   final String name;
   final String number;
   final String discountType;
@@ -261,51 +273,12 @@ class ItemSizeModel {
   }
 }
 
-List<OrderModel> ordersExample = [
-  OrderModel(
-    orderId: '30123',
-    tableNumbers: [4],
-    items: [],
-    status: OrderStatus.active,
-    timestamp: Timestamp.now(),
-    totalAmount: 0.0,
-    isTakeaway: false,
-  ),
-  OrderModel(
-    orderId: '30124',
-    tableNumbers: [7],
-    items: [],
-    status: OrderStatus.active,
-    timestamp: Timestamp.now(),
-    totalAmount: 0.0,
-    isTakeaway: false,
-  ),
-  OrderModel(
-    orderId: '30125',
-    tableNumbers: [8],
-    items: [],
-    status: OrderStatus.active,
-    timestamp: Timestamp.now(),
-    totalAmount: 0.0,
-    isTakeaway: false,
-  ),
-  OrderModel(
-    orderId: '30126',
-    tableNumbers: [9],
-    items: [],
-    status: OrderStatus.active,
-    timestamp: Timestamp.now(),
-    totalAmount: 0.0,
-    isTakeaway: false,
-  ),
-];
-
 List<CategoryModel> categoriesExample = [
-  CategoryModel(id: '1', name: 'All Menu', iconName: 'allMenu'),
-  CategoryModel(id: '2', name: 'Ice Cream', iconName: 'fa_ice_cream'),
-  CategoryModel(id: '3', name: 'Coffee', iconName: 'coffee'),
-  CategoryModel(id: '4', name: 'Cakes', iconName: 'fa_birthday_cake'),
-  CategoryModel(id: '4', name: 'Special Cakes', iconName: 'fa_birthday_cake'),
+  CategoryModel(id: '', name: 'All Menu', iconName: 'allMenu'),
+  CategoryModel(id: '1', name: 'Ice Cream', iconName: 'fa_ice_cream'),
+  CategoryModel(id: '2', name: 'Coffee', iconName: 'coffee'),
+  CategoryModel(id: '3', name: 'Cakes', iconName: 'fa_birthday_cake'),
+  CategoryModel(id: '3', name: 'Special Cakes', iconName: 'fa_birthday_cake'),
 ];
 List<CustomerModel> customersExample = [
   CustomerModel(
@@ -384,7 +357,7 @@ List<ItemModel> cafeItemsExample = [
   ItemModel(
     itemId: "item1",
     name: "Espresso",
-    categoryId: "3",
+    categoryId: "2",
     sizes: [
       ItemSizeModel(name: "Single", price: 2.5, costPrice: 1.0),
       ItemSizeModel(name: "Double", price: 3.5, costPrice: 1.8),
@@ -397,7 +370,7 @@ List<ItemModel> cafeItemsExample = [
   ItemModel(
     itemId: "item2",
     name: "Cappuccino",
-    categoryId: "3",
+    categoryId: "2",
     sizes: [
       ItemSizeModel(name: "Small", price: 3.5, costPrice: 1.5),
       ItemSizeModel(name: "Medium", price: 4.5, costPrice: 2.2),
@@ -416,7 +389,7 @@ List<ItemModel> cafeItemsExample = [
   ItemModel(
     itemId: "item3",
     name: "Muffin",
-    categoryId: "4",
+    categoryId: "3",
     sizes: [
       ItemSizeModel(name: "Regular", price: 2.5, costPrice: 1.2),
     ],
@@ -430,7 +403,7 @@ List<ItemModel> cafeItemsExample = [
   ),
   ItemModel(
     itemId: "item4",
-    name: "Lemonade",
+    name: "Lemon Ice Cream",
     categoryId: "1",
     sizes: [
       ItemSizeModel(name: "Small", price: 2.0, costPrice: 0.8),
@@ -447,7 +420,7 @@ List<ItemModel> cafeItemsExample = [
   ItemModel(
     itemId: "item5",
     name: "Avocado Toast",
-    categoryId: "4",
+    categoryId: "3",
     sizes: [
       ItemSizeModel(name: "Regular", price: 6.0, costPrice: 3.0),
     ],
@@ -462,7 +435,7 @@ List<ItemModel> cafeItemsExample = [
   ItemModel(
     itemId: "item6",
     name: "Iced Latte",
-    categoryId: "3",
+    categoryId: "2",
     sizes: [
       ItemSizeModel(name: "Medium", price: 4.0, costPrice: 2.0),
       ItemSizeModel(name: "Large", price: 5.0, costPrice: 2.5),
@@ -479,7 +452,7 @@ List<ItemModel> cafeItemsExample = [
   ItemModel(
     itemId: "item7",
     name: "Bagel",
-    categoryId: "4",
+    categoryId: "3",
     sizes: [
       ItemSizeModel(name: "Single", price: 3.0, costPrice: 1.5),
     ],
@@ -493,8 +466,8 @@ List<ItemModel> cafeItemsExample = [
   ),
   ItemModel(
     itemId: "item8",
-    name: "Smoothie Bowl",
-    categoryId: "2",
+    name: "Cake Bowl",
+    categoryId: "3",
     sizes: [
       ItemSizeModel(name: "Regular", price: 6.5, costPrice: 3.5),
     ],
@@ -509,7 +482,7 @@ List<ItemModel> cafeItemsExample = [
   ItemModel(
     itemId: "item9",
     name: "Hot Chocolate",
-    categoryId: "3",
+    categoryId: "2",
     sizes: [
       ItemSizeModel(name: "Small", price: 3.0, costPrice: 1.5),
       ItemSizeModel(name: "Medium", price: 4.0, costPrice: 2.0),
@@ -527,7 +500,7 @@ List<ItemModel> cafeItemsExample = [
   ItemModel(
     itemId: "item10",
     name: "Croissant",
-    categoryId: "4",
+    categoryId: "3",
     sizes: [
       ItemSizeModel(name: "Single", price: 3.0, costPrice: 1.8),
     ],

@@ -82,7 +82,7 @@ class CartItemWidgetPhone extends StatelessWidget {
               orderItemModel.itemImageUrl ?? kCoffeeCup2Image,
               height: 70,
               width: 70,
-              fit: BoxFit.cover,
+              fit: BoxFit.contain,
             ),
           ),
         ),

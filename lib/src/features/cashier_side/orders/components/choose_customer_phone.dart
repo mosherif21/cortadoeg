@@ -12,28 +12,17 @@ import 'package:intl_phone_field/intl_phone_field.dart';
 
 import '../../../../constants/enums.dart';
 import '../../../../general/validation_functions.dart';
+import '../controllers/customer_choose_controller.dart';
 
 class ChooseCustomerPhone extends StatelessWidget {
-  ChooseCustomerPhone({
+  const ChooseCustomerPhone({
     super.key,
     required this.customers,
   });
   final List<CustomerModel> customers;
-  final RxList<CustomerModel> filteredCustomers = <CustomerModel>[].obs;
-  final RxBool extended = false.obs;
-  final RxBool percentageChosen = true.obs;
-  final GlobalKey<ExpansionTileCoreState> key0 = GlobalKey();
-  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  final TextEditingController nameTextController = TextEditingController();
-  final TextEditingController discountTextController = TextEditingController();
-  final RxString number = ''.obs;
   @override
   Widget build(BuildContext context) {
-    final screenHeight = getScreenHeight(context);
-    final screenWidth = getScreenWidth(context);
-    customers
-        .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-    filteredCustomers.value = customers;
+    final controller = Get.put(CustomerChooseController(customers: customers));
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -45,7 +34,7 @@ class ChooseCustomerPhone extends StatelessWidget {
             cancelButtonText: 'cancel'.tr,
             hintText: 'searchItemsHint'.tr,
             onChanged: (searchText) {
-              filteredCustomers.value = searchText.trim().isEmpty
+              controller.filteredCustomers.value = searchText.trim().isEmpty
                   ? customers
                   : customers
                       .where((customer) => customer.name
@@ -77,11 +66,11 @@ class ChooseCustomerPhone extends StatelessWidget {
                 () => ListView.builder(
                   padding: const EdgeInsets.all(0),
                   scrollDirection: Axis.vertical,
-                  itemCount: filteredCustomers.length + 1,
+                  itemCount: controller.filteredCustomers.length + 1,
                   itemBuilder: (context, index) {
                     return index == 0
-                        ? addCustomerTile()
-                        : customerTile(filteredCustomers[index - 1]);
+                        ? addCustomerTile(controller: controller)
+                        : customerTile(controller.filteredCustomers[index - 1]);
                   },
                 ),
               ),
@@ -93,14 +82,14 @@ class ChooseCustomerPhone extends StatelessWidget {
     );
   }
 
-  Widget addCustomerTile() {
+  Widget addCustomerTile({required CustomerChooseController controller}) {
     return ExpansionTileCard(
       onExpansionChanged: (extendStatus) {
-        extended.value = extendStatus;
+        controller.extended.value = extendStatus;
       },
       backgroundColor: Colors.white,
       collapsedBackgroundColor: Colors.white,
-      expansionKey: key0,
+      expansionKey: controller.key0,
       elevation: 0,
       tilePadding: const EdgeInsets.symmetric(horizontal: 10),
       isHasTrailing: false,
@@ -111,13 +100,13 @@ class ChooseCustomerPhone extends StatelessWidget {
         () => Row(
           children: [
             Icon(
-              extended.value ? Icons.remove : Icons.add_rounded,
+              controller.extended.value ? Icons.remove : Icons.add_rounded,
               size: 25,
               color: Colors.black54,
             ),
             const SizedBox(width: 10),
             Text(
-              extended.value ? 'cancel'.tr : 'addCustomer'.tr,
+              controller.extended.value ? 'cancel'.tr : 'addCustomer'.tr,
               style: const TextStyle(
                 color: Colors.black54,
                 fontWeight: FontWeight.w800,
@@ -126,11 +115,11 @@ class ChooseCustomerPhone extends StatelessWidget {
           ],
         ),
       ),
-      children: [_buildChildren()],
+      children: [_buildChildren(controller: controller)],
     );
   }
 
-  Widget _buildChildren() {
+  Widget _buildChildren({required CustomerChooseController controller}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40),
       child: Column(
@@ -146,13 +135,13 @@ class ChooseCustomerPhone extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Form(
-            key: formKey,
+            key: controller.formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextFormField(
                   inputFormatters: [LengthLimitingTextInputFormatter(100)],
-                  controller: nameTextController,
+                  controller: controller.nameTextController,
                   keyboardType: TextInputType.text,
                   cursorColor: Colors.black,
                   decoration: InputDecoration(
@@ -212,7 +201,7 @@ class ChooseCustomerPhone extends StatelessWidget {
                         InputDecoration(hintText: 'searchCountry'.tr),
                   ),
                   onChanged: (phone) {
-                    number.value = phone.completeNumber;
+                    controller.number.value = phone.completeNumber;
                   },
                 ),
               ],
@@ -226,11 +215,11 @@ class ChooseCustomerPhone extends StatelessWidget {
                   height: 50,
                   child: ElevatedButton(
                     onPressed: () {
-                      percentageChosen.value = false;
+                      controller.percentageChosen.value = false;
                     },
                     style: ElevatedButton.styleFrom(
                       overlayColor: Colors.grey,
-                      backgroundColor: percentageChosen.value
+                      backgroundColor: controller.percentageChosen.value
                           ? Colors.grey.shade200
                           : Colors.black,
                       shape: RoundedRectangleBorder(
@@ -239,7 +228,7 @@ class ChooseCustomerPhone extends StatelessWidget {
                     ),
                     child: Icon(
                       Icons.attach_money_rounded,
-                      color: percentageChosen.value
+                      color: controller.percentageChosen.value
                           ? Colors.black54
                           : Colors.white,
                     ),
@@ -250,11 +239,11 @@ class ChooseCustomerPhone extends StatelessWidget {
                   height: 50,
                   child: ElevatedButton(
                     onPressed: () {
-                      percentageChosen.value = true;
+                      controller.percentageChosen.value = true;
                     },
                     style: ElevatedButton.styleFrom(
                       overlayColor: Colors.grey,
-                      backgroundColor: percentageChosen.value
+                      backgroundColor: controller.percentageChosen.value
                           ? Colors.black
                           : Colors.grey.shade200,
                       shape: RoundedRectangleBorder(
@@ -263,7 +252,7 @@ class ChooseCustomerPhone extends StatelessWidget {
                     ),
                     child: Icon(
                       Icons.percent_rounded,
-                      color: percentageChosen.value
+                      color: controller.percentageChosen.value
                           ? Colors.white
                           : Colors.black54,
                     ),
@@ -274,7 +263,7 @@ class ChooseCustomerPhone extends StatelessWidget {
                   child: TextField(
                     textInputAction: TextInputAction.done,
                     keyboardType: TextInputType.number,
-                    controller: discountTextController,
+                    controller: controller.discountTextController,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelStyle: TextStyle(color: Colors.black),
@@ -297,16 +286,18 @@ class ChooseCustomerPhone extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                final discountText = discountTextController.text.trim();
-                final name = nameTextController.text.trim();
-                if (formKey.currentState!.validate() &&
+                final discountText =
+                    controller.discountTextController.text.trim();
+                final name = controller.nameTextController.text.trim();
+                if (controller.formKey.currentState!.validate() &&
                     isNumeric(discountText)) {
                   final customerModel = CustomerModel(
                     customerId: '',
                     name: name,
-                    number: number.value,
-                    discountType:
-                        percentageChosen.value ? 'percentage' : 'value',
+                    number: controller.number.value,
+                    discountType: controller.percentageChosen.value
+                        ? 'percentage'
+                        : 'value',
                     discountValue: double.parse(discountText),
                   );
                   Get.back(result: customerModel);

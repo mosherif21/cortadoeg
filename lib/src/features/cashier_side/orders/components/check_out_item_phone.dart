@@ -31,7 +31,12 @@ class CheckOutItemPhone extends StatelessWidget {
       key: key0,
       endActionPane: ActionPane(
         motion: const DrawerMotion(),
-        dismissible: DismissiblePane(onDismissed: () => onDismissed()),
+        dismissible: DismissiblePane(
+          onDismissed: () {},
+          confirmDismiss: () async {
+            return await onDismissed();
+          },
+        ),
         children: [
           SlidableAction(
             onPressed: (context) => onEditTap(),
@@ -66,7 +71,7 @@ class CheckOutItemPhone extends StatelessWidget {
                       orderItemModel.itemImageUrl ?? kCoffeeCup2Image,
                       height: 70,
                       width: 70,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),

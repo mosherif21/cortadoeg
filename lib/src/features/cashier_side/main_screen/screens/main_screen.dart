@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hawk_fab_menu/hawk_fab_menu.dart';
 
-import '../../../../general/common_widgets/coffee_cup_add_icon.dart';
 import '../../account/screens/account_screen.dart';
 import '../../orders/screens/orders_screen.dart';
 import '../../reports/screens/reports_screen.dart';
@@ -29,8 +28,12 @@ class MainScreen extends StatelessWidget {
           isButtonVisible: mainController.showNewOrderButton.value,
           isEnglish: isLangEnglish(),
           openIcon: const Padding(
-            padding: EdgeInsets.all(8),
-            child: CoffeeCupAddIcon(size: 50),
+            padding: EdgeInsets.all(12),
+            child: Icon(
+              Icons.local_cafe,
+              color: Colors.white,
+              size: 45,
+            ),
           ),
           closeIcon: const Padding(
             padding: EdgeInsets.all(10),
@@ -46,14 +49,11 @@ class MainScreen extends StatelessWidget {
             HawkFabMenuItem(
               label: 'dineInOrder'.tr,
               ontap: () => Get.to(
-                () => TablesScreen(
-                  navBarAccess: false,
-                  tablesData: mainController.tablesList,
-                ),
+                () => TablesScreen(navBarAccess: false),
                 transition: Transition.noTransition,
               ),
               icon: const Icon(
-                Icons.local_cafe,
+                Icons.table_bar,
                 color: Colors.white,
                 size: 35,
               ),
@@ -134,10 +134,7 @@ class MainScreen extends StatelessWidget {
                     itemBuilder: (BuildContext context, int index) {
                       switch (index) {
                         case 0:
-                          return TablesScreen(
-                            navBarAccess: true,
-                            tablesData: mainController.tablesList,
-                          );
+                          return const TablesScreen(navBarAccess: true);
                         case 1:
                           return const OrdersScreen();
                         case 2:
@@ -149,10 +146,7 @@ class MainScreen extends StatelessWidget {
                         case 5:
                           return const SettingsScreen();
                         default:
-                          return TablesScreen(
-                            navBarAccess: true,
-                            tablesData: mainController.tablesList,
-                          );
+                          return const TablesScreen(navBarAccess: true);
                       }
                     },
                   ),

@@ -1,1 +1,41 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"cortadoegypt","appId":"1:571315776995:android:2f1d92da147aa0896584d6","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"cortadoegypt","configurations":{"android":"1:571315776995:android:2f1d92da147aa0896584d6","ios":"1:571315776995:ios:1562cd97789eb5126584d6","macos":"1:571315776995:ios:1562cd97789eb5126584d6","web":"1:571315776995:web:767f051e46bb54806584d6","windows":"1:571315776995:web:0baefe8ebeb51c116584d6"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "cortadoegypt",
+          "appId": "1:571315776995:android:2f1d92da147aa0896584d6",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "cortadoegypt",
+          "configurations": {
+            "android": "1:571315776995:android:2f1d92da147aa0896584d6",
+            "ios": "1:571315776995:ios:1562cd97789eb5126584d6",
+            "macos": "1:571315776995:ios:1562cd97789eb5126584d6",
+            "web": "1:571315776995:web:767f051e46bb54806584d6",
+            "windows": "1:571315776995:web:0baefe8ebeb51c116584d6"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ]
+    }
+  ]
+}

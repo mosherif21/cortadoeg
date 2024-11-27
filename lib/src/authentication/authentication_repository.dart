@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cortadoeg/src/authentication/exception_errors/password_reset_exceptions.dart';
+import 'package:cortadoeg/src/authentication/models.dart';
 import 'package:cortadoeg/src/general/app_init.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -31,7 +32,8 @@ class AuthenticationRepository extends GetxController {
       criticalRequestDeniedListener;
   String verificationId = '';
   GoogleSignIn? googleSignIn;
-  UserType userType = UserType.cashier;
+  Role userRole = Role.cashier;
+  late EmployeeModel employeeInfo;
 
   @override
   void onInit() {
@@ -83,87 +85,36 @@ class AuthenticationRepository extends GetxController {
   }
 
   Future<FunctionStatus> userInit() async {
-    // final String userId = fireUser.value!.uid;
-    // final firestoreUsersCollRef = _firestore.collection('users');
+    final String userId = fireUser.value!.uid;
+    final firestoreEmployeesCollRef = _firestore.collection('employees');
     try {
-      // await firestoreUsersCollRef.doc(userId).get().then((snapshot) async {
-      //   if (snapshot.exists) {
-      //     final userDoc = snapshot.data()!;
-      //     final userTypeValue = userDoc['type'].toString();
-      //     if (userTypeValue == 'ambulanceMedic' ||
-      //         userTypeValue == 'ambulanceDriver') {
-      //       userType = userTypeValue == 'ambulanceMedic'
-      //           ? UserType.medic
-      //           : UserType.driver;
-      //
-      //       employeeUserInfo = EmployeeUserInformation(
-      //         name: userDoc['name'].toString(),
-      //         email: userDoc['email'].toString(),
-      //         nationalId: userDoc['nationalId'].toString(),
-      //         phoneNumber: userDoc['phoneNumber'].toString(),
-      //         hospitalId: userDoc['hospitalId'].toString(),
-      //         userType: userType,
-      //       );
-      //       isUserRegistered = await checkEmployeeImagesRegistered();
-      //     } else if (userTypeValue == 'patient') {
-      //       isUserRegistered = true;
-      //       userInfo = UserInformation(
-      //         name: userDoc['name'].toString(),
-      //         email: userDoc['email'].toString(),
-      //         nationalId: userDoc['nationalId'].toString(),
-      //         birthDate: userDoc['birthdate'].toDate(),
-      //         gender: userDoc['gender'].toString(),
-      //         sosMessage: userDoc['sosMessage'].toString(),
-      //         criticalUser: userDoc['criticalUser'] as bool,
-      //         phoneNumber: userDoc['phoneNumber'].toString(),
-      //         backupNumber: userDoc['backupNumber'].toString(),
-      //       );
-      //       userType = UserType.patient;
-      //       criticalUserStatus.value = userInfo.criticalUser
-      //           ? CriticalUserStatus.criticalUserAccepted
-      //           : CriticalUserStatus.non;
-      //       if (!userInfo.criticalUser) {
-      //         initCriticalUserListeners();
-      //       }
-      //       loadProfilePicUrl();
-      //     }
-      //     if (kDebugMode) {
-      //       AppInit.logger.i(userType);
-      //     }
-      //     drawerAccountName.value = userType == UserType.patient
-      //         ? userInfo.name
-      //         : employeeUserInfo.name;
-      //     if (AppInit.notificationToken.isNotEmpty) {
-      //       await _firestore.collection('fcmTokens').doc(userId).set({
-      //         'fcmToken${AppInit.isAndroid ? 'Android' : 'Ios'}':
-      //             AppInit.notificationToken,
-      //         'notificationsLang': isLangEnglish() ? 'en' : 'ar',
-      //       });
-      //     }
-      //     if (fireUser.value!.email != null) {
-      //       final authenticationEmail = fireUser.value!.email!;
-      //       if (userType == UserType.patient) {
-      //         if (authenticationEmail.isNotEmpty &&
-      //             userInfo.email != authenticationEmail) {
-      //           if (kDebugMode) {
-      //             AppInit.logger.i(
-      //                 'Firestore email is not equal to Authentication email, updating it...');
-      //           }
-      //           updateUserEmailFirestore(email: authenticationEmail);
-      //         }
-      //       } else {
-      //         if (authenticationEmail.isNotEmpty &&
-      //             employeeUserInfo.email != authenticationEmail) {
-      //           if (kDebugMode) {
-      //             AppInit.logger.i(
-      //                 'Firestore email is not equal to Authentication email, updating it...');
-      //           }
-      //           updateUserEmailFirestore(email: authenticationEmail);
-      //         }
-      //       }
-      //     }
-      //   }
-      // });
+      await firestoreEmployeesCollRef.doc(userId).get().then((snapshot) async {
+        if (snapshot.exists) {
+          final userDoc = snapshot.data()!;
+          employeeInfo = EmployeeModel.fromFirestore(userDoc, snapshot.id);
+          if (kDebugMode) {
+            AppInit.logger.i(userRole);
+          }
+          if (AppInit.notificationToken.isNotEmpty) {
+            await _firestore.collection('fcmTokens').doc(userId).set({
+              'fcmToken${AppInit.isAndroid ? 'Android' : 'Ios'}':
+                  AppInit.notificationToken,
+              'notificationsLang': isLangEnglish() ? 'en' : 'ar',
+            });
+          }
+          if (fireUser.value!.email != null) {
+            final authenticationEmail = fireUser.value!.email!;
+            if (authenticationEmail.isNotEmpty &&
+                employeeInfo.email != authenticationEmail) {
+              if (kDebugMode) {
+                AppInit.logger.i(
+                    'Firestore email is not equal to Authentication email, updating it...');
+              }
+              updateUserEmailFirestore(email: authenticationEmail);
+            }
+          }
+        }
+      });
       return FunctionStatus.success;
     } on FirebaseException catch (error) {
       if (kDebugMode) {
@@ -343,7 +294,7 @@ class AuthenticationRepository extends GetxController {
                 .reauthenticateWithCredential(googleUser.credential);
             await updateUserEmailAuthentication(email: googleUser.email);
             await updateUserEmailFirestore(email: googleUser.email);
-            //userInfo.email = googleUser.email;
+            //employeeInfo.email = googleUser.email;
           }
         }
         return 'successGoogleLink'.tr;
@@ -421,7 +372,7 @@ class AuthenticationRepository extends GetxController {
       await fireUser.value!.reauthenticateWithCredential(credential);
       await fireUser.value!.updateEmail(newEmail);
       await updateUserEmailFirestore(email: newEmail);
-      // userInfo.email = newEmail
+      employeeInfo!.email = newEmail;
       return 'success';
     } on FirebaseAuthException catch (ex) {
       if (kDebugMode) {
@@ -549,18 +500,15 @@ class AuthenticationRepository extends GetxController {
       isFacebookLinked.value = false;
       isEmailVerified.value = false;
       verificationId = '';
-      userType = UserType.cashier;
-      // userInfo = UserInformation(
-      //   name: '',
-      //   email: '',
-      //   nationalId: '',
-      //   birthDate: DateTime.now(),
-      //   gender: '',
-      //   sosMessage: '',
-      //   criticalUser: false,
-      //   phoneNumber: '',
-      //   backupNumber: '',
-      // );
+      userRole = Role.cashier;
+      employeeInfo = EmployeeModel(
+        id: '',
+        name: '',
+        email: '',
+        phone: '',
+        role: Role.cashier,
+        permissions: [],
+      );
     } on FirebaseAuthException catch (ex) {
       if (kDebugMode) {
         AppInit.logger.e(ex.code);
