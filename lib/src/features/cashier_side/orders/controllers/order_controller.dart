@@ -23,8 +23,7 @@ class OrderController extends GetxController {
   final selectedCategory = 0.obs;
   final RxList<CategoryModel> categories = <CategoryModel>[].obs;
   late final List<ItemModel> items;
-  final RxList<CustomerModel> customers = <CustomerModel>[].obs;
-  final RxString currentCustomerName = ''.obs;
+  final RxString currentCustomerName = 'guest'.tr.obs;
   CustomerModel? currentCustomer;
   late List<ItemModel> categoryFilteredItems;
   final RxList<ItemModel> filteredItems = <ItemModel>[].obs;
@@ -62,15 +61,8 @@ class OrderController extends GetxController {
       orderItems.value = orderModel.items;
       calculateTotalAmount();
     }
-    customers.value = customersExample;
-    currentCustomerName.value = 'guest'.tr;
-    if (orderModel.customerId != null) {
-      currentCustomer = customers.where((customer) {
-        return customer.customerId == orderModel.customerId;
-      }).first;
-      if (currentCustomer != null) {
-        currentCustomerName.value = currentCustomer!.name;
-      }
+    if (orderModel.customerName != null) {
+      currentCustomerName.value = orderModel.customerName!;
     }
     super.onInit();
   }
@@ -244,14 +236,14 @@ class OrderController extends GetxController {
     final isPhone = GetScreenType(context).isPhone;
     final CustomerModel? customer = isPhone
         ? await Get.to(
-            () => ChooseCustomerPhone(customers: customers),
+            () => const ChooseCustomerPhone(),
             transition: getPageTransition(),
           )
         : await showDialog(
             useSafeArea: true,
             context: context,
             builder: (context) {
-              return ChooseCustomer(customers: customers);
+              return const ChooseCustomer();
             },
           );
     if (customer != null) {
@@ -260,14 +252,15 @@ class OrderController extends GetxController {
           customer: customer, orderId: orderModel.orderId);
       hideLoadingScreen();
       if (addStatus == FunctionStatus.success) {
+        orderModel.customerName = customer.name;
+        orderModel.customerId = customer.customerId;
+        orderModel.discountValue = customer.discountValue;
+        orderModel.discountType = customer.discountType;
         currentCustomer = customer;
         currentCustomerName.value = currentCustomer!.name;
         discountValue = currentCustomer!.discountValue;
         discountType = currentCustomer!.discountType;
         calculateTotalAmount();
-        if (!customers.contains(customer)) {
-          customers.add(customer);
-        }
       } else {
         showSnackBar(
           text: 'errorOccurred'.tr,
@@ -281,24 +274,14 @@ class OrderController extends GetxController {
       {required CustomerModel customer, required String orderId}) async {
     try {
       final firestore = FirebaseFirestore.instance;
-      final batch = firestore.batch();
-      batch.update(
-        firestore.collection('orders').doc(orderId),
+      await firestore.collection('orders').doc(orderId).update(
         {
           'customerId': customer.customerId,
+          'customerName': customer.name,
           'discountValue': customer.discountValue,
           'discountType': customer.discountType,
         },
       );
-      if (!customers.contains(customer)) {
-        final newCustomerDoc = firestore.collection('customers').doc();
-        customer.customerId = newCustomerDoc.id;
-        batch.set(
-          newCustomerDoc,
-          customer.toFirestore(),
-        );
-      }
-      await batch.commit();
       return FunctionStatus.success;
     } on FirebaseException catch (error) {
       if (kDebugMode) {
@@ -319,6 +302,7 @@ class OrderController extends GetxController {
       final firestore = FirebaseFirestore.instance;
       await firestore.collection('orders').doc(orderId).update({
         'customerId': null,
+        'customerName': null,
         'discountValue': null,
         'discountType': null,
       });
@@ -342,6 +326,10 @@ class OrderController extends GetxController {
         await removeCustomerFromOrder(orderId: orderModel.orderId);
     hideLoadingScreen();
     if (removeStatus == FunctionStatus.success) {
+      orderModel.customerName = null;
+      orderModel.customerId = null;
+      orderModel.discountValue = null;
+      orderModel.discountType = null;
       currentCustomer = null;
       currentCustomerName.value = 'guest'.tr;
       discountValue = null;

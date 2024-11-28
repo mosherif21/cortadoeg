@@ -63,6 +63,7 @@ dependencies:
   intl_phone_field: ^3.2.0
   draggable_bottom_sheet: ^1.0.2
   bottom_sheet: ^4.0.4
+  pull_to_refresh: ^2.0.0
 
   #state management dependencies
   get: ^4.6.6

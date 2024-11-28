@@ -18,6 +18,8 @@ const kEmptyCartAnim = "assets/lottie_animations/empty_cart.json";
 const String kEmailVerificationAnim =
     "assets/lottie_animations/email_verification.json";
 const String kDeleteAnim = "assets/lottie_animations/delete.json";
+const String kLoadingCoffeeAnim =
+    "assets/lottie_animations/loading_coffee.json";
 const String kNoNotificationsAnim =
     "assets/lottie_animations/no-notification.json";
 

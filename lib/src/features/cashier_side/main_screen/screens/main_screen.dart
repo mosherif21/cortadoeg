@@ -27,12 +27,12 @@ class MainScreen extends StatelessWidget {
         () => HawkFabMenu(
           isButtonVisible: mainController.showNewOrderButton.value,
           isEnglish: isLangEnglish(),
-          openIcon: const Padding(
-            padding: EdgeInsets.all(12),
+          openIcon: Padding(
+            padding: const EdgeInsets.all(12),
             child: Icon(
               Icons.local_cafe,
               color: Colors.white,
-              size: 45,
+              size: screenType.isPhone ? 40 : 45,
             ),
           ),
           closeIcon: const Padding(
@@ -49,7 +49,7 @@ class MainScreen extends StatelessWidget {
             HawkFabMenuItem(
               label: 'dineInOrder'.tr,
               ontap: () => Get.to(
-                () => TablesScreen(navBarAccess: false),
+                () => const TablesScreen(navBarAccess: false),
                 transition: Transition.noTransition,
               ),
               icon: const Icon(

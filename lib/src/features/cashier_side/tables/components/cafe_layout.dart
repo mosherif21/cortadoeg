@@ -52,7 +52,7 @@ class CafeLayout extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 10),
           Expanded(
             child: Container(
               margin: EdgeInsets.only(top: getScreenHeight(context) * 0.21),
@@ -94,7 +94,7 @@ class CafeLayout extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 10),
           Container(
             width: 60,
             height: 120,

@@ -291,7 +291,10 @@ class OrderScreenPhone extends StatelessWidget {
                                   child: ScaleAnimation(
                                     child: FadeInAnimation(
                                       child: ItemCardPhone(
-                                        imageUrl: kCoffeeCup2Image,
+                                        imageUrl: controller
+                                                .filteredItems[index]
+                                                .imageUrl ??
+                                            kLogoImage,
                                         title: controller
                                             .filteredItems[index].name,
                                         price: controller.filteredItems[index]

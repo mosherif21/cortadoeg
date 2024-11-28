@@ -42,7 +42,7 @@ class CafeLayoutPhone extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           Expanded(
             child: StretchingOverscrollIndicator(
               axisDirection: AxisDirection.down,
@@ -54,6 +54,7 @@ class CafeLayoutPhone extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 60, vertical: 10),
                         child: Row(
+                          textDirection: TextDirection.ltr,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             buildTable(3),
@@ -65,6 +66,7 @@ class CafeLayoutPhone extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 60, vertical: 10),
                         child: Row(
+                          textDirection: TextDirection.ltr,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             buildTable(4),
@@ -76,6 +78,7 @@ class CafeLayoutPhone extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 60, vertical: 10),
                         child: Row(
+                          textDirection: TextDirection.ltr,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             buildTable(5),
@@ -87,6 +90,7 @@ class CafeLayoutPhone extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 60, vertical: 10),
                         child: Row(
+                          textDirection: TextDirection.ltr,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             buildTable(6),
@@ -98,6 +102,7 @@ class CafeLayoutPhone extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 60, vertical: 10),
                         child: Row(
+                          textDirection: TextDirection.ltr,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             buildTable(7),
@@ -115,7 +120,7 @@ class CafeLayoutPhone extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           Container(
             width: 120,
             height: 60,

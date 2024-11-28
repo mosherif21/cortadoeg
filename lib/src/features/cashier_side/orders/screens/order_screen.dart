@@ -165,7 +165,8 @@ class OrderScreen extends StatelessWidget {
                                             ),
                                           ),
                                         ),
-                                        controller.currentCustomer != null
+                                        controller.currentCustomerName.value !=
+                                                'guest'.tr
                                             ? IconTextElevatedButton(
                                                 buttonColor:
                                                     Colors.grey.shade100,

@@ -1,4 +1,5 @@
 import 'package:anim_search_app_bar/anim_search_app_bar.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -29,12 +30,13 @@ class NewOrderScreenAppbar extends StatelessWidget {
       appBar: AppBar(
         elevation: 0,
         leading: const RegularBackButton(padding: 0),
-        title: Text(
+        title: AutoSizeText(
           formatOrderDetails(
             currentOrderId: currentOrderId,
             isTakeaway: isTakeaway,
             tablesNo: tablesNo,
           ),
+          maxLines: 2,
           style: TextStyle(
               color: Colors.black87,
               fontWeight: FontWeight.w600,

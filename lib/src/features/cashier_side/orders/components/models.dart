@@ -41,6 +41,7 @@ class OrderModel {
   String? discountType;
   double? discountValue;
   String? customerId;
+  String? customerName;
   final double totalAmount;
   final double discountAmount;
   final double subtotalAmount;
@@ -56,6 +57,7 @@ class OrderModel {
     this.discountType,
     this.discountValue,
     this.customerId,
+    this.customerName,
     required this.totalAmount,
     required this.discountAmount,
     required this.subtotalAmount,
@@ -71,6 +73,7 @@ class OrderModel {
       'orderDate': timestamp,
       'discountType': discountType,
       'customerId': customerId,
+      'customerName': customerName,
       'discountValue': discountValue,
       'subtotalAmount': subtotalAmount,
       'discountAmount': discountAmount,
@@ -91,6 +94,7 @@ class OrderModel {
       timestamp: map['orderDate'],
       discountType: map['discountType'],
       customerId: map['customerId'],
+      customerName: map['customerName'],
       discountValue: map['discountValue']?.toDouble(),
       subtotalAmount: map['subtotalAmount'].toDouble(),
       discountAmount: map['discountAmount'].toDouble(),
@@ -279,78 +283,6 @@ List<CategoryModel> categoriesExample = [
   CategoryModel(id: '2', name: 'Coffee', iconName: 'coffee'),
   CategoryModel(id: '3', name: 'Cakes', iconName: 'fa_birthday_cake'),
   CategoryModel(id: '3', name: 'Special Cakes', iconName: 'fa_birthday_cake'),
-];
-List<CustomerModel> customersExample = [
-  CustomerModel(
-    customerId: 'C001',
-    name: 'Ali Ahmed',
-    number: '0501234567',
-    discountType: 'percentage',
-    discountValue: 10,
-  ),
-  CustomerModel(
-    customerId: 'C002',
-    name: 'Sara Khalid',
-    number: '0559876543',
-    discountType: 'value',
-    discountValue: 15,
-  ),
-  CustomerModel(
-    customerId: 'C003',
-    name: 'Mona Hassan',
-    number: '0523345678',
-    discountType: 'percentage',
-    discountValue: 20,
-  ),
-  CustomerModel(
-    customerId: 'C004',
-    name: 'Omar Saleh',
-    number: '0537654321',
-    discountType: 'value',
-    discountValue: 25,
-  ),
-  CustomerModel(
-    customerId: 'C005',
-    name: 'Reem Youssef',
-    number: '0501122334',
-    discountType: 'percentage',
-    discountValue: 5,
-  ),
-  CustomerModel(
-    customerId: 'C006',
-    name: 'Hassan Ali',
-    number: '0582233445',
-    discountType: 'value',
-    discountValue: 30,
-  ),
-  CustomerModel(
-    customerId: 'C007',
-    name: 'Noura Abdulaziz',
-    number: '0564433221',
-    discountType: 'percentage',
-    discountValue: 15,
-  ),
-  CustomerModel(
-    customerId: 'C008',
-    name: 'Yasir Faris',
-    number: '0573344556',
-    discountType: 'value',
-    discountValue: 20,
-  ),
-  CustomerModel(
-    customerId: 'C009',
-    name: 'Laila Mohammed',
-    number: '0545566778',
-    discountType: 'percentage',
-    discountValue: 8,
-  ),
-  CustomerModel(
-    customerId: 'C010',
-    name: 'Faisal Majed',
-    number: '0599988776',
-    discountType: 'value',
-    discountValue: 10,
-  ),
 ];
 
 List<ItemModel> cafeItemsExample = [

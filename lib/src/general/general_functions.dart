@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:lottie/lottie.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sweetsheet/sweetsheet.dart';
@@ -34,13 +34,9 @@ void showLoadingScreen() {
       backgroundColor: Colors.transparent,
       content: PopScope(
         canPop: false,
-        child: SizedBox(
-          height: double.infinity,
-          width: double.infinity,
-          child: LoadingAnimationWidget.inkDrop(
-            color: Colors.white,
-            size: height * 0.08,
-          ),
+        child: Lottie.asset(
+          kLoadingCoffeeAnim,
+          height: height * 0.3,
         ),
       ),
     ),

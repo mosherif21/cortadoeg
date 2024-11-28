@@ -4,27 +4,25 @@ import 'package:cortadoeg/src/general/general_functions.dart';
 import 'package:expansion_tile_group/expansion_tile_group.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:get/get.dart';
 import 'package:intl_phone_field/countries.dart';
 import 'package:intl_phone_field/country_picker_dialog.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:intl_phone_field/intl_phone_field.dart' as intl;
+import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:shimmer/shimmer.dart';
 
-import '../../../../constants/enums.dart';
 import '../../../../general/validation_functions.dart';
 import '../controllers/customer_choose_controller.dart';
 
 class ChooseCustomer extends StatelessWidget {
-  const ChooseCustomer({
-    super.key,
-    required this.customers,
-  });
-  final List<CustomerModel> customers;
+  const ChooseCustomer({super.key});
 
   @override
   Widget build(BuildContext context) {
     final screenHeight = getScreenHeight(context);
     final screenWidth = getScreenWidth(context);
-    final controller = Get.put(CustomerChooseController(customers: customers));
+    final controller = Get.put(CustomerChooseController());
     return PopScope(
       canPop: true,
       onPopInvoked: (didPop) {
@@ -48,17 +46,7 @@ class ChooseCustomer extends StatelessWidget {
                   cancelButtonTextStyle: const TextStyle(color: Colors.black87),
                   cancelButtonText: 'cancel'.tr,
                   hintText: 'searchItemsHint'.tr,
-                  onChanged: (searchText) {
-                    controller.filteredCustomers.value = searchText
-                            .trim()
-                            .isEmpty
-                        ? customers
-                        : customers
-                            .where((customer) => customer.name
-                                .toUpperCase()
-                                .contains(searchText.toUpperCase().trimLeft()))
-                            .toList();
-                  },
+                  onChanged: controller.onCustomerSearch,
                   backgroundColor: Colors.white,
                   appBar: AppBar(
                     leading: IconButton(
@@ -87,16 +75,59 @@ class ChooseCustomer extends StatelessWidget {
                   child: StretchingOverscrollIndicator(
                     axisDirection: AxisDirection.down,
                     child: Obx(
-                      () => ListView.builder(
-                        scrollDirection: Axis.vertical,
-                        itemCount: controller.filteredCustomers.length + 1,
-                        itemBuilder: (context, index) {
-                          return index == 0
-                              ? addCustomerTile(controller: controller)
-                              : customerTile(
-                                  controller.filteredCustomers[index - 1]);
-                        },
-                      ),
+                      () => controller.loadingCustomers.value
+                          ? const SizedBox()
+                          : RefreshConfiguration(
+                              headerTriggerDistance: 60,
+                              maxOverScrollExtent: 20,
+                              enableLoadingWhenFailed: true,
+                              hideFooterWhenNotFull: true,
+                              child: AnimationLimiter(
+                                child: SmartRefresher(
+                                  enablePullDown: true,
+                                  header: ClassicHeader(
+                                    completeDuration:
+                                        const Duration(milliseconds: 0),
+                                    releaseText: 'releaseToRefresh'.tr,
+                                    refreshingText: 'refreshing'.tr,
+                                    idleText: 'pullToRefresh'.tr,
+                                    completeText: 'refreshCompleted'.tr,
+                                    iconPos: isLangEnglish()
+                                        ? IconPosition.left
+                                        : IconPosition.right,
+                                    textStyle:
+                                        const TextStyle(color: Colors.grey),
+                                    failedIcon: const Icon(Icons.error,
+                                        color: Colors.grey),
+                                    completeIcon: const Icon(Icons.done,
+                                        color: Colors.grey),
+                                    idleIcon: const Icon(Icons.arrow_downward,
+                                        color: Colors.grey),
+                                    releaseIcon: const Icon(Icons.refresh,
+                                        color: Colors.grey),
+                                  ),
+                                  controller:
+                                      controller.customersRefreshController,
+                                  onRefresh: () => controller.onRefresh(),
+                                  child: ListView.builder(
+                                    scrollDirection: Axis.vertical,
+                                    itemCount:
+                                        controller.filteredCustomers.length + 1,
+                                    itemBuilder: (context, index) {
+                                      return controller.loadingCustomers.value
+                                          ? loadingCustomerTile()
+                                          : index == 0
+                                              ? addCustomerTile(
+                                                  controller: controller)
+                                              : customerTile(
+                                                  controller.filteredCustomers[
+                                                      index - 1],
+                                                );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ),
                     ),
                   ),
                 ),
@@ -200,7 +231,7 @@ class ChooseCustomer extends StatelessWidget {
                   child: Padding(
                     padding:
                         const EdgeInsets.only(top: 10, left: 10, right: 10),
-                    child: IntlPhoneField(
+                    child: intl.IntlPhoneField(
                       cursorColor: Colors.black,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
@@ -321,24 +352,7 @@ class ChooseCustomer extends StatelessWidget {
                   child: SizedBox(
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: () {
-                        final discountText =
-                            controller.discountTextController.text.trim();
-                        final name = controller.nameTextController.text.trim();
-                        if (controller.formKey.currentState!.validate() &&
-                            isNumeric(discountText)) {
-                          final customerModel = CustomerModel(
-                            customerId: '',
-                            name: name,
-                            number: controller.number.value,
-                            discountType: controller.percentageChosen.value
-                                ? 'percentage'
-                                : 'value',
-                            discountValue: double.parse(discountText),
-                          );
-                          Get.back(result: customerModel);
-                        }
-                      },
+                      onPressed: () => controller.addCustomerPress(),
                       style: ElevatedButton.styleFrom(
                         overlayColor: Colors.grey,
                         shape: RoundedRectangleBorder(
@@ -395,16 +409,20 @@ class ChooseCustomer extends StatelessWidget {
     );
   }
 
-  bool isNumeric(String str) {
-    if (str.isEmpty) {
-      showSnackBar(
-          text: 'enterDiscountValue'.tr, snackBarType: SnackBarType.error);
-      return false;
-    } else if (double.tryParse(str) == null) {
-      showSnackBar(text: 'enterNumber'.tr, snackBarType: SnackBarType.error);
-      return false;
-    } else {
-      return true;
-    }
+  Widget loadingCustomerTile() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade800,
+      highlightColor: Colors.grey.shade600,
+      child: const Padding(
+        padding: EdgeInsets.all(10),
+        child: Row(
+          children: [
+            CircleAvatar(radius: 20),
+            SizedBox(width: 10),
+            SizedBox(height: 50, width: 200)
+          ],
+        ),
+      ),
+    );
   }
 }

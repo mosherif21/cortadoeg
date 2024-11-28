@@ -73,13 +73,13 @@ class CartItemWidgetPhone extends StatelessWidget {
       children: [
         const SizedBox(width: 10),
         Material(
-          elevation: 5,
+          elevation: orderItemModel.itemImageUrl != null ? 5 : 0,
           color: Colors.transparent,
           borderRadius: const BorderRadius.all(Radius.circular(50)),
           child: ClipRRect(
             borderRadius: const BorderRadius.all(Radius.circular(50)),
             child: Image.asset(
-              orderItemModel.itemImageUrl ?? kCoffeeCup2Image,
+              orderItemModel.itemImageUrl ?? kLogoImage,
               height: 70,
               width: 70,
               fit: BoxFit.contain,

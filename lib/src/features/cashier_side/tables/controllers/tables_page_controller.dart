@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cortadoeg/src/features/cashier_side/main_screen/controllers/main_screen_controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../../../constants/enums.dart';
 import '../../../../general/app_init.dart';
@@ -21,11 +22,59 @@ class TablesPageController extends GetxController {
   late final StreamSubscription selectedTablesListener;
   late final StreamSubscription tablesListener;
   bool navBarAccess = true;
-
+  final tablesRefreshController = RefreshController(initialRefresh: false);
   @override
   void onInit() async {
     //
     super.onInit();
+  }
+
+  void onRefresh() {
+    loadingTables.value = true;
+    loadTables();
+    tablesRefreshController.refreshToIdle();
+    tablesRefreshController.resetNoData();
+  }
+
+  Future<List<TableModel>?> fetchTables() async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final querySnapshot = await firestore.collection('tables').get();
+      final tables = querySnapshot.docs.map((doc) {
+        return TableModel.fromFirestore(doc.data(), doc.id);
+      }).toList();
+      tables.sort((a, b) => a.number.compareTo(b.number));
+      return tables;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+      return null;
+    }
+    return null;
+  }
+
+  void loadTables() async {
+    final tables = await fetchTables();
+    if (tables != null) {
+      tablesList.value = tables;
+      loadingTables.value = false;
+      for (TableModel table in tables) {
+        if (selectedTables.contains(table.number) &&
+            table.status != TableStatus.available) {
+          selectedTables.remove(table.number);
+        }
+      }
+    } else {
+      showSnackBar(
+        text: 'errorOccurred'.tr,
+        snackBarType: SnackBarType.error,
+      );
+    }
   }
 
   @override
@@ -304,6 +353,7 @@ class TablesPageController extends GetxController {
   void onClose() async {
     selectedTablesListener.cancel();
     tablesListener.cancel();
+    tablesRefreshController.dispose();
     super.onClose();
   }
 
