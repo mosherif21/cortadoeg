@@ -54,17 +54,16 @@ class AuthenticationScreen extends StatelessWidget {
                         const ButtonLanguageSelect(color: Colors.black54),
                         SizedBox(height: screenHeight * 0.13),
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Expanded(
-                              child: Image(
-                                image: const AssetImage(kLogoImage),
-                                height: screenHeight * 0.5,
-                              ),
+                            Image(
+                              image: const AssetImage(kLogoImage),
+                              height: screenHeight * 0.5,
                             ),
-                            SizedBox(width: screenWidth * 0.05),
-                            const Expanded(
+                            Container(
+                              constraints: const BoxConstraints(maxWidth: 500),
                               child: RegularCard(
-                                  padding: 30, child: AuthenticationForm()),
+                                  padding: 35, child: AuthenticationForm()),
                             ),
                           ],
                         ),

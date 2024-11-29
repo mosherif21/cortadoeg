@@ -44,6 +44,7 @@ class CartItemWidget extends StatelessWidget {
         initiallyExpanded: false,
         isHideSubtitleOnExpanded: true,
         title: Slidable(
+          useTextDirection: false,
           key: key1,
           endActionPane: ActionPane(
             motion: const DrawerMotion(),

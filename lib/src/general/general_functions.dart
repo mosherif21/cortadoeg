@@ -48,6 +48,33 @@ void hideLoadingScreen() {
   Get.back();
 }
 
+void closeKeyboard(BuildContext context) {
+  FocusScopeNode currentFocus = FocusScope.of(context);
+  if (!currentFocus.hasPrimaryFocus && currentFocus.focusedChild != null) {
+    currentFocus.unfocus();
+  }
+}
+
+String translateArabicToEnglish(String arabicNumber) {
+  const arabicToEnglishMap = {
+    '٠': '0',
+    '١': '1',
+    '٢': '2',
+    '٣': '3',
+    '٤': '4',
+    '٥': '5',
+    '٦': '6',
+    '٧': '7',
+    '٨': '8',
+    '٩': '9',
+  };
+
+  return arabicNumber.split('').map((char) {
+    return arabicToEnglishMap[char] ??
+        char; // Replace if found, otherwise keep the same
+  }).join();
+}
+
 void makeSystemUiTransparent() {
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(

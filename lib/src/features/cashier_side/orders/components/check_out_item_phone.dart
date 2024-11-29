@@ -28,6 +28,7 @@ class CheckOutItemPhone extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Slidable(
+      useTextDirection: false,
       key: key0,
       endActionPane: ActionPane(
         motion: const DrawerMotion(),

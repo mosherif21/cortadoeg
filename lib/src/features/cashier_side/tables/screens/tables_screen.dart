@@ -2,7 +2,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cortadoeg/src/constants/assets_strings.dart';
 import 'package:cortadoeg/src/general/common_widgets/back_button.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
@@ -88,34 +87,32 @@ class TablesScreen extends StatelessWidget {
                         maxOverScrollExtent: 20,
                         enableLoadingWhenFailed: true,
                         hideFooterWhenNotFull: true,
-                        child: AnimationLimiter(
-                          child: SmartRefresher(
-                            enablePullDown: true,
-                            header: ClassicHeader(
-                              completeDuration: const Duration(milliseconds: 0),
-                              releaseText: 'releaseToRefresh'.tr,
-                              refreshingText: 'refreshing'.tr,
-                              idleText: 'pullToRefresh'.tr,
-                              completeText: 'refreshCompleted'.tr,
-                              iconPos: isLangEnglish()
-                                  ? IconPosition.left
-                                  : IconPosition.right,
-                              textStyle: const TextStyle(color: Colors.black87),
-                              failedIcon: const Icon(Icons.error,
-                                  color: Colors.black87),
-                              completeIcon:
-                                  const Icon(Icons.done, color: Colors.black87),
-                              idleIcon: const Icon(Icons.arrow_downward,
-                                  color: Colors.black87),
-                              releaseIcon: const Icon(Icons.refresh,
-                                  color: Colors.black87),
-                            ),
-                            controller: controller.tablesRefreshController,
-                            onRefresh: () => controller.onRefresh(),
-                            child: screenType.isPhone
-                                ? CafeLayoutPhone(controller: controller)
-                                : CafeLayout(controller: controller),
+                        child: SmartRefresher(
+                          enablePullDown: true,
+                          header: ClassicHeader(
+                            completeDuration: const Duration(milliseconds: 0),
+                            releaseText: 'releaseToRefresh'.tr,
+                            refreshingText: 'refreshing'.tr,
+                            idleText: 'pullToRefresh'.tr,
+                            completeText: 'refreshCompleted'.tr,
+                            iconPos: isLangEnglish()
+                                ? IconPosition.left
+                                : IconPosition.right,
+                            textStyle: const TextStyle(color: Colors.black54),
+                            failedIcon:
+                                const Icon(Icons.error, color: Colors.black54),
+                            completeIcon:
+                                const Icon(Icons.done, color: Colors.black54),
+                            idleIcon: const Icon(Icons.arrow_downward,
+                                color: Colors.black54),
+                            releaseIcon: const Icon(Icons.refresh,
+                                color: Colors.black54),
                           ),
+                          controller: controller.tablesRefreshController,
+                          onRefresh: () => controller.onRefresh(),
+                          child: screenType.isPhone
+                              ? CafeLayoutPhone(controller: controller)
+                              : CafeLayout(controller: controller),
                         ),
                       ),
                     ),

@@ -414,13 +414,15 @@ class ChargeScreenPhone extends StatelessWidget {
                               padding: const EdgeInsets.all(10),
                               child: CheckOutItemPhone(
                                 orderItemModel: controller.orderItems[index],
-                                onEditTap: () => controller.onEditItem(
+                                onEditTap: () => controller.onEditItemPress(
                                     index, context, screenType.isPhone),
                                 onDeleteTap: () => controller.onDeleteItem(
-                                    index, controller.orderItems[index]),
+                                    index,
+                                    context,
+                                    controller.orderItems[index]),
                                 onDismissed: () async {
-                                  return await controller.onDeleteItem(
-                                      index, controller.orderItems[index]);
+                                  return await controller.onDeleteItem(index,
+                                      context, controller.orderItems[index]);
                                 },
                                 index: index,
                                 onQuantityChanged: (newQuantity) => controller

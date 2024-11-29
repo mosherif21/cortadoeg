@@ -65,25 +65,31 @@ class CafeLayout extends StatelessWidget {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Column(
+                        verticalDirection: isLangEnglish()
+                            ? VerticalDirection.down
+                            : VerticalDirection.up,
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: isLangEnglish()
+                            ? MainAxisAlignment.start
+                            : MainAxisAlignment.end,
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              buildTable(0),
-                              buildTable(1),
-                              buildTable(2),
+                              buildTable(5),
+                              buildTable(6),
+                              buildTable(7),
                             ],
                           ),
                           const SizedBox(height: 50),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
+                              buildTable(0),
+                              buildTable(1),
+                              buildTable(2),
                               buildTable(3),
                               buildTable(4),
-                              buildTable(5),
-                              buildTable(6),
-                              buildTable(7),
                             ],
                           ),
                         ],

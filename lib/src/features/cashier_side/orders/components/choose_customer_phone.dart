@@ -5,7 +5,6 @@ import 'package:cortadoeg/src/general/general_functions.dart';
 import 'package:expansion_tile_group/expansion_tile_group.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:get/get.dart';
 import 'package:intl_phone_field/countries.dart';
 import 'package:intl_phone_field/country_picker_dialog.dart';
@@ -55,52 +54,51 @@ class ChooseCustomerPhone extends StatelessWidget {
               axisDirection: AxisDirection.down,
               child: Obx(
                 () => controller.loadingCustomers.value
-                    ? const SizedBox()
+                    ? ListView.builder(
+                        scrollDirection: Axis.vertical,
+                        itemCount: 10,
+                        itemBuilder: (context, index) {
+                          return loadingCustomerTile();
+                        },
+                      )
                     : RefreshConfiguration(
                         headerTriggerDistance: 60,
                         maxOverScrollExtent: 20,
                         enableLoadingWhenFailed: true,
                         hideFooterWhenNotFull: true,
-                        child: AnimationLimiter(
-                          child: SmartRefresher(
-                            enablePullDown: true,
-                            header: ClassicHeader(
-                              completeDuration: const Duration(milliseconds: 0),
-                              releaseText: 'releaseToRefresh'.tr,
-                              refreshingText: 'refreshing'.tr,
-                              idleText: 'pullToRefresh'.tr,
-                              completeText: 'refreshCompleted'.tr,
-                              iconPos: isLangEnglish()
-                                  ? IconPosition.left
-                                  : IconPosition.right,
-                              textStyle: const TextStyle(color: Colors.grey),
-                              failedIcon:
-                                  const Icon(Icons.error, color: Colors.grey),
-                              completeIcon:
-                                  const Icon(Icons.done, color: Colors.grey),
-                              idleIcon: const Icon(Icons.arrow_downward,
-                                  color: Colors.grey),
-                              releaseIcon:
-                                  const Icon(Icons.refresh, color: Colors.grey),
-                            ),
-                            controller: controller.customersRefreshController,
-                            onRefresh: () => controller.onRefresh(),
-                            child: ListView.builder(
-                              scrollDirection: Axis.vertical,
-                              itemCount:
-                                  controller.filteredCustomers.length + 1,
-                              itemBuilder: (context, index) {
-                                return controller.loadingCustomers.value
-                                    ? loadingCustomerTile()
-                                    : index == 0
-                                        ? addCustomerTile(
-                                            controller: controller)
-                                        : customerTile(
-                                            controller
-                                                .filteredCustomers[index - 1],
-                                          );
-                              },
-                            ),
+                        child: SmartRefresher(
+                          enablePullDown: true,
+                          header: ClassicHeader(
+                            completeDuration: const Duration(milliseconds: 0),
+                            releaseText: 'releaseToRefresh'.tr,
+                            refreshingText: 'refreshing'.tr,
+                            idleText: 'pullToRefresh'.tr,
+                            completeText: 'refreshCompleted'.tr,
+                            iconPos: isLangEnglish()
+                                ? IconPosition.left
+                                : IconPosition.right,
+                            textStyle: const TextStyle(color: Colors.grey),
+                            failedIcon:
+                                const Icon(Icons.error, color: Colors.grey),
+                            completeIcon:
+                                const Icon(Icons.done, color: Colors.grey),
+                            idleIcon: const Icon(Icons.arrow_downward,
+                                color: Colors.grey),
+                            releaseIcon:
+                                const Icon(Icons.refresh, color: Colors.grey),
+                          ),
+                          controller: controller.customersRefreshController,
+                          onRefresh: () => controller.onRefresh(),
+                          child: ListView.builder(
+                            scrollDirection: Axis.vertical,
+                            itemCount: controller.filteredCustomers.length + 1,
+                            itemBuilder: (context, index) {
+                              return index == 0
+                                  ? addCustomerTile(controller: controller)
+                                  : customerTile(
+                                      controller.filteredCustomers[index - 1],
+                                    );
+                            },
                           ),
                         ),
                       ),
@@ -122,7 +120,7 @@ class ChooseCustomerPhone extends StatelessWidget {
       collapsedBackgroundColor: Colors.white,
       expansionKey: controller.key0,
       elevation: 0,
-      tilePadding: const EdgeInsets.symmetric(horizontal: 10),
+      tilePadding: const EdgeInsets.symmetric(horizontal: 20),
       isHasTrailing: false,
       childrenPadding: EdgeInsets.zero,
       initiallyExpanded: false,
@@ -342,7 +340,7 @@ class ChooseCustomerPhone extends StatelessWidget {
         splashFactory: InkSparkle.splashFactory,
         onTap: () => Get.back(result: customerModel),
         child: Padding(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
           child: Row(
             children: [
               CircleAvatar(
@@ -370,15 +368,26 @@ class ChooseCustomerPhone extends StatelessWidget {
 
   Widget loadingCustomerTile() {
     return Shimmer.fromColors(
-      baseColor: Colors.grey.shade800,
-      highlightColor: Colors.grey.shade600,
-      child: const Padding(
-        padding: EdgeInsets.all(10),
+      baseColor: Colors.grey.shade300,
+      highlightColor: Colors.grey.shade200,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
         child: Row(
           children: [
-            CircleAvatar(radius: 20),
-            SizedBox(width: 10),
-            SizedBox(height: 50, width: 200)
+            Container(
+              height: 50,
+              width: 50,
+              decoration: BoxDecoration(
+                color: Colors.grey,
+                borderRadius: BorderRadius.circular(50),
+              ),
+            ),
+            const SizedBox(width: 20),
+            Container(
+              height: 20,
+              width: 200,
+              color: Colors.grey,
+            )
           ],
         ),
       ),

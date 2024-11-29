@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../general/general_functions.dart';
-import '../../main_screen/components/main_screen_pages_appbar.dart';
+import '../../../cashier_side/main_screen/components/main_screen_pages_appbar.dart';
 
 class ReportsScreen extends StatelessWidget {
   const ReportsScreen({super.key});

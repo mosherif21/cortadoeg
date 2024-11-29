@@ -112,18 +112,17 @@ class SingleEntryScreen extends StatelessWidget {
                     ],
                   )
                 : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      Expanded(
-                        child: Lottie.asset(
-                          lottieAssetAnim,
-                          fit: BoxFit.contain,
-                          height: screenHeight * 0.7,
-                        ),
+                      Lottie.asset(
+                        lottieAssetAnim,
+                        fit: BoxFit.contain,
+                        height: screenHeight * 0.7,
                       ),
-                      SizedBox(width: screenWidth * 0.05),
-                      Expanded(
+                      Container(
+                        constraints: const BoxConstraints(maxWidth: 450),
                         child: RegularCard(
-                          padding: 30,
+                          padding: 35,
                           child: Column(
                             children: [
                               AutoSizeText(

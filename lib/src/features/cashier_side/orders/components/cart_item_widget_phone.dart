@@ -41,10 +41,16 @@ class CartItemWidgetPhone extends StatelessWidget {
       initiallyExpanded: false,
       isHideSubtitleOnExpanded: true,
       title: Slidable(
+        useTextDirection: false,
         key: key1,
         endActionPane: ActionPane(
           motion: const DrawerMotion(),
-          dismissible: DismissiblePane(onDismissed: () => onDismissed()),
+          dismissible: DismissiblePane(
+            onDismissed: () {},
+            confirmDismiss: () async {
+              return await onDismissed();
+            },
+          ),
           children: [
             SlidableAction(
               onPressed: (context) => onEditTap(),

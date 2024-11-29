@@ -92,6 +92,7 @@ class AuthenticationRepository extends GetxController {
         if (snapshot.exists) {
           final userDoc = snapshot.data()!;
           employeeInfo = EmployeeModel.fromFirestore(userDoc, snapshot.id);
+          userRole = employeeInfo.role;
           if (kDebugMode) {
             AppInit.logger.i(userRole);
           }

@@ -2,6 +2,7 @@ import 'package:cortadoeg/src/features/cashier_side/orders/components/models.dar
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:get/get.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../../../general/common_widgets/icon_text_elevated_button.dart';
 import '../../../../general/common_widgets/section_divider.dart';
@@ -58,12 +59,14 @@ class OrderScreen extends StatelessWidget {
                                 titleFontSize: 20,
                               ),
                               Obx(
-                                () => CategoryMenu(
-                                  categories: controller.categories,
-                                  selectedCategory:
-                                      controller.selectedCategory.value,
-                                  onSelect: controller.onCategorySelect,
-                                ),
+                                () => controller.loadingCategories.value
+                                    ? const LoadingCategories()
+                                    : CategoryMenu(
+                                        categories: controller.categories,
+                                        selectedCategory:
+                                            controller.selectedCategory.value,
+                                        onSelect: controller.onCategorySelect,
+                                      ),
                               ),
                               const SizedBox(height: 5),
                               Obx(
@@ -82,33 +85,46 @@ class OrderScreen extends StatelessWidget {
                                           controller.orderItems.isEmpty ? 5 : 4,
                                       shrinkWrap: true,
                                       children: List.generate(
-                                        controller.filteredItems.length,
+                                        controller.loadingItems.value
+                                            ? 10
+                                            : controller.filteredItems.length,
                                         (int index) {
                                           return AnimationConfiguration
                                               .staggeredGrid(
                                             position: index,
                                             duration: const Duration(
                                                 milliseconds: 300),
-                                            columnCount: 5,
+                                            columnCount:
+                                                controller.orderItems.isEmpty
+                                                    ? 5
+                                                    : 4,
                                             child: ScaleAnimation(
                                               child: FadeInAnimation(
-                                                child: ItemCard(
-                                                  imageUrl: controller
-                                                      .filteredItems[index]
-                                                      .imageUrl,
-                                                  title: controller
-                                                      .filteredItems[index]
-                                                      .name,
-                                                  price: controller
-                                                      .filteredItems[index]
-                                                      .sizes[0]
-                                                      .price,
-                                                  onSelected: () =>
-                                                      controller.onItemSelected(
-                                                          context,
-                                                          index,
-                                                          screenType.isPhone),
-                                                ),
+                                                child: controller
+                                                        .loadingItems.value
+                                                    ? const LoadingItem()
+                                                    : ItemCard(
+                                                        imageUrl: controller
+                                                            .filteredItems[
+                                                                index]
+                                                            .imageUrl,
+                                                        title: controller
+                                                            .filteredItems[
+                                                                index]
+                                                            .name,
+                                                        price: controller
+                                                            .filteredItems[
+                                                                index]
+                                                            .sizes[0]
+                                                            .price,
+                                                        onSelected: () =>
+                                                            controller
+                                                                .onItemSelected(
+                                                                    context,
+                                                                    index,
+                                                                    screenType
+                                                                        .isPhone),
+                                                      ),
                                               ),
                                             ),
                                           );
@@ -209,16 +225,19 @@ class OrderScreen extends StatelessWidget {
                                           orderItemModel:
                                               controller.orderItems[index],
                                           onEditTap: () =>
-                                              controller.onEditItem(index,
+                                              controller.onEditItemPress(index,
                                                   context, screenType.isPhone),
                                           onDeleteTap: () =>
-                                              controller.onDeleteItem(index,
+                                              controller.onDeleteItem(
+                                                  index,
+                                                  context,
                                                   controller.orderItems[index]),
                                           index: index,
                                           onDismissed: () async {
                                             return await controller
                                                 .onDeleteItem(
                                                     index,
+                                                    context,
                                                     controller
                                                         .orderItems[index]);
                                           },
@@ -455,6 +474,90 @@ class OrderScreen extends StatelessWidget {
                 ),
               ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class LoadingItem extends StatelessWidget {
+  const LoadingItem({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade300,
+      highlightColor: Colors.grey.shade200,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          const SizedBox(height: 5),
+          Container(
+            height: 150,
+            width: 200,
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(15)),
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  height: 30,
+                  width: 100,
+                  color: Colors.black,
+                ),
+                Container(
+                  height: 20,
+                  width: 40,
+                  color: Colors.black,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+        ],
+      ),
+    );
+  }
+}
+
+class LoadingCategories extends StatelessWidget {
+  const LoadingCategories({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade300,
+      highlightColor: Colors.grey.shade200,
+      child: SizedBox(
+        height: 60,
+        child: ListView.builder(
+          padding: const EdgeInsets.symmetric(vertical: 15),
+          scrollDirection: Axis.horizontal,
+          itemCount: 10,
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Container(
+                width: 100,
+                height: 40,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.black,
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

@@ -61,6 +61,7 @@ final Map<Role, List<UserPermission>> rolePermissions = {
     UserPermission.manageCustomers,
     UserPermission.viewSalesReports,
     UserPermission.viewCustodyReports,
+    UserPermission.editOrderItemsWithPass,
   ],
   Role.waiter: [
     UserPermission.createOrders,
@@ -76,6 +77,8 @@ final Map<Role, List<UserPermission>> rolePermissions = {
 };
 
 enum UserPermission {
+  editOrderItems,
+  editOrderItemsWithPass,
   manageEmployees,
   manageProducts,
   manageInventory,

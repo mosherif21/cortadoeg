@@ -8,7 +8,6 @@ import 'package:hawk_fab_menu/hawk_fab_menu.dart';
 
 import '../../account/screens/account_screen.dart';
 import '../../orders/screens/orders_screen.dart';
-import '../../reports/screens/reports_screen.dart';
 import '../../settings/screens/settings_screen.dart';
 import '../../tables/screens/tables_screen.dart';
 import '../components/main_screen_pages_appbar.dart';
@@ -130,7 +129,7 @@ class MainScreen extends StatelessWidget {
                         screenType.isPhone ? Axis.horizontal : Axis.vertical,
                     physics: const NeverScrollableScrollPhysics(),
                     controller: mainController.pageController,
-                    itemCount: 6,
+                    itemCount: 5,
                     itemBuilder: (BuildContext context, int index) {
                       switch (index) {
                         case 0:
@@ -140,10 +139,8 @@ class MainScreen extends StatelessWidget {
                         case 2:
                           return const CustomersScreen();
                         case 3:
-                          return const ReportsScreen();
-                        case 4:
                           return const AccountScreen();
-                        case 5:
+                        case 4:
                           return const SettingsScreen();
                         default:
                           return const TablesScreen(navBarAccess: true);

@@ -230,7 +230,14 @@ class ItemModel {
               .toList() ??
           [],
       ingredientIds: List<String>.from(data['ingredientIds'] ?? []),
-      options: Map<String, List<String>>.from(data['options'] ?? {}),
+      options: data['options'] != null
+          ? (data['options'] as Map<String, dynamic>).map(
+              (key, value) => MapEntry(
+                key,
+                List<String>.from(value as List),
+              ),
+            )
+          : {},
       sugarLevels: List<String>.from(data['sugarLevels'] ?? []),
     );
   }
@@ -276,175 +283,6 @@ class ItemSizeModel {
     };
   }
 }
-
-List<CategoryModel> categoriesExample = [
-  CategoryModel(id: '', name: 'All Menu', iconName: 'allMenu'),
-  CategoryModel(id: '1', name: 'Ice Cream', iconName: 'fa_ice_cream'),
-  CategoryModel(id: '2', name: 'Coffee', iconName: 'coffee'),
-  CategoryModel(id: '3', name: 'Cakes', iconName: 'fa_birthday_cake'),
-  CategoryModel(id: '3', name: 'Special Cakes', iconName: 'fa_birthday_cake'),
-];
-
-List<ItemModel> cafeItemsExample = [
-  ItemModel(
-    itemId: "item1",
-    name: "Espresso",
-    categoryId: "2",
-    sizes: [
-      ItemSizeModel(name: "Single", price: 2.5, costPrice: 1.0),
-      ItemSizeModel(name: "Double", price: 3.5, costPrice: 1.8),
-    ],
-    ingredientIds: ['coffeeBeans', 'water'],
-    sugarLevels: ['no sugar', '1 tsp'],
-    description:
-        'A rich, intense shot of espresso made from freshly ground coffee beans.',
-  ),
-  ItemModel(
-    itemId: "item2",
-    name: "Cappuccino",
-    categoryId: "2",
-    sizes: [
-      ItemSizeModel(name: "Small", price: 3.5, costPrice: 1.5),
-      ItemSizeModel(name: "Medium", price: 4.5, costPrice: 2.2),
-      ItemSizeModel(name: "Large", price: 5.5, costPrice: 3.0),
-    ],
-    ingredientIds: ['coffeeBeans', 'milk', 'water'],
-    options: {
-      'milk': ['full fat', 'almond', 'oat'],
-      'flavor': ['vanilla', 'caramel'],
-      'syrup': ['chocolate', 'caramel'],
-    },
-    sugarLevels: ['1 tsp', '2 tsp'],
-    description:
-        'A classic Italian coffee with a rich, velvety foam and a sprinkle of chocolate.',
-  ),
-  ItemModel(
-    itemId: "item3",
-    name: "Muffin",
-    categoryId: "3",
-    sizes: [
-      ItemSizeModel(name: "Regular", price: 2.5, costPrice: 1.2),
-    ],
-    ingredientIds: ['flour', 'sugar', 'milk', 'blueberries'],
-    options: {
-      'flavor': ['blueberry', 'chocolate chip', 'banana nut'],
-    },
-    sugarLevels: ['default'],
-    description:
-        'A soft, fluffy muffin filled with real blueberries or other seasonal flavors.',
-  ),
-  ItemModel(
-    itemId: "item4",
-    name: "Lemon Ice Cream",
-    categoryId: "1",
-    sizes: [
-      ItemSizeModel(name: "Small", price: 2.0, costPrice: 0.8),
-      ItemSizeModel(name: "Large", price: 3.0, costPrice: 1.2),
-    ],
-    ingredientIds: ['lemon', 'sugar', 'water'],
-    options: {
-      'flavor': ['mint', 'ginger'],
-    },
-    sugarLevels: ['no sugar', '1 tsp', '2 tsp'],
-    description:
-        'A refreshing lemonade made from freshly squeezed lemons and a touch of sweetness.',
-  ),
-  ItemModel(
-    itemId: "item5",
-    name: "Avocado Toast",
-    categoryId: "3",
-    sizes: [
-      ItemSizeModel(name: "Regular", price: 6.0, costPrice: 3.0),
-    ],
-    ingredientIds: ['bread', 'avocado', 'olive oil', 'seasoning'],
-    options: {
-      'toppings': ['egg', 'smoked salmon', 'feta cheese'],
-    },
-    sugarLevels: ['none'],
-    description:
-        'Toasted whole grain bread topped with creamy avocado and a variety of toppings.',
-  ),
-  ItemModel(
-    itemId: "item6",
-    name: "Iced Latte",
-    categoryId: "2",
-    sizes: [
-      ItemSizeModel(name: "Medium", price: 4.0, costPrice: 2.0),
-      ItemSizeModel(name: "Large", price: 5.0, costPrice: 2.5),
-    ],
-    ingredientIds: ['coffeeBeans', 'milk', 'ice'],
-    options: {
-      'milk': ['full fat', 'skimmed', 'almond', 'oat'],
-      'syrup': ['vanilla', 'caramel', 'hazelnut'],
-    },
-    sugarLevels: ['1 tsp', '2 tsp', '3 tsp'],
-    description:
-        'A chilled espresso drink blended with milk over ice and customizable with flavors.',
-  ),
-  ItemModel(
-    itemId: "item7",
-    name: "Bagel",
-    categoryId: "3",
-    sizes: [
-      ItemSizeModel(name: "Single", price: 3.0, costPrice: 1.5),
-    ],
-    ingredientIds: ['flour', 'yeast', 'sugar', 'salt'],
-    options: {
-      'toppings': ['cream cheese', 'smoked salmon', 'tomato', 'cucumber'],
-    },
-    sugarLevels: ['default'],
-    description:
-        'A fresh, chewy bagel with the option of various delicious toppings.',
-  ),
-  ItemModel(
-    itemId: "item8",
-    name: "Cake Bowl",
-    categoryId: "3",
-    sizes: [
-      ItemSizeModel(name: "Regular", price: 6.5, costPrice: 3.5),
-    ],
-    ingredientIds: ['banana', 'berries', 'yogurt', 'granola'],
-    options: {
-      'toppings': ['chia seeds', 'coconut flakes', 'honey'],
-    },
-    sugarLevels: ['no sugar', '1 tsp'],
-    description:
-        'A nutritious smoothie bowl topped with fresh fruits, granola, and superfoods.',
-  ),
-  ItemModel(
-    itemId: "item9",
-    name: "Hot Chocolate",
-    categoryId: "2",
-    sizes: [
-      ItemSizeModel(name: "Small", price: 3.0, costPrice: 1.5),
-      ItemSizeModel(name: "Medium", price: 4.0, costPrice: 2.0),
-      ItemSizeModel(name: "Large", price: 5.0, costPrice: 2.5),
-    ],
-    ingredientIds: ['milk', 'chocolate', 'sugar'],
-    options: {
-      'milk': ['full fat', 'almond', 'soy'],
-      'toppings': ['whipped cream', 'marshmallows', 'chocolate shavings'],
-    },
-    sugarLevels: ['1 tsp', '2 tsp', 'no sugar'],
-    description:
-        'A rich, creamy hot chocolate with optional toppings for added sweetness.',
-  ),
-  ItemModel(
-    itemId: "item10",
-    name: "Croissant",
-    categoryId: "3",
-    sizes: [
-      ItemSizeModel(name: "Single", price: 3.0, costPrice: 1.8),
-    ],
-    ingredientIds: ['flour', 'butter', 'sugar', 'salt'],
-    options: {
-      'fillings': ['chocolate', 'almond', 'cheese'],
-    },
-    sugarLevels: ['default'],
-    description:
-        'A flaky, buttery croissant with options for sweet or savory fillings.',
-  ),
-];
 
 final categoriesIconMap = {
   'allMenu': Icons.select_all,

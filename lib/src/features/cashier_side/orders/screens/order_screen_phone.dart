@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../../../general/common_widgets/icon_text_elevated_button.dart';
 import '../../../../general/general_functions.dart';
@@ -172,14 +173,16 @@ class OrderScreenPhone extends StatelessWidget {
                                     const EdgeInsets.symmetric(horizontal: 10),
                                 child: CartItemWidgetPhone(
                                   orderItemModel: controller.orderItems[index],
-                                  onEditTap: () => controller.onEditItem(
+                                  onEditTap: () => controller.onEditItemPress(
                                       index, context, screenType.isPhone),
                                   onDeleteTap: () => controller.onDeleteItem(
-                                      index, controller.orderItems[index]),
+                                      index,
+                                      context,
+                                      controller.orderItems[index]),
                                   index: index,
                                   onDismissed: () async {
-                                    return await controller.onDeleteItem(
-                                        index, controller.orderItems[index]);
+                                    return await controller.onDeleteItem(index,
+                                        context, controller.orderItems[index]);
                                   },
                                 ),
                               );
@@ -188,7 +191,7 @@ class OrderScreenPhone extends StatelessWidget {
                         )
                       : Center(
                           child: Padding(
-                            padding: const EdgeInsets.all(50),
+                            padding: const EdgeInsets.all(40),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -264,11 +267,14 @@ class OrderScreenPhone extends StatelessWidget {
                       titleFontSize: 18,
                     ),
                     Obx(
-                      () => CategoryMenuPhone(
-                        categories: controller.categories,
-                        selectedCategory: controller.selectedCategory.value,
-                        onSelect: controller.onCategorySelect,
-                      ),
+                      () => controller.loadingCategories.value
+                          ? const LoadingCategories()
+                          : CategoryMenuPhone(
+                              categories: controller.categories,
+                              selectedCategory:
+                                  controller.selectedCategory.value,
+                              onSelect: controller.onCategorySelect,
+                            ),
                     ),
                     const SizedBox(height: 5),
                     Obx(
@@ -282,7 +288,9 @@ class OrderScreenPhone extends StatelessWidget {
                             crossAxisCount: 2,
                             shrinkWrap: true,
                             children: List.generate(
-                              controller.filteredItems.length,
+                              controller.loadingItems.value
+                                  ? 10
+                                  : controller.filteredItems.length,
                               (int index) {
                                 return AnimationConfiguration.staggeredGrid(
                                   position: index,
@@ -290,19 +298,25 @@ class OrderScreenPhone extends StatelessWidget {
                                   columnCount: 2,
                                   child: ScaleAnimation(
                                     child: FadeInAnimation(
-                                      child: ItemCardPhone(
-                                        imageUrl: controller
-                                                .filteredItems[index]
-                                                .imageUrl ??
-                                            kLogoImage,
-                                        title: controller
-                                            .filteredItems[index].name,
-                                        price: controller.filteredItems[index]
-                                            .sizes[0].price,
-                                        onSelected: () =>
-                                            controller.onItemSelected(context,
-                                                index, screenType.isPhone),
-                                      ),
+                                      child: controller.loadingItems.value
+                                          ? const LoadingItem()
+                                          : ItemCardPhone(
+                                              imageUrl: controller
+                                                      .filteredItems[index]
+                                                      .imageUrl ??
+                                                  kLogoImage,
+                                              title: controller
+                                                  .filteredItems[index].name,
+                                              price: controller
+                                                  .filteredItems[index]
+                                                  .sizes[0]
+                                                  .price,
+                                              onSelected: () =>
+                                                  controller.onItemSelected(
+                                                      context,
+                                                      index,
+                                                      screenType.isPhone),
+                                            ),
                                     ),
                                   ),
                                 );
@@ -318,6 +332,63 @@ class OrderScreenPhone extends StatelessWidget {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class LoadingItem extends StatelessWidget {
+  const LoadingItem({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade300,
+      highlightColor: Colors.grey.shade200,
+      child: Container(
+        height: 100,
+        width: 180,
+        decoration: const BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(15)),
+          color: Colors.grey,
+        ),
+      ),
+    );
+  }
+}
+
+class LoadingCategories extends StatelessWidget {
+  const LoadingCategories({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade300,
+      highlightColor: Colors.grey.shade200,
+      child: SizedBox(
+        height: 130,
+        child: ListView.builder(
+          padding: const EdgeInsets.symmetric(vertical: 15),
+          scrollDirection: Axis.horizontal,
+          itemCount: 6,
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Container(
+                width: 80,
+                height: 120,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(50),
+                  color: Colors.black,
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

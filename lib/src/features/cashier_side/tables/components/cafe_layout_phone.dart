@@ -57,32 +57,8 @@ class CafeLayoutPhone extends StatelessWidget {
                           textDirection: TextDirection.ltr,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            buildTable(3),
                             buildTable(0),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 60, vertical: 10),
-                        child: Row(
-                          textDirection: TextDirection.ltr,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            buildTable(4),
-                            buildTable(1),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 60, vertical: 10),
-                        child: Row(
-                          textDirection: TextDirection.ltr,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
                             buildTable(5),
-                            buildTable(2),
                           ],
                         ),
                       ),
@@ -93,7 +69,31 @@ class CafeLayoutPhone extends StatelessWidget {
                           textDirection: TextDirection.ltr,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
+                            buildTable(1),
                             buildTable(6),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 60, vertical: 10),
+                        child: Row(
+                          textDirection: TextDirection.ltr,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            buildTable(2),
+                            buildTable(7),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 60, vertical: 10),
+                        child: Row(
+                          textDirection: TextDirection.ltr,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            buildTable(3),
                             const SizedBox(),
                           ],
                         ),
@@ -105,7 +105,7 @@ class CafeLayoutPhone extends StatelessWidget {
                           textDirection: TextDirection.ltr,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            buildTable(7),
+                            buildTable(4),
                             const SizedBox(),
                           ],
                         ),

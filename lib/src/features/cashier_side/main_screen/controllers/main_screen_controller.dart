@@ -1,3 +1,4 @@
+import 'package:bcrypt/bcrypt.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cortadoeg/src/features/cashier_side/orders/components/models.dart';
 import 'package:cortadoeg/src/features/cashier_side/tables/controllers/tables_page_controller.dart';
@@ -19,7 +20,7 @@ class MainScreenController extends GetxController {
   late final PageController pageController;
   final navBarIndex = 0.obs;
   final showNewOrderButton = true.obs;
-
+  String editOrderPasscodeHash = '';
   @override
   void onInit() async {
     barController = SidebarXController(selectedIndex: 0, extended: false);
@@ -35,7 +36,64 @@ class MainScreenController extends GetxController {
       pageController.jumpToPage(barController.selectedIndex);
       newOrderButtonVisibility();
     });
+    getEditOrderPasscodeHash().then((hash) {
+      if (hash != null) {
+        editOrderPasscodeHash = hash;
+      }
+    });
     super.onReady();
+  }
+
+  Future<FunctionStatus> saveEditOrderPasscode(String passcode) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('passcodes')
+          .doc('passcodes')
+          .set({
+        'editOrderItemsHash': BCrypt.hashpw(
+            isLangEnglish() ? passcode : translateArabicToEnglish(passcode),
+            BCrypt.gensalt()),
+      }, SetOptions(merge: true));
+      return FunctionStatus.success;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+    }
+    return FunctionStatus.failure;
+  }
+
+  Future<String?> getEditOrderPasscodeHash() async {
+    try {
+      final passcodesSnapshot = await FirebaseFirestore.instance
+          .collection('passcodes')
+          .doc('passcodes')
+          .get();
+      if (passcodesSnapshot.exists) {
+        return passcodesSnapshot['editOrderItemsHash'].toString();
+      }
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+    }
+    return null;
+  }
+
+  bool verifyEditOrderItemPasscode(String inputPasscode) {
+    return BCrypt.checkpw(
+        isLangEnglish()
+            ? inputPasscode
+            : translateArabicToEnglish(inputPasscode),
+        editOrderPasscodeHash);
   }
 
   void newOrderButtonVisibility() {
@@ -57,11 +115,9 @@ class MainScreenController extends GetxController {
         return 'ordersHistory'.tr;
       case 2:
         return 'customers'.tr;
-      case 4:
-        return 'reports'.tr;
-      case 5:
+      case 3:
         return 'account'.tr;
-      case 6:
+      case 4:
         return 'settings'.tr;
       default:
         return 'tablesView'.tr;

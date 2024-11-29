@@ -45,38 +45,38 @@ class ItemDetails extends StatelessWidget {
                   child: Row(
                     children: [
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              decoration: item.imageUrl != null
-                                  ? BoxDecoration(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(15)),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey.shade200,
-                                          blurRadius: 5,
+                        child: StretchingOverscrollIndicator(
+                          axisDirection: AxisDirection.down,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  decoration: item.imageUrl != null
+                                      ? BoxDecoration(
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(15)),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.shade200,
+                                              blurRadius: 5,
+                                            )
+                                          ],
                                         )
-                                      ],
-                                    )
-                                  : null,
-                              child: ClipRRect(
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(15)),
-                                child: Image.asset(
-                                  item.imageUrl ?? kLogoImage,
-                                  height: screenHeight * 0.35,
-                                  width: double.infinity,
-                                  fit: BoxFit.contain,
+                                      : null,
+                                  child: ClipRRect(
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(15)),
+                                    child: Image.asset(
+                                      item.imageUrl ?? kLogoImage,
+                                      height: screenHeight * 0.35,
+                                      width: double.infinity,
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            StretchingOverscrollIndicator(
-                              axisDirection: AxisDirection.down,
-                              child: SingleChildScrollView(
-                                child: Column(
+                                const SizedBox(height: 20),
+                                Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     AutoSizeText(
@@ -98,24 +98,25 @@ class ItemDetails extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                              ),
+                                const SizedBox(height: 15),
+                                InputQty.int(
+                                  initVal: orderItem != null
+                                      ? orderItem!.quantity
+                                      : 1,
+                                  minVal: 1,
+                                  decoration: const QtyDecorationProps(
+                                    isBordered: false,
+                                    borderShape: BorderShapeBtn.circle,
+                                    btnColor: Colors.black,
+                                    width: 10,
+                                  ),
+                                  onQtyChanged: (quantity) =>
+                                      controller.itemQuantity.value = quantity,
+                                ),
+                                const SizedBox(height: 20),
+                              ],
                             ),
-                            const SizedBox(height: 15),
-                            InputQty.int(
-                              initVal:
-                                  orderItem != null ? orderItem!.quantity : 1,
-                              minVal: 1,
-                              decoration: const QtyDecorationProps(
-                                isBordered: false,
-                                borderShape: BorderShapeBtn.circle,
-                                btnColor: Colors.black,
-                                width: 10,
-                              ),
-                              onQtyChanged: (quantity) =>
-                                  controller.itemQuantity.value = quantity,
-                            ),
-                            const SizedBox(height: 20),
-                          ],
+                          ),
                         ),
                       ),
                       const SizedBox(width: 20),
