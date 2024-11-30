@@ -123,62 +123,80 @@ class CustomersScreen extends StatelessWidget {
                                               ),
                                               controller: controller
                                                   .customersRefreshController,
-                                              onRefresh: () =>
-                                                  controller.onRefresh(),
-                                              child: ListView.builder(
-                                                scrollDirection: Axis.vertical,
-                                                itemCount: controller
-                                                        .filteredCustomers
-                                                        .length +
-                                                    1,
-                                                itemBuilder: (context, index) {
-                                                  return index == 0
-                                                      ? addCustomerTile(
-                                                          controller:
-                                                              controller,
-                                                          context: context)
-                                                      : Obx(
-                                                          () => customerTile(
-                                                            customerModel:
-                                                                controller
-                                                                        .filteredCustomers[
-                                                                    index - 1],
-                                                            onTap: () => controller
-                                                                .onCustomerTap(
-                                                                    index:
-                                                                        index,
-                                                                    customerModel: controller
-                                                                            .filteredCustomers[
-                                                                        index -
-                                                                            1]),
-                                                            onEditTap: () => controller.onEditPress(
+                                              onRefresh: () => controller
+                                                  .onCustomersRefresh(),
+                                              child:
+                                                  controller.customersList
+                                                          .isNotEmpty
+                                                      ? ListView.builder(
+                                                          scrollDirection:
+                                                              Axis.vertical,
+                                                          itemCount: controller
+                                                                  .filteredCustomers
+                                                                  .length +
+                                                              1,
+                                                          itemBuilder:
+                                                              (context, index) {
+                                                            return index == 0
+                                                                ? addCustomerTile(
+                                                                    controller:
+                                                                        controller,
+                                                                    context:
+                                                                        context)
+                                                                : Obx(
+                                                                    () =>
+                                                                        customerTile(
+                                                                      customerModel: controller
+                                                                              .filteredCustomers[
+                                                                          index -
+                                                                              1],
+                                                                      onTap: () => controller.onCustomerTap(
+                                                                          index:
+                                                                              index,
+                                                                          customerId: controller
+                                                                              .filteredCustomers[index - 1]
+                                                                              .customerId),
+                                                                      onEditTap: () => controller.onEditPress(
+                                                                          context:
+                                                                              context,
+                                                                          customerModel: controller.filteredCustomers[index -
+                                                                              1],
+                                                                          index:
+                                                                              index - 1),
+                                                                      onDeleteTap:
+                                                                          () =>
+                                                                              controller.onDeleteTap(
+                                                                        customerModel:
+                                                                            controller.filteredCustomers[index -
+                                                                                1],
+                                                                        index:
+                                                                            index,
+                                                                      ),
+                                                                      chosen: controller
+                                                                              .chosenCustomerIndex
+                                                                              .value ==
+                                                                          index,
+                                                                    ),
+                                                                  );
+                                                          },
+                                                        )
+                                                      : Column(
+                                                          children: [
+                                                            addCustomerTile(
+                                                                controller:
+                                                                    controller,
                                                                 context:
-                                                                    context,
-                                                                customerModel:
-                                                                    controller
-                                                                            .filteredCustomers[
-                                                                        index -
-                                                                            1],
-                                                                index:
-                                                                    index - 1),
-                                                            onDeleteTap: () =>
-                                                                controller
-                                                                    .onDeleteTap(
-                                                              customerModel:
-                                                                  controller
-                                                                          .filteredCustomers[
-                                                                      index -
-                                                                          1],
-                                                              index: index,
+                                                                    context),
+                                                            Expanded(
+                                                              child:
+                                                                  SingleChildScrollView(
+                                                                child: noCustomerWidget(
+                                                                    screenHeight:
+                                                                        screenHeight),
+                                                              ),
                                                             ),
-                                                            chosen: controller
-                                                                    .chosenCustomerIndex
-                                                                    .value ==
-                                                                index,
-                                                          ),
-                                                        );
-                                                },
-                                              ),
+                                                          ],
+                                                        ),
                                             ),
                                           ),
                                   ),
@@ -195,47 +213,83 @@ class CustomersScreen extends StatelessWidget {
                         color: Colors.white,
                         height: double.infinity,
                         child: Obx(
-                          () => controller.customerOrders.isEmpty &&
-                                  controller.chosenCustomerIndex.value != 0
-                              ? Column(
-                                  children: [
-                                    Divider(
-                                      color: Colors.grey.shade100,
-                                      thickness: 2,
-                                      height: 2,
+                          () => controller.chosenCustomerIndex.value != 0
+                              ? RefreshConfiguration(
+                                  headerTriggerDistance: 60,
+                                  maxOverScrollExtent: 20,
+                                  enableLoadingWhenFailed: true,
+                                  hideFooterWhenNotFull: true,
+                                  child: SmartRefresher(
+                                    enablePullDown: true,
+                                    header: ClassicHeader(
+                                      completeDuration:
+                                          const Duration(milliseconds: 0),
+                                      releaseText: 'releaseToRefresh'.tr,
+                                      refreshingText: 'refreshing'.tr,
+                                      idleText: 'pullToRefresh'.tr,
+                                      completeText: 'refreshCompleted'.tr,
+                                      iconPos: isLangEnglish()
+                                          ? IconPosition.left
+                                          : IconPosition.right,
+                                      textStyle:
+                                          const TextStyle(color: Colors.grey),
+                                      failedIcon: const Icon(Icons.error,
+                                          color: Colors.grey),
+                                      completeIcon: const Icon(Icons.done,
+                                          color: Colors.grey),
+                                      idleIcon: const Icon(Icons.arrow_downward,
+                                          color: Colors.grey),
+                                      releaseIcon: const Icon(Icons.refresh,
+                                          color: Colors.grey),
                                     ),
-                                    Lottie.asset(
-                                      kNoOrdersAnim,
-                                      fit: BoxFit.contain,
-                                      height: screenHeight * 0.5,
-                                    ),
-                                    AutoSizeText(
-                                      'noOrdersCustomerTitle'.tr,
-                                      style: const TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 30,
-                                          fontWeight: FontWeight.w600),
-                                      maxLines: 2,
-                                    ),
-                                    const SizedBox(height: 5.0),
-                                    AutoSizeText(
-                                      'noOrdersCustomerBody'.tr,
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w500),
-                                      maxLines: 2,
-                                    ),
-                                  ],
+                                    controller: controller
+                                        .customerOrdersRefreshController,
+                                    onRefresh: () =>
+                                        controller.onCustomerOrdersRefresh(),
+                                    child: controller.customerOrders.isEmpty
+                                        ? Column(
+                                            children: [
+                                              Lottie.asset(
+                                                kNoOrdersAnim,
+                                                fit: BoxFit.contain,
+                                                height: screenHeight * 0.5,
+                                              ),
+                                              AutoSizeText(
+                                                'noOrdersCustomerTitle'.tr,
+                                                style: const TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 30,
+                                                    fontWeight:
+                                                        FontWeight.w600),
+                                                maxLines: 2,
+                                              ),
+                                              const SizedBox(height: 5.0),
+                                              AutoSizeText(
+                                                'noOrdersCustomerBody'.tr,
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                    color: Colors.grey,
+                                                    fontSize: 20,
+                                                    fontWeight:
+                                                        FontWeight.w500),
+                                                maxLines: 2,
+                                              ),
+                                            ],
+                                          )
+                                        : ListView.builder(
+                                            itemCount: controller
+                                                .customerOrders.length,
+                                            shrinkWrap: true,
+                                            itemBuilder: (context, index) {
+                                              return Text(controller
+                                                  .customerOrders[index]
+                                                  .orderId);
+                                            },
+                                          ),
+                                  ),
                                 )
                               : Column(
                                   children: [
-                                    Divider(
-                                      color: Colors.grey.shade100,
-                                      thickness: 2,
-                                      height: 2,
-                                    ),
                                     Lottie.asset(
                                       kChooseCustomerAnim,
                                       fit: BoxFit.contain,
@@ -274,6 +328,34 @@ class CustomersScreen extends StatelessWidget {
     );
   }
 
+  Widget noCustomerWidget({
+    required double screenHeight,
+  }) {
+    return Column(
+      children: [
+        Lottie.asset(
+          kNoCustomersAnim,
+          fit: BoxFit.contain,
+          height: screenHeight * 0.35,
+        ),
+        AutoSizeText(
+          'noCustomersTitle'.tr,
+          style: const TextStyle(
+              color: Colors.black, fontSize: 25, fontWeight: FontWeight.w600),
+          maxLines: 1,
+        ),
+        const SizedBox(height: 5.0),
+        AutoSizeText(
+          'noCustomerBody'.tr,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+              color: Colors.grey, fontSize: 15, fontWeight: FontWeight.w500),
+          maxLines: 2,
+        ),
+      ],
+    );
+  }
+
   Widget addCustomerTile({
     required CustomersScreenController controller,
     required BuildContext context,
@@ -282,24 +364,22 @@ class CustomersScreen extends StatelessWidget {
       onTap: () => controller.onAddCustomerTap(context),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-        child: Obx(
-          () => Row(
-            children: [
-              Icon(
-                controller.extended.value ? Icons.remove : Icons.add_rounded,
-                size: 25,
+        child: Row(
+          children: [
+            const Icon(
+              Icons.person_add,
+              size: 25,
+              color: Colors.black54,
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'addCustomer'.tr,
+              style: const TextStyle(
                 color: Colors.black54,
+                fontWeight: FontWeight.w800,
               ),
-              const SizedBox(width: 10),
-              Text(
-                controller.extended.value ? 'cancel'.tr : 'addCustomer'.tr,
-                style: const TextStyle(
-                  color: Colors.black54,
-                  fontWeight: FontWeight.w800,
-                ),
-              )
-            ],
-          ),
+            )
+          ],
         ),
       ),
     );
@@ -343,7 +423,7 @@ class CustomersScreen extends StatelessWidget {
             child: Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: chosen ? Colors.white : Colors.grey.shade500,
+                  backgroundColor: chosen ? Colors.white : Colors.black,
                   child: Text(
                     customerModel.name[0].toUpperCase(),
                     style: TextStyle(
@@ -355,7 +435,7 @@ class CustomersScreen extends StatelessWidget {
                 Text(
                   customerModel.name,
                   style: TextStyle(
-                    color: chosen ? Colors.white : Colors.black45,
+                    color: chosen ? Colors.white : Colors.black,
                     fontWeight: FontWeight.w800,
                   ),
                 )

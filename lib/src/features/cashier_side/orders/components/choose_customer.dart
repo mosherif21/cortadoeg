@@ -1,4 +1,5 @@
 import 'package:anim_search_app_bar/anim_search_app_bar.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cortadoeg/src/features/cashier_side/orders/components/models.dart';
 import 'package:cortadoeg/src/general/general_functions.dart';
 import 'package:expansion_tile_group/expansion_tile_group.dart';
@@ -8,9 +9,11 @@ import 'package:get/get.dart';
 import 'package:intl_phone_field/countries.dart';
 import 'package:intl_phone_field/country_picker_dialog.dart';
 import 'package:intl_phone_field/intl_phone_field.dart' as intl;
+import 'package:lottie/lottie.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../../constants/assets_strings.dart';
 import '../../../../general/validation_functions.dart';
 import '../controllers/customer_choose_controller.dart';
 
@@ -113,20 +116,35 @@ class ChooseCustomer extends StatelessWidget {
                                 controller:
                                     controller.customersRefreshController,
                                 onRefresh: () => controller.onRefresh(),
-                                child: ListView.builder(
-                                  scrollDirection: Axis.vertical,
-                                  itemCount:
-                                      controller.filteredCustomers.length + 1,
-                                  itemBuilder: (context, index) {
-                                    return index == 0
-                                        ? addCustomerTile(
-                                            controller: controller)
-                                        : customerTile(
-                                            controller
-                                                .filteredCustomers[index - 1],
-                                          );
-                                  },
-                                ),
+                                child: controller.customersList.isEmpty
+                                    ? Column(
+                                        children: [
+                                          addCustomerTile(
+                                            controller: controller,
+                                          ),
+                                          Expanded(
+                                            child: SingleChildScrollView(
+                                              child: noCustomerWidget(
+                                                  screenHeight: screenHeight),
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    : ListView.builder(
+                                        scrollDirection: Axis.vertical,
+                                        itemCount: controller
+                                                .filteredCustomers.length +
+                                            1,
+                                        itemBuilder: (context, index) {
+                                          return index == 0
+                                              ? addCustomerTile(
+                                                  controller: controller)
+                                              : customerTile(
+                                                  controller.filteredCustomers[
+                                                      index - 1],
+                                                );
+                                        },
+                                      ),
                               ),
                             ),
                     ),
@@ -161,7 +179,7 @@ class ChooseCustomer extends StatelessWidget {
           () => Row(
             children: [
               Icon(
-                controller.extended.value ? Icons.remove : Icons.add_rounded,
+                controller.extended.value ? Icons.remove : Icons.person_add,
                 size: 25,
                 color: Colors.black54,
               ),
@@ -407,6 +425,34 @@ class ChooseCustomer extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget noCustomerWidget({
+    required double screenHeight,
+  }) {
+    return Column(
+      children: [
+        Lottie.asset(
+          kNoCustomersAnim,
+          fit: BoxFit.contain,
+          height: screenHeight * 0.2,
+        ),
+        AutoSizeText(
+          'noCustomersTitle'.tr,
+          style: const TextStyle(
+              color: Colors.black, fontSize: 30, fontWeight: FontWeight.w600),
+          maxLines: 1,
+        ),
+        const SizedBox(height: 5.0),
+        AutoSizeText(
+          'noCustomerBody'.tr,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+              color: Colors.grey, fontSize: 20, fontWeight: FontWeight.w500),
+          maxLines: 2,
+        ),
+      ],
     );
   }
 

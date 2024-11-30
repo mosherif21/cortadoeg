@@ -13,14 +13,16 @@ import '../../orders/components/models.dart';
 class CustomersScreenController extends GetxController {
   final RxList<CustomerModel> customersList = <CustomerModel>[].obs;
   final RxList<CustomerModel> filteredCustomers = <CustomerModel>[].obs;
-  final RxBool extended = false.obs;
   final RxBool percentageChosen = true.obs;
   final RxBool loadingCustomers = true.obs;
+  final RxBool loadingCustomerOrders = true.obs;
   late final GlobalKey<FormState> formKey;
   late final TextEditingController nameTextController;
   late final TextEditingController discountTextController;
   final RxString number = ''.obs;
   final customersRefreshController = RefreshController(initialRefresh: false);
+  final customerOrdersRefreshController =
+      RefreshController(initialRefresh: false);
   final RxList<OrderModel> customerOrders = <OrderModel>[].obs;
   final RxInt chosenCustomerIndex = 0.obs;
   @override
@@ -85,13 +87,33 @@ class CustomersScreenController extends GetxController {
     }
   }
 
-  void onRefresh() {
-    extended.value = false;
+  void onCustomersRefresh() {
     loadingCustomers.value = true;
     chosenCustomerIndex.value = 0;
     loadCustomers();
     customersRefreshController.refreshToIdle();
     customersRefreshController.resetNoData();
+  }
+
+  void onCustomerOrdersRefresh() async {
+    final index = chosenCustomerIndex.value;
+    final customerId = customersList[index - 1].customerId;
+    loadingCustomerOrders.value = true;
+    customerOrdersRefreshController.refreshToIdle();
+    customerOrdersRefreshController.resetNoData();
+    showLoadingScreen();
+    final orders = await getOrdersByCustomerId(customerId);
+    hideLoadingScreen();
+    if (orders != null) {
+      chosenCustomerIndex.value = index;
+      customerOrders.value = orders;
+      loadingCustomerOrders.value = false;
+    } else {
+      showSnackBar(
+        text: 'errorOccurred'.tr,
+        snackBarType: SnackBarType.error,
+      );
+    }
   }
 
   void addCustomerPress() async {
@@ -128,9 +150,45 @@ class CustomersScreenController extends GetxController {
     }
   }
 
-  void onCustomerTap(
-      {required int index, required CustomerModel customerModel}) async {
-    chosenCustomerIndex.value = index;
+  Future<List<OrderModel>?> getOrdersByCustomerId(String customerId) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final querySnapshot = await firestore
+          .collection('orders')
+          .where('customerId', isEqualTo: customerId)
+          .get();
+      final orders = querySnapshot.docs
+          .map((doc) => OrderModel.fromFirestore(doc.data(), doc.id))
+          .toList();
+
+      return orders;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+      return null;
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+      return null;
+    }
+  }
+
+  void onCustomerTap({required int index, required String customerId}) async {
+    showLoadingScreen();
+    final orders = await getOrdersByCustomerId(customerId);
+    hideLoadingScreen();
+    if (orders != null) {
+      chosenCustomerIndex.value = index;
+      customerOrders.value = orders;
+      loadingCustomerOrders.value = false;
+    } else {
+      showSnackBar(
+        text: 'errorOccurred'.tr,
+        snackBarType: SnackBarType.error,
+      );
+    }
   }
 
   void onEditPress(

@@ -661,6 +661,8 @@ class Languages extends Translations {
           'chooseCustomerViewOrdersTitle': 'No Customer Chosen',
           'noOrdersCustomerTitle': 'No Orders',
           'noOrdersCustomerBody': 'This Customer doesn\'t have any orders',
+          'noCustomersTitle': 'No Customers',
+          'noCustomerBody': 'Add customers to manage them here',
           'editCustomerSuccess': 'Customer was edited successfully',
           'deleteCustomerSuccess': 'Customer was deleted successfully',
           'addCustomerSuccess': 'Customer was added successfully',
