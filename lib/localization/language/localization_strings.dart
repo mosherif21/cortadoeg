@@ -289,7 +289,7 @@ class Languages extends Translations {
           'totalSalesTax': 'إجمالي ضريبة المبيعات',
           'discountSales': 'تخفيض المبيعات',
           'total': 'الإجمالي',
-          'typeNotes': 'يجب إدخال أي ملاحظات للعنصر هنا',
+          'typeNotes': 'يمكن إدخال أي ملاحظات للعنصر هنا',
           'itemNote': 'ملاحظات العنصر',
           'currentOrder': 'الطلب الحالي',
           'addCustomer': 'إضافة عميل',
@@ -657,6 +657,15 @@ class Languages extends Translations {
           'tableNotAvailable': 'Table number @tableNo is unavailable',
           'orderItemDeletedSuccess': 'Order Item Deleted Successfully',
           'functionNotAllowed': 'You don\'t have the permission to do that',
+          'searchCustomersHint': 'Search all customers here...',
+          'chooseCustomerViewOrdersTitle': 'No Customer Chosen',
+          'noOrdersCustomerTitle': 'No Orders',
+          'noOrdersCustomerBody': 'This Customer doesn\'t have any orders',
+          'editCustomerSuccess': 'Customer was edited successfully',
+          'deleteCustomerSuccess': 'Customer was deleted successfully',
+          'addCustomerSuccess': 'Customer was added successfully',
+          'chooseCustomerViewOrdersBody':
+              'Choose a customer to view his orders here',
         },
       };
 }

@@ -748,21 +748,35 @@ class OrderController extends GetxController {
     }
   }
 
-  onQuantityChangedPhone(int newQuantity, int index) async {
-    showLoadingScreen();
-    final changeQuantityStatus = await changeOrderItemQuantity(
-      orderId: orderModel.orderId,
-      orderItems: orderItems,
-      newQuantity: newQuantity,
-      index: index,
-    );
-    hideLoadingScreen();
-    if (changeQuantityStatus == FunctionStatus.success) {
-      orderItems[index].quantity = newQuantity;
-      calculateTotalAmount();
+  onQuantityChangedPhone(
+      int newQuantity, int index, BuildContext context) async {
+    if (hasPermission(AuthenticationRepository.instance.employeeInfo,
+        UserPermission.editOrderItemsWithPass)) {
+      final passcodeValid = await showPassCodeScreen(index, context);
+      if (passcodeValid) {
+        showLoadingScreen();
+        final changeQuantityStatus = await changeOrderItemQuantity(
+          orderId: orderModel.orderId,
+          orderItems: orderItems,
+          newQuantity: newQuantity,
+          index: index,
+        );
+        hideLoadingScreen();
+        if (changeQuantityStatus == FunctionStatus.success) {
+          orderItems[index].quantity = newQuantity;
+          calculateTotalAmount();
+        } else {
+          orderItems[index].quantity = orderItems[index].quantity;
+          showSnackBar(
+            text: 'errorOccurred'.tr,
+            snackBarType: SnackBarType.error,
+          );
+        }
+      }
     } else {
+      orderItems[index].quantity = orderItems[index].quantity;
       showSnackBar(
-        text: 'errorOccurred'.tr,
+        text: 'functionNotAllowed'.tr,
         snackBarType: SnackBarType.error,
       );
     }

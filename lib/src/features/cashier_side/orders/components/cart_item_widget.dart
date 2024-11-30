@@ -81,6 +81,7 @@ class CartItemWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
+        const SizedBox(width: 5),
         ClipRRect(
           borderRadius: const BorderRadius.all(Radius.circular(10)),
           child: Image.asset(

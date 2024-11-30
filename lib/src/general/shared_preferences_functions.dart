@@ -32,6 +32,7 @@ Future<void> setLocaleLanguageButton(String languageCode) async {
     return;
   }
   showLoadingScreen();
+
   if (AppInit.showOnBoard) {
     await setShowOnBoarding();
     await setLocaleLanguage(languageCode);

@@ -425,8 +425,9 @@ class ChargeScreenPhone extends StatelessWidget {
                                       context, controller.orderItems[index]);
                                 },
                                 index: index,
-                                onQuantityChanged: (newQuantity) => controller
-                                    .onQuantityChangedPhone(newQuantity, index),
+                                onQuantityChanged: (newQuantity) =>
+                                    controller.onQuantityChangedPhone(
+                                        newQuantity, index, context),
                               ),
                             );
                           },

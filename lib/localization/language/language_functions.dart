@@ -2,6 +2,7 @@ import 'package:cortadoeg/src/general/common_widgets/today_date_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../src/authentication/authentication_repository.dart';
 import '../../src/constants/enums.dart';
 import '../../src/general/app_init.dart';
 import '../../src/general/general_functions.dart';
@@ -50,6 +51,7 @@ Future<void> setLocaleLanguage(String languageCode) async {
     if (Get.isRegistered<DateController>()) {
       DateController.instance.updateDate();
     }
+    AuthenticationRepository.instance.setNotificationsLanguage();
     hideLoadingScreen();
   }
 }

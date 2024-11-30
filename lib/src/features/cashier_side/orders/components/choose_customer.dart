@@ -44,7 +44,7 @@ class ChooseCustomer extends StatelessWidget {
                   keyboardType: TextInputType.text,
                   cancelButtonTextStyle: const TextStyle(color: Colors.black87),
                   cancelButtonText: 'cancel'.tr,
-                  hintText: 'searchItemsHint'.tr,
+                  hintText: 'searchCustomersHint'.tr,
                   onChanged: controller.onCustomerSearch,
                   backgroundColor: Colors.white,
                   appBar: AppBar(
@@ -388,7 +388,7 @@ class ChooseCustomer extends StatelessWidget {
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor: Colors.lightGreen,
+                backgroundColor: Colors.grey.shade500,
                 child: Text(
                   customerModel.name[0].toUpperCase(),
                   style: const TextStyle(
@@ -412,8 +412,8 @@ class ChooseCustomer extends StatelessWidget {
 
   Widget loadingCustomerTile() {
     return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade200,
+      baseColor: Colors.grey.shade200,
+      highlightColor: Colors.grey.shade100,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
         child: Row(

@@ -333,30 +333,31 @@ class OrderScreen extends StatelessWidget {
                                                   fontSize: 14,
                                                 ),
                                               ),
-                                              Row(
-                                                children: [
-                                                  Text(
-                                                    '-\$${controller.discountAmount.value.toStringAsFixed(2)}',
-                                                    style: const TextStyle(
-                                                      color: Colors.black,
-                                                      fontWeight:
-                                                          FontWeight.w800,
-                                                      fontSize: 14,
+                                              GestureDetector(
+                                                onTap: () => controller
+                                                    .onCancelDiscount(),
+                                                child: Row(
+                                                  children: [
+                                                    Text(
+                                                      '-\$${controller.discountAmount.value.toStringAsFixed(2)}',
+                                                      style: const TextStyle(
+                                                        color: Colors.black,
+                                                        fontWeight:
+                                                            FontWeight.w800,
+                                                        fontSize: 14,
+                                                      ),
                                                     ),
-                                                  ),
-                                                  if (controller.discountAmount
-                                                          .value >
-                                                      0)
-                                                    GestureDetector(
-                                                      onTap: () => controller
-                                                          .onCancelDiscount(),
-                                                      child: const Icon(
+                                                    if (controller
+                                                            .discountAmount
+                                                            .value >
+                                                        0)
+                                                      const Icon(
                                                         size: 15,
                                                         Icons.cancel_rounded,
                                                         color: Colors.grey,
-                                                      ),
-                                                    )
-                                                ],
+                                                      )
+                                                  ],
+                                                ),
                                               ),
                                             ],
                                           ),

@@ -96,13 +96,7 @@ class AuthenticationRepository extends GetxController {
           if (kDebugMode) {
             AppInit.logger.i(userRole);
           }
-          if (AppInit.notificationToken.isNotEmpty) {
-            await _firestore.collection('fcmTokens').doc(userId).set({
-              'fcmToken${AppInit.isAndroid ? 'Android' : 'Ios'}':
-                  AppInit.notificationToken,
-              'notificationsLang': isLangEnglish() ? 'en' : 'ar',
-            });
-          }
+          setNotificationsLanguage();
           if (fireUser.value!.email != null) {
             final authenticationEmail = fireUser.value!.email!;
             if (authenticationEmail.isNotEmpty &&
@@ -116,6 +110,34 @@ class AuthenticationRepository extends GetxController {
           }
         }
       });
+      return FunctionStatus.success;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.i(error.toString());
+      }
+      return FunctionStatus.failure;
+    } catch (e) {
+      if (kDebugMode) {
+        AppInit.logger.e(e.toString());
+      }
+      return FunctionStatus.failure;
+    }
+  }
+
+  Future<FunctionStatus> setNotificationsLanguage() async {
+    try {
+      if (fireUser.value != null) {
+        if (AppInit.notificationToken.isNotEmpty) {
+          await _firestore
+              .collection('fcmTokens')
+              .doc(fireUser.value!.uid)
+              .set({
+            'fcmToken${AppInit.isAndroid ? 'Android' : 'Ios'}':
+                AppInit.notificationToken,
+            'notificationsLang': isLangEnglish() ? 'en' : 'ar',
+          });
+        }
+      }
       return FunctionStatus.success;
     } on FirebaseException catch (error) {
       if (kDebugMode) {
