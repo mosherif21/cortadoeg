@@ -764,17 +764,29 @@ class OrderController extends GetxController {
         hideLoadingScreen();
         if (changeQuantityStatus == FunctionStatus.success) {
           orderItems[index].quantity = newQuantity;
+          orderItems[index] = orderItems[index];
           calculateTotalAmount();
         } else {
-          orderItems[index].quantity = orderItems[index].quantity;
+          orderItems[index].quantity = newQuantity > orderItems[index].quantity
+              ? newQuantity - 1
+              : newQuantity + 1;
+          orderItems[index] = orderItems[index];
           showSnackBar(
             text: 'errorOccurred'.tr,
             snackBarType: SnackBarType.error,
           );
         }
+      } else {
+        orderItems[index].quantity = newQuantity > orderItems[index].quantity
+            ? newQuantity - 1
+            : newQuantity + 1;
+        orderItems[index] = orderItems[index];
       }
     } else {
-      orderItems[index].quantity = orderItems[index].quantity;
+      orderItems[index].quantity = newQuantity > orderItems[index].quantity
+          ? newQuantity - 1
+          : newQuantity + 1;
+      orderItems[index] = orderItems[index];
       showSnackBar(
         text: 'functionNotAllowed'.tr,
         snackBarType: SnackBarType.error,
