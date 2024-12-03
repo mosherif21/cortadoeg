@@ -666,8 +666,17 @@ class Languages extends Translations {
           'editCustomerSuccess': 'Customer was edited successfully',
           'deleteCustomerSuccess': 'Customer was deleted successfully',
           'addCustomerSuccess': 'Customer was added successfully',
+          'returned': 'Returned',
+          'active': 'Active',
           'chooseCustomerViewOrdersBody':
               'Choose a customer to view his orders here',
+          'allOrders': 'All Orders',
+          'today': 'Today',
+          'yesterday': 'Yesterday',
+          'thisWeek': 'This week',
+          'thisMonth': 'This month',
+          'thisYear': 'This year',
+          'customDate': 'Custom date',
         },
       };
 }

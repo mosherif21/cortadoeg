@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cortadoeg/src/features/cashier_side/orders/controllers/orders_controller.dart';
 import 'package:cortadoeg/src/general/general_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -21,6 +22,9 @@ class DateController extends GetxController {
     formattedDate.value =
         DateFormat('EEE, dd MMM yyyy', isLangEnglish() ? 'en_US' : 'ar_SA')
             .format(DateTime.now());
+    if (Get.isRegistered<OrdersController>()) {
+      OrdersController.instance.updateDateFilters();
+    }
   }
 
   void _setDailyUpdate() {

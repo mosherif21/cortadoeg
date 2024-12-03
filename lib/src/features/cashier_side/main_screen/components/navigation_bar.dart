@@ -115,12 +115,12 @@ class SideNavigationBar extends StatelessWidget {
             onTap: (_isPhone) ? () => Get.back() : null,
             iconSize: 20),
         SidebarXItem(
-            icon: FontAwesomeIcons.user,
+            icon: Icons.person,
             label: 'account'.tr,
             onLongPress:
                 (!_isPhone) ? () => _controller.toggleExtended() : null,
             onTap: (_isPhone) ? () => Get.back() : null,
-            iconSize: 20),
+            iconSize: 27),
         SidebarXItem(
             icon: Icons.settings,
             label: 'settings'.tr,

@@ -76,10 +76,7 @@ class OrderScreen extends StatelessWidget {
                                   child: AnimationLimiter(
                                     child: GridView.count(
                                       mainAxisSpacing: 20,
-                                      crossAxisSpacing:
-                                          controller.orderItems.isEmpty
-                                              ? 20
-                                              : 20,
+                                      crossAxisSpacing: 20,
                                       physics: const ScrollPhysics(),
                                       crossAxisCount:
                                           controller.orderItems.isEmpty ? 5 : 4,

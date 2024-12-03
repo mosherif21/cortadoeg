@@ -21,6 +21,7 @@ class MainScreenController extends GetxController {
   final navBarIndex = 0.obs;
   final showNewOrderButton = true.obs;
   String editOrderPasscodeHash = '';
+
   @override
   void onInit() async {
     barController = SidebarXController(selectedIndex: 0, extended: false);

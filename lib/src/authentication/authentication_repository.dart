@@ -26,10 +26,6 @@ class AuthenticationRepository extends GetxController {
   final isEmailAndPasswordLinked = false.obs;
   final isFacebookLinked = false.obs;
   final isEmailVerified = false.obs;
-  late StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>?
-      criticalRequestListener;
-  late StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>?
-      criticalRequestDeniedListener;
   String verificationId = '';
   GoogleSignIn? googleSignIn;
   Role userRole = Role.cashier;
