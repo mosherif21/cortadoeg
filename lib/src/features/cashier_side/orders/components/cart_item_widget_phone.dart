@@ -14,10 +14,8 @@ class CartItemWidgetPhone extends StatelessWidget {
     required this.onEditTap,
     required this.onDeleteTap,
     required this.onDismissed,
-    required this.index,
   });
 
-  final int index;
   final OrderItemModel orderItemModel;
   final Function onEditTap;
   final Function onDeleteTap;

@@ -23,18 +23,20 @@ import '../components/models.dart';
 class OrderController extends GetxController {
   OrderController({
     required this.orderModel,
+    this.tablesIds,
   });
 
   final OrderModel orderModel;
+  final List<String>? tablesIds;
   final selectedCategory = 0.obs;
   final RxList<CategoryModel> categories = <CategoryModel>[].obs;
   late final List<ItemModel> items;
+
   final RxString currentCustomerName = 'guest'.tr.obs;
   CustomerModel? currentCustomer;
   late List<ItemModel> categoryFilteredItems;
   final RxList<ItemModel> filteredItems = <ItemModel>[].obs;
   final RxList<OrderItemModel> orderItems = <OrderItemModel>[].obs;
-  List<String> tableIds = [];
   late final TextEditingController discountTextController;
   late final TextEditingController searchBarTextController;
   late final DraggableScrollableController phoneItemDetailsScrollController;
@@ -270,6 +272,7 @@ class OrderController extends GetxController {
   double calculateTotalAmount() {
     orderSubtotal.value = orderItems.fold(
         0, (addition, item) => addition + item.price * item.quantity);
+
     discountAmount.value = 0.0;
     if (discountType != null && discountValue != null) {
       if (discountType == 'percentage') {
@@ -278,11 +281,13 @@ class OrderController extends GetxController {
         discountAmount.value = discountValue!;
       }
     }
+
     final taxableAmount = (orderSubtotal.value - discountAmount.value) < 0
         ? 0
         : (orderSubtotal.value - discountAmount.value);
     orderTax.value = taxableAmount * (taxRate / 100);
-    orderTotal.value = taxableAmount + orderTax.value;
+    orderTotal.value =
+        roundToNearestHalfOrWhole(taxableAmount + orderTax.value);
 
     return orderTotal.value;
   }
@@ -668,6 +673,72 @@ class OrderController extends GetxController {
       percentageChosen.value = discountType!.compareTo('percentage') == 0;
       discountTextController.text =
           discountValue! > 0 ? discountValue.toString() : '';
+    }
+  }
+
+  void onChargeTap() async {
+    showLoadingScreen();
+    final chargeOrderStatus = await chargeOrder(orderId: orderModel.orderId);
+    hideLoadingScreen();
+    if (chargeOrderStatus == FunctionStatus.success) {
+      Get.back();
+      showSnackBar(
+        text: 'orderChargedSuccess'.tr,
+        snackBarType: SnackBarType.success,
+      );
+    } else {
+      showSnackBar(
+        text: 'errorOccurred'.tr,
+        snackBarType: SnackBarType.error,
+      );
+    }
+  }
+
+  Future<FunctionStatus> chargeOrder({required String orderId}) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final batch = firestore.batch();
+      batch.update(firestore.collection('orders').doc(orderModel.orderId), {
+        'status': OrderStatus.complete.name,
+        'subtotalAmount': orderSubtotal.value,
+        'taxTotalAmount': orderTax.value,
+        'discountAmount': discountAmount.value,
+        'totalAmount': orderTotal.value,
+      });
+      if (tablesIds != null) {
+        for (var tableId in tablesIds!) {
+          batch.update(firestore.collection('tables').doc(tableId),
+              {'status': TableStatus.billed.name});
+        }
+      } else {
+        if (orderModel.tableNumbers != null) {
+          final tablesIdsList = [];
+          for (var tableNo in orderModel.tableNumbers!) {
+            final tableIdSnapshot = await firestore
+                .collection('tables')
+                .where('number', isEqualTo: tableNo)
+                .get();
+            tablesIdsList.add(tableIdSnapshot.docs.first.id);
+          }
+          for (var tableId in tablesIdsList) {
+            batch.update(firestore.collection('tables').doc(tableId),
+                {'status': TableStatus.billed.name});
+          }
+        }
+      }
+      await batch.commit();
+
+      return FunctionStatus.success;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+      return FunctionStatus.failure;
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+      return FunctionStatus.failure;
     }
   }
 

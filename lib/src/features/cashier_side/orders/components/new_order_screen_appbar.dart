@@ -11,12 +11,12 @@ class NewOrderScreenAppbar extends StatelessWidget {
       required this.searchBarTextController,
       required this.isTakeaway,
       this.tablesNo,
-      required this.currentOrderId,
+      required this.orderNumber,
       required this.titleFontSize});
   final TextEditingController searchBarTextController;
   final bool isTakeaway;
   final List<int>? tablesNo;
-  final String currentOrderId;
+  final String orderNumber;
   final double titleFontSize;
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class NewOrderScreenAppbar extends StatelessWidget {
         leading: const RegularBackButton(padding: 0),
         title: AutoSizeText(
           formatOrderDetails(
-            currentOrderId: currentOrderId,
+            orderNumber: orderNumber,
             isTakeaway: isTakeaway,
             tablesNo: tablesNo,
           ),
@@ -51,12 +51,12 @@ class NewOrderScreenAppbar extends StatelessWidget {
 }
 
 String formatOrderDetails({
-  required String currentOrderId,
+  required String orderNumber,
   required bool isTakeaway,
   required List<int>? tablesNo,
 }) {
   final orderStr = 'orderNumber'.trParams({
-    'number': currentOrderId.toString(),
+    'number': orderNumber.toString(),
   });
   String locationStr;
   if (isTakeaway) {

@@ -10,6 +10,7 @@ import 'package:sidebarx/sidebarx.dart';
 
 import '../../../../constants/enums.dart';
 import '../../../../general/app_init.dart';
+import '../../orders/controllers/orders_controller.dart';
 import '../../orders/screens/order_screen.dart';
 import '../../orders/screens/order_screen_phone.dart';
 
@@ -106,6 +107,15 @@ class MainScreenController extends GetxController {
         showNewOrderButton.value = false;
       }
     }
+    if (Get.isRegistered<OrdersController>()) {
+      final currentChosenOrder =
+          OrdersController.instance.currentChosenOrder.value;
+      if (currentChosenOrder != null) {
+        showNewOrderButton.value = false;
+      } else {
+        showNewOrderButton.value = true;
+      }
+    }
   }
 
   String getPageTitle(int navBarIndex) {
@@ -162,21 +172,53 @@ class MainScreenController extends GetxController {
 
   Future<OrderModel?> addTakeawayOrder() async {
     try {
-      final orderDoc = FirebaseFirestore.instance.collection('orders').doc();
-      final takeawayOrder = OrderModel(
-        orderId: orderDoc.id,
-        tableNumbers: [],
-        items: [],
-        status: OrderStatus.active,
-        timestamp: Timestamp.now(),
-        totalAmount: 0.0,
-        discountAmount: 0.0,
-        subtotalAmount: 0.0,
-        taxTotalAmount: 0.0,
-        isTakeaway: true,
-      );
-      await orderDoc.set(takeawayOrder.toFirestore());
-      return takeawayOrder;
+      final orderNumber = await generateOrderNumber();
+      if (orderNumber != null) {
+        final orderDoc = FirebaseFirestore.instance.collection('orders').doc();
+        final takeawayOrder = OrderModel(
+          orderNumber: orderNumber,
+          orderId: orderDoc.id,
+          tableNumbers: [],
+          items: [],
+          status: OrderStatus.active,
+          timestamp: Timestamp.now(),
+          totalAmount: 0.0,
+          discountAmount: 0.0,
+          subtotalAmount: 0.0,
+          taxTotalAmount: 0.0,
+          isTakeaway: true,
+        );
+        await orderDoc.set(takeawayOrder.toFirestore());
+        return takeawayOrder;
+      }
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+    }
+    return null;
+  }
+
+  Future<int?> generateOrderNumber() async {
+    try {
+      final DateTime now = DateTime.now();
+
+      final ordersRef = FirebaseFirestore.instance.collection('orders');
+      final QuerySnapshot todayOrders = await ordersRef
+          .where('timestamp',
+              isGreaterThanOrEqualTo:
+                  Timestamp.fromDate(DateTime(now.year, now.month, now.day)))
+          .where('timestamp',
+              isLessThan: Timestamp.fromDate(
+                  DateTime(now.year, now.month, now.day + 1)))
+          .get();
+
+      final int orderCount = todayOrders.docs.length;
+      return orderCount + 1;
     } on FirebaseException catch (error) {
       if (kDebugMode) {
         AppInit.logger.e(error.toString());

@@ -34,6 +34,7 @@ class CategoryModel {
 class OrderModel {
   final String orderId;
   final bool isTakeaway;
+  final int orderNumber;
   List<int>? tableNumbers;
   List<OrderItemModel> items;
   OrderStatus status;
@@ -50,6 +51,7 @@ class OrderModel {
   OrderModel({
     required this.orderId,
     required this.isTakeaway,
+    required this.orderNumber,
     this.tableNumbers,
     required this.items,
     required this.status,
@@ -68,9 +70,10 @@ class OrderModel {
     return {
       'isTakeaway': isTakeaway,
       'tableNumbers': tableNumbers,
+      'orderNumber': orderNumber,
       'items': items.map((item) => item.toFirestore()).toList(),
       'status': status.name,
-      'orderDate': timestamp,
+      'timestamp': timestamp,
       'discountType': discountType,
       'customerId': customerId,
       'customerName': customerName,
@@ -91,8 +94,9 @@ class OrderModel {
           .map((itemMap) => OrderItemModel.fromFirestore(itemMap))
           .toList(),
       status: OrderStatus.values.firstWhere((e) => e.name == map['status']),
-      timestamp: map['orderDate'],
+      timestamp: map['timestamp'],
       discountType: map['discountType'],
+      orderNumber: map['orderNumber'],
       customerId: map['customerId'],
       customerName: map['customerName'],
       discountValue: map['discountValue']?.toDouble(),

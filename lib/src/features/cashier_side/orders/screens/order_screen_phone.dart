@@ -18,15 +18,16 @@ import '../controllers/order_controller.dart';
 import 'charge_screen_phone.dart';
 
 class OrderScreenPhone extends StatelessWidget {
-  const OrderScreenPhone({super.key, required this.orderModel});
+  const OrderScreenPhone({super.key, required this.orderModel, this.tablesIds});
   final OrderModel orderModel;
-
+  final List<String>? tablesIds;
   @override
   Widget build(BuildContext context) {
     final screenHeight = getScreenHeight(context);
     final screenWidth = getScreenWidth(context);
     final screenType = GetScreenType(context);
-    final controller = Get.put(OrderController(orderModel: orderModel));
+    final controller =
+        Get.put(OrderController(orderModel: orderModel, tablesIds: tablesIds));
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       body: DraggableBottomSheet(
@@ -179,7 +180,6 @@ class OrderScreenPhone extends StatelessWidget {
                                       index,
                                       context,
                                       controller.orderItems[index]),
-                                  index: index,
                                   onDismissed: () async {
                                     return await controller.onDeleteItem(index,
                                         context, controller.orderItems[index]);
@@ -262,7 +262,7 @@ class OrderScreenPhone extends StatelessWidget {
                       searchBarTextController:
                           controller.searchBarTextController,
                       isTakeaway: orderModel.isTakeaway,
-                      currentOrderId: orderModel.orderId,
+                      orderNumber: orderModel.orderNumber.toString(),
                       tablesNo: orderModel.tableNumbers,
                       titleFontSize: 18,
                     ),

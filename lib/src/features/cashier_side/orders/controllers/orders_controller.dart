@@ -12,13 +12,14 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../../../constants/enums.dart';
 import '../../../../general/app_init.dart';
-import '../../../../general/general_functions.dart';
+import '../../main_screen/controllers/main_screen_controller.dart';
+import '../screens/order_screen.dart';
+import '../screens/order_screen_phone.dart';
 
 class OrdersController extends GetxController {
   static OrdersController get instance => Get.find();
   final RxList<OrderModel> ordersList = <OrderModel>[].obs;
   final loadingOrders = true.obs;
-
   final Rxn<OrderStatus> selectedStatus = Rxn<OrderStatus>(null);
   final ordersRefreshController = RefreshController(initialRefresh: false);
   late DateTime? dateFrom;
@@ -29,7 +30,7 @@ class OrdersController extends GetxController {
   final SingleSelectController<String?> dateSelectController =
       SingleSelectController<String?>('today'.tr);
   StreamSubscription? ordersListener;
-
+  final Rxn<OrderModel?> currentChosenOrder = Rxn<OrderModel>(null);
   @override
   void onInit() {
     super.onInit();
@@ -53,7 +54,31 @@ class OrdersController extends GetxController {
 
   void updateDateFilters() {
     _initializeDateRangeOptions();
-    _listenToFilteredOrders();
+    resetDateFilter();
+  }
+
+  void onOrderTap({required int chosenIndex, required bool isPhone}) {
+    final chosenOrder = ordersList[chosenIndex];
+    if (currentChosenOrder.value == chosenOrder) {
+      currentChosenOrder.value = null;
+      MainScreenController.instance.showNewOrderButton.value = true;
+    } else {
+      if (chosenOrder.status == OrderStatus.active) {
+        Get.to(
+          () => isPhone
+              ? OrderScreenPhone(
+                  orderModel: chosenOrder,
+                )
+              : OrderScreen(
+                  orderModel: chosenOrder,
+                ),
+          transition: Transition.noTransition,
+        );
+      } else {
+        currentChosenOrder.value = ordersList[chosenIndex];
+        MainScreenController.instance.showNewOrderButton.value = false;
+      }
+    }
   }
 
   void _initializeDateRangeOptions() {
@@ -113,14 +138,13 @@ class OrdersController extends GetxController {
             if (results.first != null) {
               dateFrom = results.first!;
               dateTo = results.last!;
-              String dateFormatted = DateFormat(
-                      'MMM dd, yyyy', isLangEnglish() ? 'en_US' : 'ar_SA')
-                  .format(dateFrom!);
+              String dateFormatted =
+                  DateFormat('MMM dd, yyyy').format(dateFrom!);
               dateTo = DateTime(results.last!.year, results.last!.month,
                   results.last!.day, 23, 59, 59);
               if (dateFrom!.day != dateTo!.day) {
                 dateFormatted +=
-                    ' - ${DateFormat('MMM dd, yyyy', isLangEnglish() ? 'en_US' : 'ar_SA').format(dateTo!)}';
+                    ' - ${DateFormat('MMM dd, yyyy').format(dateTo!)}';
               }
               if (isDate(currentSelectedDate)) {
                 dateRangeOptions.remove(currentSelectedDate);
@@ -157,7 +181,8 @@ class OrdersController extends GetxController {
   }
 
   void resetDateFilter() {
-    if (isDate(currentSelectedDate)) {
+    if (isDate(currentSelectedDate) &&
+        dateRangeOptions.containsKey(currentSelectedDate)) {
       dateRangeOptions.remove(currentSelectedDate);
     }
     final now = DateTime.now();
@@ -165,17 +190,19 @@ class OrdersController extends GetxController {
     dateTo = DateTime(now.year, now.month, now.day, 23, 59, 59);
     dateSelectController.value = 'today'.tr;
     _listenToFilteredOrders();
+    currentChosenOrder.value = null;
   }
 
   void onRefresh() {
     loadingOrders.value = true;
+    currentChosenOrder.value = null;
     _listenToFilteredOrders();
     ordersRefreshController.refreshToIdle();
     ordersRefreshController.resetNoData();
   }
 
   bool isDate(String input) {
-    final yearRegex = RegExp(r'\b\d{4}\b');
+    final yearRegex = RegExp(r'\b(?:\d{4}|[٠-٩]{4})\b');
     return yearRegex.hasMatch(input);
   }
 
@@ -209,12 +236,12 @@ class OrdersController extends GetxController {
       }
 
       if (dateFrom != null) {
-        query = query.where('orderDate',
+        query = query.where('timestamp',
             isGreaterThanOrEqualTo: Timestamp.fromDate(dateFrom!));
       }
 
       if (dateTo != null) {
-        query = query.where('orderDate',
+        query = query.where('timestamp',
             isLessThanOrEqualTo: Timestamp.fromDate(dateTo!));
       }
 

@@ -1,27 +1,18 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:expansion_tile_group/expansion_tile_group.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
 
 import '../../../../constants/assets_strings.dart';
 import 'models.dart';
 
-class CartItemWidget extends StatelessWidget {
-  CartItemWidget({
+class OrdersScreenItemWidget extends StatelessWidget {
+  OrdersScreenItemWidget({
     super.key,
     required this.orderItemModel,
-    required this.onEditTap,
-    required this.onDeleteTap,
-    required this.onDismissed,
   });
 
-  final GlobalKey key1 = GlobalKey();
-
   final OrderItemModel orderItemModel;
-  final Function onEditTap;
-  final Function onDeleteTap;
-  final Function onDismissed;
   final RxBool extended = false.obs;
   final GlobalKey<ExpansionTileCoreState> key0 = GlobalKey();
 
@@ -42,34 +33,7 @@ class CartItemWidget extends StatelessWidget {
         childrenPadding: EdgeInsets.zero,
         initiallyExpanded: false,
         isHideSubtitleOnExpanded: true,
-        title: Slidable(
-          useTextDirection: false,
-          key: key1,
-          endActionPane: ActionPane(
-            motion: const DrawerMotion(),
-            dismissible: DismissiblePane(
-              onDismissed: () {},
-              confirmDismiss: () async {
-                return await onDismissed();
-              },
-            ),
-            children: [
-              SlidableAction(
-                onPressed: (context) => onEditTap(),
-                backgroundColor: Colors.lightBlueAccent,
-                foregroundColor: Colors.white,
-                icon: Icons.edit,
-              ),
-              SlidableAction(
-                onPressed: (context) => onDeleteTap(),
-                backgroundColor: Colors.redAccent,
-                foregroundColor: Colors.white,
-                icon: Icons.delete_outline_outlined,
-              ),
-            ],
-          ),
-          child: buildItem(context),
-        ),
+        title: buildItem(context),
         children: [_buildChildren(context)],
       ),
     );

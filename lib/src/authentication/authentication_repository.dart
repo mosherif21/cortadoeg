@@ -84,29 +84,34 @@ class AuthenticationRepository extends GetxController {
     final String userId = fireUser.value!.uid;
     final firestoreEmployeesCollRef = _firestore.collection('employees');
     try {
-      await firestoreEmployeesCollRef.doc(userId).get().then((snapshot) async {
-        if (snapshot.exists) {
-          final userDoc = snapshot.data()!;
-          employeeInfo = EmployeeModel.fromFirestore(userDoc, snapshot.id);
-          userRole = employeeInfo.role;
-          if (kDebugMode) {
-            AppInit.logger.i(userRole);
-          }
-          setNotificationsLanguage();
-          if (fireUser.value!.email != null) {
-            final authenticationEmail = fireUser.value!.email!;
-            if (authenticationEmail.isNotEmpty &&
-                employeeInfo.email != authenticationEmail) {
-              if (kDebugMode) {
-                AppInit.logger.i(
-                    'Firestore email is not equal to Authentication email, updating it...');
-              }
-              updateUserEmailFirestore(email: authenticationEmail);
+      final snapshot = await firestoreEmployeesCollRef.doc(userId).get();
+      if (snapshot.exists) {
+        final userDoc = snapshot.data()!;
+        employeeInfo = EmployeeModel.fromFirestore(userDoc, snapshot.id);
+        userRole = employeeInfo.role;
+        if (kDebugMode) {
+          AppInit.logger.i(userRole);
+        }
+        setNotificationsLanguage();
+        if (fireUser.value!.email != null) {
+          final authenticationEmail = fireUser.value!.email!;
+          if (authenticationEmail.isNotEmpty &&
+              employeeInfo.email != authenticationEmail) {
+            if (kDebugMode) {
+              AppInit.logger.i(
+                  'Firestore email is not equal to Authentication email, updating it...');
             }
+            updateUserEmailFirestore(email: authenticationEmail);
           }
         }
-      });
-      return FunctionStatus.success;
+        return FunctionStatus.success;
+      } else {
+        showSnackBar(
+          text: 'emailNotRegistered'.tr,
+          snackBarType: SnackBarType.info,
+        );
+        return FunctionStatus.failure;
+      }
     } on FirebaseException catch (error) {
       if (kDebugMode) {
         AppInit.logger.i(error.toString());
@@ -313,7 +318,7 @@ class AuthenticationRepository extends GetxController {
                 .reauthenticateWithCredential(googleUser.credential);
             await updateUserEmailAuthentication(email: googleUser.email);
             await updateUserEmailFirestore(email: googleUser.email);
-            //employeeInfo.email = googleUser.email;
+            employeeInfo.email = googleUser.email;
           }
         }
         return 'successGoogleLink'.tr;
@@ -511,6 +516,7 @@ class AuthenticationRepository extends GetxController {
 
   Future<void> logoutAuthUser() async {
     try {
+      await logoutAuth();
       await signOutGoogle();
       isUserRegistered = false;
       isUserLoggedIn = false;

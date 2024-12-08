@@ -15,15 +15,16 @@ import '../components/new_order_screen_appbar.dart';
 import '../controllers/order_controller.dart';
 
 class OrderScreen extends StatelessWidget {
-  const OrderScreen({super.key, required this.orderModel});
+  const OrderScreen({super.key, required this.orderModel, this.tablesIds});
   final OrderModel orderModel;
-
+  final List<String>? tablesIds;
   @override
   Widget build(BuildContext context) {
     final screenHeight = getScreenHeight(context);
     final screenWidth = getScreenWidth(context);
     final screenType = GetScreenType(context);
-    final controller = Get.put(OrderController(orderModel: orderModel));
+    final controller =
+        Get.put(OrderController(orderModel: orderModel, tablesIds: tablesIds));
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       body: Obx(
@@ -54,7 +55,7 @@ class OrderScreen extends StatelessWidget {
                                 searchBarTextController:
                                     controller.searchBarTextController,
                                 isTakeaway: orderModel.isTakeaway,
-                                currentOrderId: orderModel.orderId,
+                                orderNumber: orderModel.orderNumber.toString(),
                                 tablesNo: orderModel.tableNumbers,
                                 titleFontSize: 20,
                               ),
@@ -229,7 +230,6 @@ class OrderScreen extends StatelessWidget {
                                                   index,
                                                   context,
                                                   controller.orderItems[index]),
-                                          index: index,
                                           onDismissed: () async {
                                             return await controller
                                                 .onDeleteItem(
@@ -442,7 +442,7 @@ class OrderScreen extends StatelessWidget {
                                         icon: Icons.payments_outlined,
                                         iconColor: Colors.white,
                                         text: 'charge'.tr,
-                                        onClick: () {},
+                                        onClick: () => controller.onChargeTap(),
                                       ),
                                     ),
                                   ],

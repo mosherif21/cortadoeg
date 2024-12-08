@@ -268,6 +268,16 @@ void displayChangeLang() {
   }
 }
 
+double roundToNearestHalfOrWhole(double value) {
+  final rounded = value.round(); // Round to nearest whole number
+  final diff = value - rounded; // Find the difference
+
+  if (diff.abs() >= 0.1 && diff.abs() < 0.75) {
+    return rounded + (diff.isNegative ? -0.5 : 0.5);
+  }
+  return rounded.toDouble();
+}
+
 Future<void> launchURL({required String url}) async {
   final uri = Uri.parse(url);
   if (!await launchUrl(uri)) {

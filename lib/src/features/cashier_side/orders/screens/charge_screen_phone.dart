@@ -388,10 +388,7 @@ class ChargeScreenPhone extends StatelessWidget {
                       enabled: controller.orderItems.isNotEmpty,
                       text:
                           '${'charge'.tr} | \$${controller.orderTotal.value.toStringAsFixed(2)}',
-                      onClick: () => Get.to(
-                        () => ChargeScreenPhone(controller: controller),
-                        transition: getPageTransition(),
-                      ),
+                      onClick: () => controller.onChargeTap(),
                     ),
                   ),
                 ),
