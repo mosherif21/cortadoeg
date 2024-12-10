@@ -422,6 +422,20 @@ class OrderScreen extends StatelessWidget {
                                   children: [
                                     Expanded(
                                       child: IconTextElevatedButton(
+                                        buttonColor: Colors.red,
+                                        textColor: Colors.white,
+                                        borderRadius: 10,
+                                        elevation: 0,
+                                        icon: Icons.close,
+                                        iconColor: Colors.white,
+                                        text: 'cancelOrder'.tr,
+                                        onClick: () =>
+                                            controller.onCancelOrderTap(),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: IconTextElevatedButton(
                                         buttonColor: Colors.deepOrange,
                                         textColor: Colors.white,
                                         borderRadius: 10,
@@ -432,21 +446,19 @@ class OrderScreen extends StatelessWidget {
                                         onClick: () => Get.back(),
                                       ),
                                     ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: IconTextElevatedButton(
-                                        buttonColor: Colors.green,
-                                        textColor: Colors.white,
-                                        borderRadius: 10,
-                                        elevation: 0,
-                                        icon: Icons.payments_outlined,
-                                        iconColor: Colors.white,
-                                        text: 'charge'.tr,
-                                        onClick: () => controller.onChargeTap(),
-                                      ),
-                                    ),
                                   ],
-                                )
+                                ),
+                                const SizedBox(height: 10),
+                                IconTextElevatedButton(
+                                  buttonColor: Colors.green,
+                                  textColor: Colors.white,
+                                  borderRadius: 10,
+                                  elevation: 0,
+                                  icon: Icons.payments_outlined,
+                                  iconColor: Colors.white,
+                                  text: 'charge'.tr,
+                                  onClick: () => controller.onChargeTap(),
+                                ),
                               ],
                             ),
                           ),

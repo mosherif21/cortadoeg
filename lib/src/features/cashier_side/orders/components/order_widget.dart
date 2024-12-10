@@ -4,7 +4,6 @@ import 'package:cortadoeg/src/features/cashier_side/orders/components/models.dar
 import 'package:cortadoeg/src/general/general_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../general/common_widgets/ripple_circle.dart';
@@ -39,7 +38,7 @@ class OrderWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           splashFactory: InkSparkle.splashFactory,
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(18),
             child: Column(
               children: [
                 Row(
@@ -76,13 +75,16 @@ class OrderWidget extends StatelessWidget {
                     ),
                     const Spacer(),
                     const SizedBox(width: 10),
-                    AutoSizeText(
-                      maxLines: 1,
-                      getOrderTotal(),
-                      style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 18,
-                        color: Colors.grey.shade600,
+                    Container(
+                      constraints: const BoxConstraints(maxWidth: 48),
+                      child: AutoSizeText(
+                        maxLines: 1,
+                        getOrderTotal(),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 18,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                     ),
                   ],
@@ -168,16 +170,6 @@ class OrderWidget extends StatelessWidget {
     final orderTotal = roundToNearestHalfOrWhole(taxableAmount + orderTax);
 
     return orderTotal == 0 ? '\$0' : '\$${orderTotal.toString()}';
-  }
-
-  String getOrderTime(DateTime dateTime) {
-    return DateFormat('hh:mm a', isLangEnglish() ? 'en_US' : 'ar_SA')
-        .format(dateTime);
-  }
-
-  String getOrderDate(DateTime dateTime) {
-    return DateFormat('dd/MM', isLangEnglish() ? 'en_US' : 'ar_SA')
-        .format(dateTime);
   }
 
   String formatOrderDetails({

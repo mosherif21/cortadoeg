@@ -449,8 +449,10 @@ class TablesPageController extends GetxController {
         for (var table in tablesList.where((table) {
           return table.currentOrderId == orderId;
         })) {
-          batch.update(firestore.collection('tables').doc(table.tableId),
-              {'status': TableStatus.occupied.name});
+          batch.update(firestore.collection('tables').doc(table.tableId), {
+            'status': TableStatus.occupied.name,
+            'currentOrderId': orderId,
+          });
         }
         await batch.commit();
         return orderModel;

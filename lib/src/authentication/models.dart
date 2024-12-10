@@ -1,9 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../constants/enums.dart';
 
 class EmployeeModel {
   final String id;
   String name;
   String email;
+  String? gender;
+  Timestamp? birthDate;
   String phone;
   Role role;
   List<UserPermission> permissions;
@@ -13,6 +17,8 @@ class EmployeeModel {
     required this.name,
     required this.email,
     required this.phone,
+    required this.gender,
+    required this.birthDate,
     required this.role,
     required this.permissions,
   });
@@ -21,19 +27,22 @@ class EmployeeModel {
     return {
       'name': name,
       'email': email,
+      'gender': gender,
+      'birthDate': birthDate,
       'phone': phone,
       'role': role.name, // Save enum as string
       'permissions': permissions.map((p) => p.name).toList(),
     };
   }
 
-  // Create EmployeeModel from Firestore DocumentSnapshot
   factory EmployeeModel.fromFirestore(Map<String, dynamic> map, String id) {
     return EmployeeModel(
       id: id,
       name: map['name'],
       email: map['email'],
       phone: map['phone'],
+      gender: map['gender'],
+      birthDate: map['birthDate'],
       role: Role.values.firstWhere((r) => r.name == map['role']),
       permissions: (map['permissions'] as List<dynamic>)
           .map(

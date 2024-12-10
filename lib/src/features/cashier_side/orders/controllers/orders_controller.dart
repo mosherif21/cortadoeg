@@ -12,13 +12,16 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../../../constants/enums.dart';
 import '../../../../general/app_init.dart';
+import '../../../../general/general_functions.dart';
 import '../../main_screen/controllers/main_screen_controller.dart';
+import '../../tables/components/models.dart';
 import '../screens/order_screen.dart';
 import '../screens/order_screen_phone.dart';
 
 class OrdersController extends GetxController {
   static OrdersController get instance => Get.find();
-  final RxList<OrderModel> ordersList = <OrderModel>[].obs;
+  List<OrderModel> ordersList = <OrderModel>[].obs;
+  final RxList<OrderModel> filteredOrdersList = <OrderModel>[].obs;
   final loadingOrders = true.obs;
   final Rxn<OrderStatus> selectedStatus = Rxn<OrderStatus>(null);
   final ordersRefreshController = RefreshController(initialRefresh: false);
@@ -29,20 +32,22 @@ class OrdersController extends GetxController {
       <String, Map<String, DateTime>>{}.obs;
   final SingleSelectController<String?> dateSelectController =
       SingleSelectController<String?>('today'.tr);
+  final SingleSelectController<String?> statusSelectController =
+      SingleSelectController<String?>('active'.tr);
   StreamSubscription? ordersListener;
   final Rxn<OrderModel?> currentChosenOrder = Rxn<OrderModel>(null);
+  String searchText = '';
+
   @override
   void onInit() {
     super.onInit();
+
     final now = DateTime.now();
     dateFrom = DateTime(now.year, now.month, now.day);
     dateTo = DateTime(now.year, now.month, now.day, 23, 59, 59);
+    selectedStatus.value = OrderStatus.active;
     _initializeDateRangeOptions();
     _listenToFilteredOrders();
-    dateSelectController.addListener(() {});
-
-    debounce(selectedStatus, (_) => _listenToFilteredOrders(),
-        time: const Duration(milliseconds: 300));
   }
 
   @override
@@ -58,7 +63,7 @@ class OrdersController extends GetxController {
   }
 
   void onOrderTap({required int chosenIndex, required bool isPhone}) {
-    final chosenOrder = ordersList[chosenIndex];
+    final chosenOrder = filteredOrdersList[chosenIndex];
     if (currentChosenOrder.value == chosenOrder) {
       currentChosenOrder.value = null;
       MainScreenController.instance.showNewOrderButton.value = true;
@@ -75,7 +80,7 @@ class OrdersController extends GetxController {
           transition: Transition.noTransition,
         );
       } else {
-        currentChosenOrder.value = ordersList[chosenIndex];
+        currentChosenOrder.value = chosenOrder;
         MainScreenController.instance.showNewOrderButton.value = false;
       }
     }
@@ -86,6 +91,11 @@ class OrdersController extends GetxController {
     final todayStart = DateTime(now.year, now.month, now.day);
     final todayEnd = DateTime(now.year, now.month, now.day, 23, 59, 59);
 
+    // Adjust the start of the week to Saturday
+    final daysSinceSaturday =
+        (now.weekday % 7); // Saturday is 0 when using modulo 7
+    final startOfThisWeek =
+        todayStart.subtract(Duration(days: daysSinceSaturday));
     dateRangeOptions.assignAll({
       'today'.tr: {
         "from": todayStart,
@@ -96,7 +106,7 @@ class OrdersController extends GetxController {
         "to": todayStart.subtract(const Duration(seconds: 1)),
       },
       'thisWeek'.tr: {
-        "from": todayStart.subtract(Duration(days: now.weekday - 1)),
+        "from": startOfThisWeek,
         "to": todayEnd,
       },
       'thisMonth'.tr: {
@@ -116,6 +126,7 @@ class OrdersController extends GetxController {
 
   void setStatusFilter(OrderStatus? status) {
     selectedStatus.value = status;
+    _listenToFilteredOrders();
   }
 
   void applyPredefinedDateRange(String? key, BuildContext context) async {
@@ -155,7 +166,6 @@ class OrdersController extends GetxController {
                 "from": dateFrom!,
                 "to": dateTo!,
               };
-
               _listenToFilteredOrders();
             }
           } else {
@@ -206,8 +216,10 @@ class OrdersController extends GetxController {
     return yearRegex.hasMatch(input);
   }
 
-  void onOrderStatusChanged(value) =>
-      setStatusFilter(mapStringToOrderStatus(value));
+  void onOrderStatusChanged(value) {
+    statusSelectController.value = value;
+    setStatusFilter(mapStringToOrderStatus(value));
+  }
 
   OrderStatus? mapStringToOrderStatus(String value) {
     return value == 'active'.tr
@@ -224,7 +236,8 @@ class OrdersController extends GetxController {
   void _listenToFilteredOrders() {
     try {
       loadingOrders.value = true;
-
+      ordersList = [];
+      filteredOrdersList.value = [];
       ordersListener?.cancel();
 
       final CollectionReference ordersRef =
@@ -251,8 +264,13 @@ class OrdersController extends GetxController {
               doc.data() as Map<String, dynamic>, doc.id);
         }).toList();
         updatedOrders.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-        ordersList.value = updatedOrders;
+        ordersList = updatedOrders;
         loadingOrders.value = false;
+        if (searchText.isEmpty) {
+          filteredOrdersList.value = ordersList;
+        } else {
+          onOrdersSearch();
+        }
       });
     } on FirebaseException catch (error) {
       if (kDebugMode) {
@@ -263,5 +281,250 @@ class OrdersController extends GetxController {
         AppInit.logger.e(err.toString());
       }
     }
+  }
+
+  void onOrdersSearch() {
+    if (!loadingOrders.value) {
+      final searchedByIdList = ordersList
+          .where((order) => order.orderId
+              .toUpperCase()
+              .contains(searchText.toUpperCase().trim()))
+          .toList();
+      filteredOrdersList.value =
+          searchText.trim().isEmpty ? ordersList : searchedByIdList;
+    }
+  }
+
+  void onReopenOrderTap({required bool isPhone}) async {
+    showLoadingScreen();
+    final orderModel = currentChosenOrder.value!;
+    late List<TableModel> tablesList;
+
+    // Fetch all tables
+    final tablesListGet = await getTables();
+    if (tablesListGet != null) {
+      tablesList = tablesListGet;
+    } else {
+      hideLoadingScreen();
+      showSnackBar(
+        text: 'errorOccurred'.tr,
+        snackBarType: SnackBarType.error,
+      );
+      return;
+    }
+
+    tablesList = tablesList.where((table) {
+      return orderModel.tableNumbers!.contains(table.number);
+    }).toList();
+
+    for (var table in tablesList) {
+      if (table.currentOrderId != null &&
+          table.currentOrderId != orderModel.orderId &&
+          (table.status == TableStatus.occupied ||
+              table.status == TableStatus.billed)) {
+        hideLoadingScreen();
+        showSnackBar(
+          text: 'conflictingTablesError'.tr,
+          snackBarType: SnackBarType.error,
+        );
+        return;
+      }
+    }
+
+    // Proceed with reopening the order
+    final reopenOrderStatus =
+        await reopenOrder(orderId: orderModel.orderId, tablesList: tablesList);
+
+    hideLoadingScreen();
+    if (reopenOrderStatus == FunctionStatus.success) {
+      currentChosenOrder.value = null;
+      Get.back();
+      Get.to(
+        () => isPhone
+            ? OrderScreenPhone(
+                orderModel: orderModel,
+                tablesIds: orderModel.tableNumbers != null
+                    ? tablesList
+                        .where((table) =>
+                            orderModel.tableNumbers!.contains(table.number))
+                        .map((table) => table.tableId)
+                        .toList()
+                    : [],
+              )
+            : OrderScreen(
+                orderModel: orderModel,
+                tablesIds: orderModel.tableNumbers != null
+                    ? tablesList
+                        .where((table) =>
+                            orderModel.tableNumbers!.contains(table.number))
+                        .map((table) => table.tableId)
+                        .toList()
+                    : [],
+              ),
+        transition: Transition.noTransition,
+      );
+    } else {
+      showSnackBar(
+        text: 'errorOccurred'.tr,
+        snackBarType: SnackBarType.error,
+      );
+    }
+  }
+
+  Future<FunctionStatus> reopenOrder(
+      {required String orderId, required List<TableModel> tablesList}) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final batch = firestore.batch();
+      batch.update(firestore.collection('orders').doc(orderId), {
+        'status': OrderStatus.active.name,
+      });
+      for (var table in tablesList) {
+        batch.update(firestore.collection('tables').doc(table.tableId), {
+          'status': TableStatus.occupied.name,
+          'currentOrderId': orderId,
+        });
+      }
+      await batch.commit();
+      return FunctionStatus.success;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+      return FunctionStatus.failure;
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+      return FunctionStatus.failure;
+    }
+  }
+
+  Future<List<TableModel>?> getTables() async {
+    try {
+      final CollectionReference tablesRef =
+          FirebaseFirestore.instance.collection('tables');
+      final tablesSnapshot = await tablesRef.get();
+      List<TableModel> tablesList = tablesSnapshot.docs.map((doc) {
+        return TableModel.fromFirestore(
+            doc.data() as Map<String, dynamic>, doc.id);
+      }).toList();
+      tablesList.sort((a, b) => a.number.compareTo(b.number));
+      return tablesList;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+      return null;
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+      return null;
+    }
+  }
+
+  Future<OrderModel?> getOrder({required String orderId}) async {
+    try {
+      final orderSnapshot = await FirebaseFirestore.instance
+          .collection('orders')
+          .doc(orderId)
+          .get();
+      if (orderSnapshot.exists) {
+        final orderModel =
+            OrderModel.fromFirestore(orderSnapshot.data()!, orderSnapshot.id);
+        return orderModel;
+      }
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+    }
+    return null;
+  }
+
+  void returnOrderTap() async {
+    showLoadingScreen();
+    final returnOrderStatus = await returnOrder();
+    hideLoadingScreen();
+    if (returnOrderStatus == FunctionStatus.success) {
+      showSnackBar(
+        text: 'orderReturnedSuccess'.tr,
+        snackBarType: SnackBarType.success,
+      );
+      currentChosenOrder.value = null;
+    } else {
+      showSnackBar(
+        text: 'errorOccurred'.tr,
+        snackBarType: SnackBarType.error,
+      );
+    }
+  }
+
+  Future<FunctionStatus> returnOrder() async {
+    try {
+      final orderReference = FirebaseFirestore.instance
+          .collection('orders')
+          .doc(currentChosenOrder.value!.orderId);
+      await orderReference.update({'status': OrderStatus.returned.name});
+      return FunctionStatus.success;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+    }
+    return FunctionStatus.failure;
+  }
+
+  void completeOrderTap() async {
+    showLoadingScreen();
+    final completeOrderStatus = await completeOrder();
+    hideLoadingScreen();
+    if (completeOrderStatus == FunctionStatus.success) {
+      showSnackBar(
+        text: 'orderCompletedSuccess'.tr,
+        snackBarType: SnackBarType.success,
+      );
+      currentChosenOrder.value = null;
+    } else {
+      showSnackBar(
+        text: 'errorOccurred'.tr,
+        snackBarType: SnackBarType.error,
+      );
+    }
+  }
+
+  Future<FunctionStatus> completeOrder() async {
+    try {
+      final orderReference = FirebaseFirestore.instance
+          .collection('orders')
+          .doc(currentChosenOrder.value!.orderId);
+      await orderReference.update({'status': OrderStatus.complete.name});
+      return FunctionStatus.success;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+    }
+    return FunctionStatus.failure;
+  }
+
+  void printOrderTap() {
+    showSnackBar(
+      text: 'orderPrintSuccess'.tr,
+      snackBarType: SnackBarType.success,
+    );
   }
 }

@@ -15,6 +15,7 @@ import 'package:get/get.dart';
 import 'package:passcode_screen/passcode_screen.dart';
 
 import '../../../../constants/enums.dart';
+import '../../tables/components/models.dart';
 import '../components/discount_widget.dart';
 import '../components/item_details.dart';
 import '../components/item_details_phone.dart';
@@ -406,7 +407,7 @@ class OrderController extends GetxController {
   }
 
   void onEditItemPress(int index, BuildContext context, bool isPhone) async {
-    if (hasPermission(AuthenticationRepository.instance.employeeInfo,
+    if (hasPermission(AuthenticationRepository.instance.employeeInfo!,
         UserPermission.editOrderItemsWithPass)) {
       final passcodeValid = await showPassCodeScreen(index, context);
       if (passcodeValid) {
@@ -460,7 +461,7 @@ class OrderController extends GetxController {
 
   Future<bool> onDeleteItem(
       int itemIndex, BuildContext context, OrderItemModel orderItem) async {
-    if (hasPermission(AuthenticationRepository.instance.employeeInfo,
+    if (hasPermission(AuthenticationRepository.instance.employeeInfo!,
         UserPermission.editOrderItemsWithPass)) {
       final passcodeValid = await showPassCodeScreen(itemIndex, context);
       if (passcodeValid) {
@@ -819,9 +820,140 @@ class OrderController extends GetxController {
     }
   }
 
+  void onCancelOrderTap() async {
+    showLoadingScreen();
+
+    // Step 1: Check if the order is a takeaway order
+    if (orderModel.isTakeaway) {
+      final cancelStatus = await cancelOrder(orderId: orderModel.orderId);
+      hideLoadingScreen();
+      handleCancelStatus(cancelStatus, orderModel);
+      return;
+    }
+
+    // Step 2: Fetch associated tables
+    late List<String> tables;
+    if (orderModel.tableNumbers == null) {
+      tables = [];
+    } else {
+      if (tablesIds != null) {
+        tables = tablesIds!;
+      } else {
+        final tablesListGet = await getTables();
+        if (tablesListGet != null) {
+          final tablesList = tablesListGet.where((table) {
+            return orderModel.tableNumbers!.contains(table.number);
+          }).toList();
+          tables = tablesList.map((table) => table.tableId).toList();
+        } else {
+          hideLoadingScreen();
+          showSnackBar(
+            text: 'errorOccurred'.tr,
+            snackBarType: SnackBarType.error,
+          );
+          return;
+        }
+      }
+    }
+
+    // Step 3: Cancel order and update tables
+    final cancelOrderStatus = await cancelOrder(
+      orderId: orderModel.orderId,
+      tablesIds: tables,
+    );
+    hideLoadingScreen();
+    handleCancelStatus(cancelOrderStatus, orderModel);
+  }
+
+  Future<FunctionStatus> cancelOrder({
+    required String orderId,
+    List<String>? tablesIds,
+  }) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final batch = firestore.batch();
+
+      // Update the order status to canceled
+      batch.update(firestore.collection('orders').doc(orderId), {
+        'status': OrderStatus.canceled.name,
+      });
+
+      // Clear associated tables if provided
+      if (tablesIds != null) {
+        for (var tableId in tablesIds) {
+          // Fetch the table to verify the currentOrderId
+          final tableSnapshot =
+              await firestore.collection('tables').doc(tableId).get();
+          if (tableSnapshot.exists) {
+            final tableData = tableSnapshot.data() as Map<String, dynamic>;
+            final currentOrderId = tableData['currentOrderId'];
+            if (currentOrderId == orderId) {
+              batch.update(firestore.collection('tables').doc(tableId), {
+                'status': TableStatus.available.name,
+                'currentOrderId': null,
+              });
+            }
+          }
+        }
+      }
+
+      await batch.commit();
+      return FunctionStatus.success;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+      return FunctionStatus.failure;
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+      return FunctionStatus.failure;
+    }
+  }
+
+  void handleCancelStatus(FunctionStatus status, OrderModel orderModel) {
+    if (status == FunctionStatus.success) {
+      Get.back();
+      showSnackBar(
+        text: 'orderCanceledSuccess'.tr,
+        snackBarType: SnackBarType.success,
+      );
+    } else {
+      showSnackBar(
+        text: 'errorOccurred'.tr,
+        snackBarType: SnackBarType.error,
+      );
+    }
+  }
+
+  Future<List<TableModel>?> getTables() async {
+    try {
+      final CollectionReference tablesRef =
+          FirebaseFirestore.instance.collection('tables');
+      final tablesSnapshot = await tablesRef.get();
+      List<TableModel> tablesList = tablesSnapshot.docs.map((doc) {
+        return TableModel.fromFirestore(
+            doc.data() as Map<String, dynamic>, doc.id);
+      }).toList();
+      tablesList.sort((a, b) => a.number.compareTo(b.number));
+      return tablesList;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+      return null;
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+      return null;
+    }
+  }
+
   onQuantityChangedPhone(
       int newQuantity, int index, BuildContext context) async {
-    if (hasPermission(AuthenticationRepository.instance.employeeInfo,
+    if (hasPermission(AuthenticationRepository.instance.employeeInfo!,
         UserPermission.editOrderItemsWithPass)) {
       final passcodeValid = await showPassCodeScreen(index, context);
       if (passcodeValid) {

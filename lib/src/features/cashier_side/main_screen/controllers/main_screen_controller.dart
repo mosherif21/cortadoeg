@@ -22,6 +22,7 @@ class MainScreenController extends GetxController {
   final navBarIndex = 0.obs;
   final showNewOrderButton = true.obs;
   String editOrderPasscodeHash = '';
+  final RxBool navBarExtended = false.obs;
 
   @override
   void onInit() async {
@@ -34,6 +35,8 @@ class MainScreenController extends GetxController {
   @override
   void onReady() {
     barController.addListener(() {
+      navBarExtended.value = barController.extended;
+
       navBarIndex.value = barController.selectedIndex;
       pageController.jumpToPage(barController.selectedIndex);
       newOrderButtonVisibility();

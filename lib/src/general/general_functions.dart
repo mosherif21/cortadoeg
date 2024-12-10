@@ -268,6 +268,16 @@ void displayChangeLang() {
   }
 }
 
+String getOrderTime(DateTime dateTime) {
+  return DateFormat('hh:mm a', isLangEnglish() ? 'en_US' : 'ar_SA')
+      .format(dateTime);
+}
+
+String getOrderDate(DateTime dateTime) {
+  return DateFormat('dd/MM', isLangEnglish() ? 'en_US' : 'ar_SA')
+      .format(dateTime);
+}
+
 double roundToNearestHalfOrWhole(double value) {
   final rounded = value.round(); // Round to nearest whole number
   final diff = value - rounded; // Find the difference
