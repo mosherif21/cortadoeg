@@ -10,7 +10,7 @@ class IconTextElevatedButton extends StatelessWidget {
     this.textColor = Colors.white,
     this.iconColor = Colors.white,
     this.buttonColor = Colors.black,
-    this.fontSize = 15,
+    this.fontSize = 12,
     this.iconSize = 22,
     this.borderRadius = 25,
     this.elevation = 2,

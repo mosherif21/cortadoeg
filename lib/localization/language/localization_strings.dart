@@ -744,6 +744,8 @@ class Languages extends Translations {
           'complete': 'Complete',
           'return': 'Return',
           'printInvoice': 'Print Invoice',
+          'selectStatus': 'Select Status',
+          'selectDate': 'Select Date',
         },
       };
 }

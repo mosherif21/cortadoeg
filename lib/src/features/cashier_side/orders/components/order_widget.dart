@@ -1,4 +1,3 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cortadoeg/src/constants/enums.dart';
 import 'package:cortadoeg/src/features/cashier_side/orders/components/models.dart';
 import 'package:cortadoeg/src/general/general_functions.dart';
@@ -47,7 +46,7 @@ class OrderWidget extends StatelessWidget {
                       'orderNumber'.trParams(
                           {'number': orderModel.orderNumber.toString()}),
                       style: const TextStyle(
-                          fontWeight: FontWeight.w800, fontSize: 18),
+                          fontWeight: FontWeight.w800, fontSize: 16),
                     ),
                     const SizedBox(width: 10),
                     RippleCircle(
@@ -72,20 +71,6 @@ class OrderWidget extends StatelessWidget {
                                   : 'returned'.tr,
                       style: const TextStyle(
                           fontWeight: FontWeight.w800, fontSize: 14),
-                    ),
-                    const Spacer(),
-                    const SizedBox(width: 10),
-                    Container(
-                      constraints: const BoxConstraints(maxWidth: 48),
-                      child: AutoSizeText(
-                        maxLines: 1,
-                        getOrderTotal(),
-                        style: TextStyle(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 18,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
                     ),
                   ],
                 ),

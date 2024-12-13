@@ -27,7 +27,7 @@ class MainScreenController extends GetxController {
   @override
   void onInit() async {
     barController = SidebarXController(selectedIndex: 0, extended: false);
-    pageController = PageController(initialPage: 0);
+    pageController = PageController(initialPage: 0, keepPage: true);
     homeScaffoldKey = GlobalKey<ScaffoldState>();
     super.onInit();
   }

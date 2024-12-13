@@ -73,6 +73,7 @@ class CustomersScreen extends StatelessWidget {
                             child: Column(
                               children: [
                                 AnimSearchAppBar(
+                                  hintStyle: const TextStyle(fontSize: 14),
                                   keyboardType: TextInputType.text,
                                   cancelButtonTextStyle:
                                       const TextStyle(color: Colors.black87),
@@ -288,84 +289,75 @@ class CustomersScreen extends StatelessWidget {
                                                         horizontal: 20,
                                                         vertical: 30),
                                                 child: AnimationLimiter(
-                                                  child: LayoutBuilder(
-                                                    builder:
-                                                        (context, constraints) {
-                                                      const double itemWidth =
-                                                          230.0;
-                                                      const double itemHeight =
-                                                          90.0;
-                                                      final crossAxisCount =
-                                                          (constraints.maxWidth /
-                                                                  (itemWidth +
-                                                                      20))
-                                                              .floor();
-                                                      return Obx(
-                                                        () => GridView.builder(
-                                                          physics:
-                                                              const ScrollPhysics(),
-                                                          shrinkWrap: true,
-                                                          gridDelegate:
-                                                              SliverGridDelegateWithFixedCrossAxisCount(
-                                                            crossAxisCount:
-                                                                crossAxisCount,
-                                                            mainAxisSpacing: 15,
-                                                            crossAxisSpacing:
-                                                                15,
-                                                            childAspectRatio:
-                                                                2.5,
+                                                  child: Obx(
+                                                    () => GridView.builder(
+                                                      physics:
+                                                          const ScrollPhysics(),
+                                                      shrinkWrap: true,
+                                                      gridDelegate:
+                                                          SliverGridDelegateWithFixedCrossAxisCount(
+                                                        crossAxisCount: controller
+                                                                    .currentChosenOrder
+                                                                    .value !=
+                                                                null
+                                                            ? 1
+                                                            : 2,
+                                                        mainAxisSpacing: 15,
+                                                        crossAxisSpacing: 15,
+                                                        childAspectRatio: 2.5,
+                                                      ),
+                                                      itemCount: controller
+                                                              .loadingCustomerOrders
+                                                              .value
+                                                          ? 20
+                                                          : controller
+                                                              .customerOrders
+                                                              .length,
+                                                      itemBuilder:
+                                                          (context, index) {
+                                                        return AnimationConfiguration
+                                                            .staggeredGrid(
+                                                          position: index,
+                                                          duration:
+                                                              const Duration(
+                                                                  milliseconds:
+                                                                      300),
+                                                          columnCount: controller
+                                                                      .currentChosenOrder
+                                                                      .value !=
+                                                                  null
+                                                              ? 1
+                                                              : 2,
+                                                          child: ScaleAnimation(
+                                                            child:
+                                                                FadeInAnimation(
+                                                              child: controller
+                                                                      .loadingCustomerOrders
+                                                                      .value
+                                                                  ? const LoadingOrderWidget()
+                                                                  : Obx(
+                                                                      () =>
+                                                                          OrderWidget(
+                                                                        orderModel:
+                                                                            controller.customerOrders[index],
+                                                                        isChosen: controller.customerOrders[index] ==
+                                                                                controller.currentChosenOrder.value
+                                                                            ? true
+                                                                            : false,
+                                                                        onTap: () =>
+                                                                            controller.onOrderTap(
+                                                                          chosenIndex:
+                                                                              index,
+                                                                          isPhone:
+                                                                              screenType.isPhone,
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                            ),
                                                           ),
-                                                          itemCount: controller
-                                                                  .loadingCustomerOrders
-                                                                  .value
-                                                              ? 20
-                                                              : controller
-                                                                  .customerOrders
-                                                                  .length,
-                                                          itemBuilder:
-                                                              (context, index) {
-                                                            return AnimationConfiguration
-                                                                .staggeredGrid(
-                                                              position: index,
-                                                              duration:
-                                                                  const Duration(
-                                                                      milliseconds:
-                                                                          300),
-                                                              columnCount:
-                                                                  crossAxisCount,
-                                                              child:
-                                                                  ScaleAnimation(
-                                                                child:
-                                                                    FadeInAnimation(
-                                                                  child:
-                                                                      SizedBox(
-                                                                    width:
-                                                                        itemWidth,
-                                                                    height:
-                                                                        itemHeight,
-                                                                    child: controller
-                                                                            .loadingCustomerOrders
-                                                                            .value
-                                                                        ? const LoadingOrderWidget()
-                                                                        : Obx(
-                                                                            () =>
-                                                                                OrderWidget(
-                                                                              orderModel: controller.customerOrders[index],
-                                                                              isChosen: controller.customerOrders[index] == controller.currentChosenOrder.value ? true : false,
-                                                                              onTap: () => controller.onOrderTap(
-                                                                                chosenIndex: index,
-                                                                                isPhone: screenType.isPhone,
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            );
-                                                          },
-                                                        ),
-                                                      );
-                                                    },
+                                                        );
+                                                      },
+                                                    ),
                                                   ),
                                                 ),
                                               ),
@@ -428,7 +420,7 @@ class CustomersScreen extends StatelessWidget {
                                                                           }),
                                                                           style: const TextStyle(
                                                                               fontWeight: FontWeight.w800,
-                                                                              fontSize: 20),
+                                                                              fontSize: 17),
                                                                         ),
                                                                         const SizedBox(
                                                                             width:
@@ -444,7 +436,7 @@ class CustomersScreen extends StatelessWidget {
                                                                             fontWeight:
                                                                                 FontWeight.w800,
                                                                             fontSize:
-                                                                                17,
+                                                                                15,
                                                                             color:
                                                                                 Colors.grey.shade600,
                                                                           ),
@@ -461,7 +453,7 @@ class CustomersScreen extends StatelessWidget {
                                                                             style:
                                                                                 TextStyle(
                                                                               fontWeight: FontWeight.w800,
-                                                                              fontSize: 17,
+                                                                              fontSize: 15,
                                                                               color: Colors.grey.shade600,
                                                                             ),
                                                                           ),
@@ -490,7 +482,7 @@ class CustomersScreen extends StatelessWidget {
                                                                         style:
                                                                             const TextStyle(
                                                                           fontSize:
-                                                                              18,
+                                                                              16,
                                                                           fontWeight:
                                                                               FontWeight.w600,
                                                                           color:
@@ -731,7 +723,7 @@ class CustomersScreen extends StatelessWidget {
                                                                                         textColor: Colors.white,
                                                                                         borderRadius: 10,
                                                                                         elevation: 0,
-                                                                                        icon: Icons.start_rounded,
+                                                                                        icon: Icons.check_circle,
                                                                                         iconColor: Colors.white,
                                                                                         text: 'complete'.tr,
                                                                                         onClick: () => controller.completeOrderTap(),
@@ -982,7 +974,7 @@ class CustomersScreen extends StatelessWidget {
             const SizedBox(width: 20),
             Container(
               height: 30,
-              width: 250,
+              width: 150,
               color: Colors.black,
             )
           ],

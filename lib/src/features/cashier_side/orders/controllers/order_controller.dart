@@ -682,7 +682,7 @@ class OrderController extends GetxController {
     final chargeOrderStatus = await chargeOrder(orderId: orderModel.orderId);
     hideLoadingScreen();
     if (chargeOrderStatus == FunctionStatus.success) {
-      Get.back();
+      Get.back(result: true);
       showSnackBar(
         text: 'orderChargedSuccess'.tr,
         snackBarType: SnackBarType.success,
@@ -914,7 +914,7 @@ class OrderController extends GetxController {
 
   void handleCancelStatus(FunctionStatus status, OrderModel orderModel) {
     if (status == FunctionStatus.success) {
-      Get.back();
+      Get.back(result: true);
       showSnackBar(
         text: 'orderCanceledSuccess'.tr,
         snackBarType: SnackBarType.success,

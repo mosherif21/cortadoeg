@@ -15,6 +15,7 @@ class OnboardingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     ConnectivityChecker.checkConnection(displayAlert: true);
     final screenHeight = getScreenHeight(context);
+    final screenType = GetScreenType(context);
     return OnBoardingSlider(
       finishButtonText: 'continueApp'.tr,
       onFinish: () => displayChangeLang(),
@@ -52,7 +53,7 @@ class OnboardingScreen extends StatelessWidget {
         for (int i = 1; i < 5; i++)
           Lottie.asset(
             'assets/lottie_animations/onBoardingAnim$i.json',
-            height: i == 1 ? screenHeight * 0.8 : screenHeight * 0.7,
+            height: i == 1 ? screenHeight * 0.7 : screenHeight * 0.6,
           )
       ],
       speed: 1.8,
@@ -61,6 +62,7 @@ class OnboardingScreen extends StatelessWidget {
           OnboardingPageWidget(
             onBoardingTitle: 'onBoardingTitle$i'.tr,
             onBoardingDescription: 'onBoardingDescription$i'.tr,
+            isPhone: screenType.isPhone,
           ),
       ],
     );

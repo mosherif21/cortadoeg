@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
 class OnboardingPageWidget extends StatelessWidget {
-  const OnboardingPageWidget(
-      {super.key,
-      required this.onBoardingTitle,
-      required this.onBoardingDescription});
+  const OnboardingPageWidget({
+    super.key,
+    required this.onBoardingTitle,
+    required this.onBoardingDescription,
+    required this.isPhone,
+  });
   final String onBoardingTitle;
   final String onBoardingDescription;
+  final bool isPhone;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -16,8 +19,8 @@ class OnboardingPageWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          const SizedBox(
-            height: 480,
+          SizedBox(
+            height: isPhone ? 450 : 350,
           ),
           Text(
             onBoardingTitle,

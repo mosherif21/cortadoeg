@@ -1,8 +1,8 @@
 import 'package:anim_search_app_bar/anim_search_app_bar.dart';
-import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:cortadoeg/src/constants/enums.dart';
 import 'package:cortadoeg/src/features/cashier_side/main_screen/controllers/main_screen_controller.dart';
 import 'package:cortadoeg/src/features/cashier_side/orders/components/order_widget.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:get/get.dart';
@@ -31,6 +31,14 @@ class OrdersScreen extends StatelessWidget {
       controller.searchText = orderSearchTextController.text.trim();
       controller.onOrdersSearch();
     });
+    final statusSelectOptions = [
+      'active'.tr,
+      'allOrders'.tr,
+      'completed'.tr,
+      'canceled'.tr,
+      'returned'.tr,
+    ];
+    final navBarExtended = MainScreenController.instance.navBarExtended.value;
     return Scaffold(
       appBar: screenType.isPhone
           ? null
@@ -59,30 +67,142 @@ class OrdersScreen extends StatelessWidget {
                     children: [
                       SizedBox(
                         width: 150,
-                        child: CustomDropdown<String>(
-                          items: [
-                            'active'.tr,
-                            'allOrders'.tr,
-                            'completed'.tr,
-                            'canceled'.tr,
-                            'returned'.tr,
-                          ],
-                          controller: controller.statusSelectController,
-                          onChanged: controller.onOrderStatusChanged,
+                        child: Obx(
+                          () => DropdownButtonHideUnderline(
+                            child: DropdownButton2<String>(
+                              isExpanded: true,
+                              hint: Text(
+                                'selectStatus'.tr,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: Theme.of(context).hintColor,
+                                ),
+                              ),
+                              items: statusSelectOptions
+                                  .map(
+                                    (String item) => DropdownMenuItem<String>(
+                                      value: item,
+                                      child: Text(
+                                        item,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                              value: statusSelectOptions.elementAt(
+                                  controller.currentSelectedStatus.value),
+                              onChanged: (value) => value != null
+                                  ? controller.onOrderStatusChanged(
+                                      value, statusSelectOptions.indexOf(value))
+                                  : controller.onOrderStatusChanged(
+                                      'active'.tr, 0),
+                              dropdownStyleData: DropdownStyleData(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              buttonStyleData: ButtonStyleData(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                height: 40,
+                                width: 140,
+                              ),
+                              menuItemStyleData: const MenuItemStyleData(
+                                height: 40,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                       Obx(
                         () => SizedBox(
                           width: controller.dateRangeOptions.keys.length > 6
-                              ? controller.currentSelectedDate.contains('-')
-                                  ? 280
+                              ? controller.dateRangeOptions.keys
+                                      .toList()
+                                      .elementAt(
+                                          controller.currentSelectedDate.value)
+                                      .contains('-')
+                                  ? screenType.isPhone
+                                      ? 220
+                                      : 280
                                   : 170
                               : 150,
-                          child: CustomDropdown<String>(
-                            items: controller.dateRangeOptions.keys.toList(),
-                            controller: controller.dateSelectController,
-                            onChanged: (key) => controller
-                                .applyPredefinedDateRange(key, context),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton2<String>(
+                              isExpanded: true,
+                              hint: Text(
+                                'selectDate'.tr,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: Theme.of(context).hintColor,
+                                ),
+                              ),
+                              items: controller.dateRangeOptions.keys
+                                  .toList()
+                                  .map(
+                                    (String item) => DropdownMenuItem<String>(
+                                      value: item,
+                                      child: Container(
+                                        constraints: screenType.isPhone &&
+                                                controller.currentSelectedDate
+                                                        .value ==
+                                                    6
+                                            ? const BoxConstraints(
+                                                maxWidth: 220)
+                                            : null,
+                                        child: Text(
+                                          overflow: TextOverflow.ellipsis,
+                                          item,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                              dropdownStyleData: DropdownStyleData(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              value: controller.dateRangeOptions.keys
+                                  .toList()
+                                  .elementAt(
+                                      controller.currentSelectedDate.value),
+                              onChanged: (key) => key != null
+                                  ? controller.applyPredefinedDateRange(
+                                      key,
+                                      context,
+                                      controller.dateRangeOptions.keys
+                                          .toList()
+                                          .indexOf(key))
+                                  : controller.applyPredefinedDateRange(
+                                      'today'.tr, context, 0),
+                              buttonStyleData: ButtonStyleData(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                height: 40,
+                                width: 140,
+                              ),
+                              menuItemStyleData: const MenuItemStyleData(
+                                height: 40,
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -133,96 +253,89 @@ class OrdersScreen extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 20, vertical: 10),
                             child: AnimationLimiter(
-                              child: LayoutBuilder(
-                                builder: (context, constraints) {
-                                  const double itemWidth = 230.0;
-                                  const double itemHeight = 90.0;
-                                  final orderChosen =
-                                      controller.currentChosenOrder.value !=
-                                          null;
-                                  final navBarExtended = MainScreenController
-                                      .instance.navBarExtended.value;
-                                  return Obx(
-                                    () =>
-                                        !controller.loadingOrders.value &&
-                                                controller
-                                                    .filteredOrdersList.isEmpty
-                                            ? NoOrdersWidget(
-                                                status: controller
-                                                    .selectedStatus.value)
-                                            : GridView.builder(
-                                                physics: const ScrollPhysics(),
-                                                shrinkWrap: true,
-                                                gridDelegate:
-                                                    SliverGridDelegateWithFixedCrossAxisCount(
-                                                  crossAxisCount: navBarExtended
-                                                      ? orderChosen
-                                                          ? 2
-                                                          : 3
-                                                      : orderChosen
-                                                          ? 3
-                                                          : 4,
-                                                  mainAxisSpacing: 15,
-                                                  crossAxisSpacing: 15,
-                                                  childAspectRatio: 2.5,
-                                                ),
-                                                itemCount: controller
+                              child: Obx(
+                                () => !controller.loadingOrders.value &&
+                                        controller.filteredOrdersList.isEmpty
+                                    ? NoOrdersWidget(
+                                        status: controller.selectedStatus.value)
+                                    : GridView.builder(
+                                        physics: const ScrollPhysics(),
+                                        shrinkWrap: true,
+                                        gridDelegate:
+                                            SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: screenType.isPhone
+                                              ? 1
+                                              : navBarExtended
+                                                  ? controller.currentChosenOrder
+                                                              .value !=
+                                                          null
+                                                      ? 2
+                                                      : 3
+                                                  : controller.currentChosenOrder
+                                                              .value !=
+                                                          null
+                                                      ? 2
+                                                      : 3,
+                                          mainAxisSpacing: 15,
+                                          crossAxisSpacing: 15,
+                                          childAspectRatio: 2.5,
+                                        ),
+                                        itemCount:
+                                            controller.loadingOrders.value
+                                                ? 20
+                                                : controller
+                                                    .filteredOrdersList.length,
+                                        itemBuilder: (context, index) {
+                                          return AnimationConfiguration
+                                              .staggeredGrid(
+                                            position: index,
+                                            duration: const Duration(
+                                                milliseconds: 300),
+                                            columnCount: screenType.isPhone
+                                                ? 1
+                                                : navBarExtended
+                                                    ? controller.currentChosenOrder
+                                                                .value !=
+                                                            null
+                                                        ? 2
+                                                        : 3
+                                                    : controller.currentChosenOrder
+                                                                .value !=
+                                                            null
+                                                        ? 2
+                                                        : 3,
+                                            child: ScaleAnimation(
+                                              child: FadeInAnimation(
+                                                child: controller
                                                         .loadingOrders.value
-                                                    ? 20
-                                                    : controller
-                                                        .filteredOrdersList
-                                                        .length,
-                                                itemBuilder: (context, index) {
-                                                  return AnimationConfiguration
-                                                      .staggeredGrid(
-                                                    position: index,
-                                                    duration: const Duration(
-                                                        milliseconds: 300),
-                                                    columnCount: navBarExtended
-                                                        ? orderChosen
-                                                            ? 2
-                                                            : 3
-                                                        : orderChosen
-                                                            ? 3
-                                                            : 4,
-                                                    child: ScaleAnimation(
-                                                      child: FadeInAnimation(
-                                                        child: SizedBox(
-                                                          width: itemWidth,
-                                                          height: itemHeight,
-                                                          child: controller
-                                                                  .loadingOrders
-                                                                  .value
-                                                              ? const LoadingOrderWidget()
-                                                              : Obx(
-                                                                  () =>
-                                                                      OrderWidget(
-                                                                    orderModel:
-                                                                        controller
-                                                                            .filteredOrdersList[index],
-                                                                    isChosen: controller.filteredOrdersList[index] ==
-                                                                            controller.currentChosenOrder.value
-                                                                        ? true
-                                                                        : false,
-                                                                    onTap: () =>
-                                                                        controller
-                                                                            .onOrderTap(
-                                                                      chosenIndex:
-                                                                          index,
-                                                                      isPhone:
-                                                                          screenType
-                                                                              .isPhone,
-                                                                    ),
-                                                                  ),
-                                                                ),
+                                                    ? const LoadingOrderWidget()
+                                                    : Obx(
+                                                        () => OrderWidget(
+                                                          orderModel: controller
+                                                                  .filteredOrdersList[
+                                                              index],
+                                                          isChosen: controller
+                                                                          .filteredOrdersList[
+                                                                      index] ==
+                                                                  controller
+                                                                      .currentChosenOrder
+                                                                      .value
+                                                              ? true
+                                                              : false,
+                                                          onTap: () =>
+                                                              controller
+                                                                  .onOrderTap(
+                                                            chosenIndex: index,
+                                                            isPhone: screenType
+                                                                .isPhone,
+                                                          ),
                                                         ),
                                                       ),
-                                                    ),
-                                                  );
-                                                },
                                               ),
-                                  );
-                                },
+                                            ),
+                                          );
+                                        },
+                                      ),
                               ),
                             ),
                           ),
@@ -529,7 +642,7 @@ class OrdersScreen extends StatelessWidget {
                                                   textColor: Colors.white,
                                                   borderRadius: 10,
                                                   elevation: 0,
-                                                  icon: Icons.start_rounded,
+                                                  icon: Icons.check_circle,
                                                   iconColor: Colors.white,
                                                   text: 'complete'.tr,
                                                   onClick: () => controller

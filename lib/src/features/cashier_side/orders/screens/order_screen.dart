@@ -443,7 +443,7 @@ class OrderScreen extends StatelessWidget {
                                         icon: Icons.pause,
                                         iconColor: Colors.white,
                                         text: 'holdCart'.tr,
-                                        onClick: () => Get.back(),
+                                        onClick: () => Get.back(result: false),
                                       ),
                                     ),
                                   ],

@@ -51,7 +51,7 @@ class CustomersScreenController extends GetxController {
       MainScreenController.instance.showNewOrderButton.value = true;
     } else {
       if (chosenOrder.status == OrderStatus.active) {
-        await Get.to(
+        final changed = await Get.to(
           () => isPhone
               ? OrderScreenPhone(
                   orderModel: chosenOrder,
@@ -61,7 +61,9 @@ class CustomersScreenController extends GetxController {
                 ),
           transition: Transition.noTransition,
         );
-        onCustomerOrdersRefresh();
+        if (changed) {
+          onCustomerOrdersRefresh();
+        }
       } else {
         currentChosenOrder.value = chosenOrder;
         MainScreenController.instance.showNewOrderButton.value = false;
@@ -407,8 +409,6 @@ class CustomersScreenController extends GetxController {
     showLoadingScreen();
     final orderModel = currentChosenOrder.value!;
     late List<TableModel> tablesList;
-
-    // Fetch all tables
     final tablesListGet = await getTables();
     if (tablesListGet != null) {
       tablesList = tablesListGet;
@@ -438,8 +438,6 @@ class CustomersScreenController extends GetxController {
         return;
       }
     }
-
-    // Proceed with reopening the order
     final reopenOrderStatus =
         await reopenOrder(orderId: orderModel.orderId, tablesList: tablesList);
 

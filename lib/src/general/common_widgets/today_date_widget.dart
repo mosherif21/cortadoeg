@@ -22,18 +22,17 @@ class DateController extends GetxController {
     formattedDate.value =
         DateFormat('EEE, dd MMM yyyy', isLangEnglish() ? 'en_US' : 'ar_SA')
             .format(DateTime.now());
-    if (Get.isRegistered<OrdersController>()) {
-      OrdersController.instance.updateDateFilters();
-    }
   }
 
   void _setDailyUpdate() {
     DateTime now = DateTime.now();
     DateTime nextUpdate = DateTime(now.year, now.month, now.day + 1);
     Duration timeUntilMidnight = nextUpdate.difference(now);
-
     Timer(timeUntilMidnight, () {
       updateDate();
+      if (Get.isRegistered<OrdersController>()) {
+        OrdersController.instance.updateNewDayDateFilters();
+      }
       _setDailyUpdate();
     });
   }

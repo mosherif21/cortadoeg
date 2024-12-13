@@ -85,7 +85,7 @@ class OrdersScreenItemWidget extends StatelessWidget {
                     Text(
                       'itemDetails'.tr,
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 12,
                         fontWeight: FontWeight.w800,
                         color: Colors.grey,
                       ),
@@ -101,7 +101,7 @@ class OrdersScreenItemWidget extends StatelessWidget {
                     Text(
                       '\$${(orderItemModel.price * orderItemModel.quantity).toStringAsFixed(2)}',
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 12,
                         fontWeight: FontWeight.w800,
                         color: Colors.green,
                       ),

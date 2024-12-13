@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../../src/authentication/authentication_repository.dart';
 import '../../src/constants/enums.dart';
+import '../../src/features/cashier_side/orders/controllers/orders_controller.dart';
 import '../../src/general/app_init.dart';
 import '../../src/general/general_functions.dart';
 
@@ -50,6 +51,9 @@ Future<void> setLocaleLanguage(String languageCode) async {
     await setLocale(languageCode);
     if (Get.isRegistered<DateController>()) {
       DateController.instance.updateDate();
+    }
+    if (Get.isRegistered<OrdersController>()) {
+      OrdersController.instance.updateDateFilters();
     }
     AuthenticationRepository.instance.setNotificationsLanguage();
     hideLoadingScreen();

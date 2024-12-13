@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cortadoeg/src/features/cashier_side/orders/components/models.dart';
@@ -27,13 +26,10 @@ class OrdersController extends GetxController {
   final ordersRefreshController = RefreshController(initialRefresh: false);
   late DateTime? dateFrom;
   late DateTime? dateTo;
-  String currentSelectedDate = 'today'.tr;
+  final RxInt currentSelectedDate = 0.obs;
+  final RxInt currentSelectedStatus = 0.obs;
   final RxMap<String, Map<String, DateTime>> dateRangeOptions =
       <String, Map<String, DateTime>>{}.obs;
-  final SingleSelectController<String?> dateSelectController =
-      SingleSelectController<String?>('today'.tr);
-  final SingleSelectController<String?> statusSelectController =
-      SingleSelectController<String?>('active'.tr);
   StreamSubscription? ordersListener;
   final Rxn<OrderModel?> currentChosenOrder = Rxn<OrderModel>(null);
   String searchText = '';
@@ -41,7 +37,6 @@ class OrdersController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-
     final now = DateTime.now();
     dateFrom = DateTime(now.year, now.month, now.day);
     dateTo = DateTime(now.year, now.month, now.day, 23, 59, 59);
@@ -53,13 +48,16 @@ class OrdersController extends GetxController {
   @override
   void onClose() {
     ordersListener?.cancel();
-    dateSelectController.dispose();
     super.onClose();
   }
 
   void updateDateFilters() {
     _initializeDateRangeOptions();
-    resetDateFilter();
+  }
+
+  void updateNewDayDateFilters() {
+    _initializeDateRangeOptions();
+    _listenToFilteredOrders();
   }
 
   void onOrderTap({required int chosenIndex, required bool isPhone}) {
@@ -90,12 +88,23 @@ class OrdersController extends GetxController {
     final now = DateTime.now();
     final todayStart = DateTime(now.year, now.month, now.day);
     final todayEnd = DateTime(now.year, now.month, now.day, 23, 59, 59);
-
-    // Adjust the start of the week to Saturday
-    final daysSinceSaturday =
-        (now.weekday % 7); // Saturday is 0 when using modulo 7
+    final daysSinceSaturday = (now.weekday % 7);
     final startOfThisWeek =
         todayStart.subtract(Duration(days: daysSinceSaturday));
+    String customDateElementKey = '';
+    Map<String, DateTime> customDateElementValue = {};
+    if (dateRangeOptions.length > 6) {
+      customDateElementKey = dateRangeOptions.keys.elementAt(6);
+      customDateElementValue = dateRangeOptions[customDateElementKey]!;
+      String dateFormatted =
+          DateFormat('MMM dd, yyyy', isLangEnglish() ? 'en_US' : 'ar_SA')
+              .format(dateFrom!);
+      if (dateFrom!.day != dateTo!.day) {
+        dateFormatted +=
+            ' - ${DateFormat('MMM dd, yyyy', isLangEnglish() ? 'en_US' : 'ar_SA').format(dateTo!)}';
+      }
+      customDateElementKey = dateFormatted;
+    }
     dateRangeOptions.assignAll({
       'today'.tr: {
         "from": todayStart,
@@ -122,6 +131,9 @@ class OrdersController extends GetxController {
         "to": todayEnd,
       },
     });
+    if (customDateElementKey.trim().isNotEmpty) {
+      dateRangeOptions[customDateElementKey] = customDateElementValue;
+    }
   }
 
   void setStatusFilter(OrderStatus? status) {
@@ -129,9 +141,10 @@ class OrdersController extends GetxController {
     _listenToFilteredOrders();
   }
 
-  void applyPredefinedDateRange(String? key, BuildContext context) async {
-    try {
-      if (key != null) {
+  void applyPredefinedDateRange(
+      String key, BuildContext context, int index) async {
+    if (currentSelectedDate.value != index) {
+      try {
         if (key == 'customDate'.tr) {
           final results = await showCalendarDatePicker2Dialog(
             dialogBackgroundColor: Colors.white,
@@ -149,23 +162,26 @@ class OrdersController extends GetxController {
             if (results.first != null) {
               dateFrom = results.first!;
               dateTo = results.last!;
-              String dateFormatted =
-                  DateFormat('MMM dd, yyyy').format(dateFrom!);
+              String dateFormatted = DateFormat(
+                      'MMM dd, yyyy', isLangEnglish() ? 'en_US' : 'ar_SA')
+                  .format(dateFrom!);
               dateTo = DateTime(results.last!.year, results.last!.month,
                   results.last!.day, 23, 59, 59);
               if (dateFrom!.day != dateTo!.day) {
                 dateFormatted +=
-                    ' - ${DateFormat('MMM dd, yyyy').format(dateTo!)}';
+                    ' - ${DateFormat('MMM dd, yyyy', isLangEnglish() ? 'en_US' : 'ar_SA').format(dateTo!)}';
               }
-              if (isDate(currentSelectedDate)) {
-                dateRangeOptions.remove(currentSelectedDate);
+              final dateKey = dateRangeOptions.keys
+                  .toList()
+                  .elementAt(currentSelectedDate.value);
+              if (isDate(dateKey)) {
+                dateRangeOptions.remove(dateKey);
               }
-              currentSelectedDate = dateFormatted;
-              dateSelectController.value = dateFormatted;
               dateRangeOptions[dateFormatted] = {
                 "from": dateFrom!,
                 "to": dateTo!,
               };
+              currentSelectedDate.value = dateRangeOptions.length - 1;
               _listenToFilteredOrders();
             }
           } else {
@@ -177,28 +193,32 @@ class OrdersController extends GetxController {
             dateFrom = selectedRange["from"];
             dateTo = selectedRange["to"];
             _listenToFilteredOrders();
-            if (isDate(currentSelectedDate)) {
-              dateRangeOptions.remove(currentSelectedDate);
+            final dateKey = dateRangeOptions.keys
+                .toList()
+                .elementAt(currentSelectedDate.value);
+            if (isDate(dateKey)) {
+              dateRangeOptions.remove(dateKey);
             }
-            currentSelectedDate = key;
+            currentSelectedDate.value = index;
           }
         }
+      } catch (error) {
+        AppInit.logger.e(error.toString());
+        resetDateFilter();
       }
-    } catch (error) {
-      AppInit.logger.e(error.toString());
-      resetDateFilter();
     }
   }
 
   void resetDateFilter() {
-    if (isDate(currentSelectedDate) &&
-        dateRangeOptions.containsKey(currentSelectedDate)) {
-      dateRangeOptions.remove(currentSelectedDate);
+    final dateKey =
+        dateRangeOptions.keys.toList().elementAt(currentSelectedDate.value);
+    if (isDate(dateKey) && dateRangeOptions.containsKey(dateKey)) {
+      dateRangeOptions.remove(dateKey);
     }
     final now = DateTime.now();
     dateFrom = DateTime(now.year, now.month, now.day);
     dateTo = DateTime(now.year, now.month, now.day, 23, 59, 59);
-    dateSelectController.value = 'today'.tr;
+    currentSelectedDate.value = 0;
     _listenToFilteredOrders();
     currentChosenOrder.value = null;
   }
@@ -213,12 +233,18 @@ class OrdersController extends GetxController {
 
   bool isDate(String input) {
     final yearRegex = RegExp(r'\b(?:\d{4}|[٠-٩]{4})\b');
-    return yearRegex.hasMatch(input);
+    final normalizedInput = input.replaceAllMapped(
+      RegExp(r'[٠-٩]'),
+      (match) => (match.group(0)!.codeUnitAt(0) - 0x0660).toString(),
+    );
+    return yearRegex.hasMatch(normalizedInput);
   }
 
-  void onOrderStatusChanged(value) {
-    statusSelectController.value = value;
-    setStatusFilter(mapStringToOrderStatus(value));
+  void onOrderStatusChanged(String value, index) {
+    if (index != currentSelectedStatus.value) {
+      currentSelectedStatus.value = index;
+      setStatusFilter(mapStringToOrderStatus(value));
+    }
   }
 
   OrderStatus? mapStringToOrderStatus(String value) {
@@ -299,8 +325,6 @@ class OrdersController extends GetxController {
     showLoadingScreen();
     final orderModel = currentChosenOrder.value!;
     late List<TableModel> tablesList;
-
-    // Fetch all tables
     final tablesListGet = await getTables();
     if (tablesListGet != null) {
       tablesList = tablesListGet;
@@ -330,8 +354,6 @@ class OrdersController extends GetxController {
         return;
       }
     }
-
-    // Proceed with reopening the order
     final reopenOrderStatus =
         await reopenOrder(orderId: orderModel.orderId, tablesList: tablesList);
 

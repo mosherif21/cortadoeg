@@ -40,7 +40,6 @@ class ItemCard extends StatelessWidget {
                 fit: BoxFit.contain,
               ),
             ),
-            const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Row(
@@ -50,7 +49,7 @@ class ItemCard extends StatelessWidget {
                     title,
                     maxLines: 2,
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: Colors.black87,
                     ),
@@ -58,7 +57,7 @@ class ItemCard extends StatelessWidget {
                   Text(
                     '\$${price.toStringAsFixed(2)}',
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
