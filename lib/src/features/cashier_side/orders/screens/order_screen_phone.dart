@@ -220,23 +220,52 @@ class OrderScreenPhone extends StatelessWidget {
                 padding: const EdgeInsets.all(10),
                 child: SizedBox(
                   height: 55,
-                  child: Obx(
-                    () => IconTextElevatedButton(
-                      buttonColor: Colors.black,
-                      textColor: Colors.white,
-                      borderRadius: 25,
-                      fontSize: 20,
-                      elevation: 0,
-                      icon: Icons.shopping_cart,
-                      iconColor: Colors.white,
-                      enabled: controller.orderTotal.value > 0,
-                      text:
-                          '${'checkOut'.tr} | \$${controller.orderTotal.value.toStringAsFixed(2)}',
-                      onClick: () => Get.to(
-                        () => ChargeScreenPhone(controller: controller),
-                        transition: getPageTransition(),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 55,
+                          child: IconTextElevatedButton(
+                            buttonColor: Colors.red,
+                            textColor: Colors.white,
+                            borderRadius: 15,
+                            fontSize: 18,
+                            elevation: 0,
+                            icon: Icons.cancel_rounded,
+                            iconColor: Colors.white,
+                            enabled: true,
+                            text: 'cancel'.tr,
+                            onClick: () => controller.onCancelOrderTap(
+                              isPhone: true,
+                              chargeScreen: false,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Obx(
+                          () => SizedBox(
+                            height: 55,
+                            child: IconTextElevatedButton(
+                              buttonColor: Colors.black,
+                              textColor: Colors.white,
+                              borderRadius: 15,
+                              fontSize: 18,
+                              elevation: 0,
+                              icon: Icons.shopping_cart,
+                              iconColor: Colors.white,
+                              enabled: controller.orderTotal.value > 0,
+                              text: 'checkOut'.tr,
+                              onClick: () => Get.to(
+                                () => ChargeScreenPhone(controller: controller),
+                                transition: getPageTransition(),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

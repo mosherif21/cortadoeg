@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cortadoeg/src/features/cashier_side/customers/components/add_customer_widget.dart';
+import 'package:expansion_tile_group/expansion_tile_group.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -30,11 +31,14 @@ class CustomersScreenController extends GetxController {
   final RxList<OrderModel> customerOrders = <OrderModel>[].obs;
   final RxInt chosenCustomerIndex = 0.obs;
   final Rxn<OrderModel?> currentChosenOrder = Rxn<OrderModel>(null);
+  late final GlobalKey<ExpansionTileCoreState> key0;
+  final RxBool extended = false.obs;
   @override
   void onInit() async {
     nameTextController = TextEditingController();
     discountTextController = TextEditingController();
     formKey = GlobalKey<FormState>();
+    key0 = GlobalKey<ExpansionTileCoreState>();
     super.onInit();
   }
 
@@ -151,7 +155,7 @@ class CustomersScreenController extends GetxController {
     }
   }
 
-  void addCustomerPress() async {
+  void addCustomerPress({required bool isPhone}) async {
     final discountText = discountTextController.text.trim();
     final name = nameTextController.text.trim();
     if (formKey.currentState!.validate() && isNumeric(discountText)) {
@@ -168,7 +172,11 @@ class CustomersScreenController extends GetxController {
       hideLoadingScreen();
       if (newCustomer != null) {
         customersList.add(newCustomer);
-        Get.back();
+        if (isPhone) {
+          extended.value = false;
+        } else {
+          Get.back();
+        }
         nameTextController.clear();
         discountTextController.clear();
         percentageChosen.value = true;
@@ -210,7 +218,10 @@ class CustomersScreenController extends GetxController {
     }
   }
 
-  void onCustomerTap({required int index, required String customerId}) async {
+  void onCustomerTap(
+      {required int index,
+      required String customerId,
+      required bool isPhone}) async {
     showLoadingScreen();
     final orders = await getOrdersByCustomerId(customerId);
     hideLoadingScreen();
@@ -226,10 +237,12 @@ class CustomersScreenController extends GetxController {
     }
   }
 
-  void onEditPress(
-      {required BuildContext context,
-      required int index,
-      required CustomerModel customerModel}) async {
+  void onEditPress({
+    required BuildContext context,
+    required int index,
+    required CustomerModel customerModel,
+    required bool isPhone,
+  }) async {
     nameTextController.text = customerModel.name;
     percentageChosen.value = customerModel.discountType == 'percentage';
     discountTextController.text = customerModel.discountValue.toString();
@@ -312,8 +325,11 @@ class CustomersScreenController extends GetxController {
     return FunctionStatus.failure;
   }
 
-  void onDeleteTap(
-      {required int index, required CustomerModel customerModel}) async {
+  void onDeleteTap({
+    required int index,
+    required CustomerModel customerModel,
+    required bool isPhone,
+  }) async {
     showLoadingScreen();
     final deleteStatus =
         await removeCustomerDatabase(customerId: customerModel.customerId);
@@ -386,7 +402,7 @@ class CustomersScreenController extends GetxController {
         return AddCustomerWidget(
           controller: this,
           edit: false,
-          onPress: () => addCustomerPress(),
+          onPress: () => addCustomerPress(isPhone: false),
         );
       },
     );

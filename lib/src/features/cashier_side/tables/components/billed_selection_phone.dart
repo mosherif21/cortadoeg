@@ -13,14 +13,14 @@ class BilledSelectionPhone extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const TextStyle textStyle = TextStyle(
-        fontSize: 25.0, fontWeight: FontWeight.w600, color: Colors.black54);
+        fontSize: 20, fontWeight: FontWeight.w600, color: Colors.black87);
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           AutoSizeText(
-            'chooseBilledOption '.tr,
+            'chooseBilledOption'.tr,
             style: const TextStyle(
                 fontSize: 18.0,
                 fontWeight: FontWeight.w700,
@@ -38,12 +38,15 @@ class BilledSelectionPhone extends StatelessWidget {
                 foregroundColor: Colors.black54,
               ),
               onPressed: () => tableIsEmptyPress(),
-              icon: Image.asset(
-                kEmptyTableImage,
-                height: 60,
+              icon: Padding(
+                padding: const EdgeInsets.all(5),
+                child: Image.asset(
+                  kEmptyTableImage,
+                  height: 60,
+                ),
               ),
               label: SizedBox(
-                width: 100,
+                width: 150,
                 child: AutoSizeText(
                   'tableIsEmpty'.tr,
                   style: textStyle,
@@ -63,12 +66,15 @@ class BilledSelectionPhone extends StatelessWidget {
                 foregroundColor: Colors.black54,
               ),
               onPressed: () => reopenOrderPress(),
-              icon: Image.asset(
-                kReopenOrderImage,
-                height: 60,
+              icon: Padding(
+                padding: const EdgeInsets.all(5),
+                child: Image.asset(
+                  kReopenOrderImage,
+                  height: 60,
+                ),
               ),
               label: SizedBox(
-                width: 100,
+                width: 150,
                 child: AutoSizeText(
                   'reopenOrder'.tr,
                   style: textStyle,

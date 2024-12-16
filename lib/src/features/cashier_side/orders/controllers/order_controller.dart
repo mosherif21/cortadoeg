@@ -677,11 +677,12 @@ class OrderController extends GetxController {
     }
   }
 
-  void onChargeTap() async {
+  void onChargeTap({required bool isPhone}) async {
     showLoadingScreen();
     final chargeOrderStatus = await chargeOrder(orderId: orderModel.orderId);
     hideLoadingScreen();
     if (chargeOrderStatus == FunctionStatus.success) {
+      if (isPhone) Get.back();
       Get.back(result: true);
       showSnackBar(
         text: 'orderChargedSuccess'.tr,
@@ -820,14 +821,15 @@ class OrderController extends GetxController {
     }
   }
 
-  void onCancelOrderTap() async {
+  void onCancelOrderTap(
+      {required bool isPhone, required bool chargeScreen}) async {
     showLoadingScreen();
 
     // Step 1: Check if the order is a takeaway order
     if (orderModel.isTakeaway) {
       final cancelStatus = await cancelOrder(orderId: orderModel.orderId);
       hideLoadingScreen();
-      handleCancelStatus(cancelStatus, orderModel);
+      handleCancelStatus(cancelStatus, orderModel, isPhone, chargeScreen);
       return;
     }
 
@@ -862,7 +864,7 @@ class OrderController extends GetxController {
       tablesIds: tables,
     );
     hideLoadingScreen();
-    handleCancelStatus(cancelOrderStatus, orderModel);
+    handleCancelStatus(cancelOrderStatus, orderModel, isPhone, chargeScreen);
   }
 
   Future<FunctionStatus> cancelOrder({
@@ -912,8 +914,10 @@ class OrderController extends GetxController {
     }
   }
 
-  void handleCancelStatus(FunctionStatus status, OrderModel orderModel) {
+  void handleCancelStatus(FunctionStatus status, OrderModel orderModel,
+      bool isPhone, bool chargeScreen) {
     if (status == FunctionStatus.success) {
+      if (isPhone && chargeScreen) Get.back();
       Get.back(result: true);
       showSnackBar(
         text: 'orderCanceledSuccess'.tr,

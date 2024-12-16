@@ -746,6 +746,7 @@ class Languages extends Translations {
           'printInvoice': 'Print Invoice',
           'selectStatus': 'Select Status',
           'selectDate': 'Select Date',
+          'orderDetails': 'Order Details',
         },
       };
 }

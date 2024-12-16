@@ -430,7 +430,10 @@ class OrderScreen extends StatelessWidget {
                                         iconColor: Colors.white,
                                         text: 'cancelOrder'.tr,
                                         onClick: () =>
-                                            controller.onCancelOrderTap(),
+                                            controller.onCancelOrderTap(
+                                          isPhone: false,
+                                          chargeScreen: false,
+                                        ),
                                       ),
                                     ),
                                     const SizedBox(width: 10),
@@ -457,7 +460,8 @@ class OrderScreen extends StatelessWidget {
                                   icon: Icons.payments_outlined,
                                   iconColor: Colors.white,
                                   text: 'charge'.tr,
-                                  onClick: () => controller.onChargeTap(),
+                                  onClick: () =>
+                                      controller.onChargeTap(isPhone: false),
                                 ),
                               ],
                             ),

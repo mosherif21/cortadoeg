@@ -14,6 +14,7 @@ import '../../../../general/app_init.dart';
 import '../../../../general/general_functions.dart';
 import '../../main_screen/controllers/main_screen_controller.dart';
 import '../../tables/components/models.dart';
+import '../screens/order_details_screen_phone.dart';
 import '../screens/order_screen.dart';
 import '../screens/order_screen_phone.dart';
 
@@ -62,24 +63,35 @@ class OrdersController extends GetxController {
 
   void onOrderTap({required int chosenIndex, required bool isPhone}) {
     final chosenOrder = filteredOrdersList[chosenIndex];
-    if (currentChosenOrder.value == chosenOrder) {
-      currentChosenOrder.value = null;
-      MainScreenController.instance.showNewOrderButton.value = true;
-    } else {
+    if (isPhone) {
       if (chosenOrder.status == OrderStatus.active) {
         Get.to(
-          () => isPhone
-              ? OrderScreenPhone(
-                  orderModel: chosenOrder,
-                )
-              : OrderScreen(
-                  orderModel: chosenOrder,
-                ),
+          () => OrderScreenPhone(orderModel: chosenOrder),
           transition: Transition.noTransition,
         );
       } else {
-        currentChosenOrder.value = chosenOrder;
-        MainScreenController.instance.showNewOrderButton.value = false;
+        Get.to(
+          () => OrderDetailsScreenPhone(
+            orderModel: chosenOrder,
+            controller: this,
+          ),
+          transition: Transition.noTransition,
+        );
+      }
+    } else {
+      if (currentChosenOrder.value == chosenOrder) {
+        currentChosenOrder.value = null;
+        MainScreenController.instance.showNewOrderButton.value = true;
+      } else {
+        if (chosenOrder.status == OrderStatus.active) {
+          Get.to(
+            () => OrderScreen(orderModel: chosenOrder),
+            transition: Transition.noTransition,
+          );
+        } else {
+          currentChosenOrder.value = chosenOrder;
+          MainScreenController.instance.showNewOrderButton.value = false;
+        }
       }
     }
   }
@@ -321,9 +333,10 @@ class OrdersController extends GetxController {
     }
   }
 
-  void onReopenOrderTap({required bool isPhone}) async {
+  void onReopenOrderTap(
+      {required bool isPhone, OrderModel? aOrderModel}) async {
     showLoadingScreen();
-    final orderModel = currentChosenOrder.value!;
+    final orderModel = isPhone ? aOrderModel! : currentChosenOrder.value!;
     late List<TableModel> tablesList;
     final tablesListGet = await getTables();
     if (tablesListGet != null) {
@@ -360,7 +373,7 @@ class OrdersController extends GetxController {
     hideLoadingScreen();
     if (reopenOrderStatus == FunctionStatus.success) {
       currentChosenOrder.value = null;
-      Get.back();
+      if (isPhone) Get.back();
       Get.to(
         () => isPhone
             ? OrderScreenPhone(
@@ -469,16 +482,21 @@ class OrdersController extends GetxController {
     return null;
   }
 
-  void returnOrderTap() async {
+  void returnOrderTap({required bool isPhone, OrderModel? orderModel}) async {
     showLoadingScreen();
-    final returnOrderStatus = await returnOrder();
+    final returnOrderStatus =
+        await returnOrder(isPhone: isPhone, orderModel: orderModel);
     hideLoadingScreen();
     if (returnOrderStatus == FunctionStatus.success) {
+      if (isPhone) {
+        Get.back();
+      } else {
+        currentChosenOrder.value = null;
+      }
       showSnackBar(
         text: 'orderReturnedSuccess'.tr,
         snackBarType: SnackBarType.success,
       );
-      currentChosenOrder.value = null;
     } else {
       showSnackBar(
         text: 'errorOccurred'.tr,
@@ -487,11 +505,14 @@ class OrdersController extends GetxController {
     }
   }
 
-  Future<FunctionStatus> returnOrder() async {
+  Future<FunctionStatus> returnOrder(
+      {required bool isPhone, OrderModel? orderModel}) async {
     try {
       final orderReference = FirebaseFirestore.instance
           .collection('orders')
-          .doc(currentChosenOrder.value!.orderId);
+          .doc(isPhone
+              ? orderModel!.orderId
+              : currentChosenOrder.value!.orderId);
       await orderReference.update({'status': OrderStatus.returned.name});
       return FunctionStatus.success;
     } on FirebaseException catch (error) {
@@ -506,11 +527,13 @@ class OrdersController extends GetxController {
     return FunctionStatus.failure;
   }
 
-  void completeOrderTap() async {
+  void completeOrderTap({required bool isPhone, OrderModel? orderModel}) async {
     showLoadingScreen();
-    final completeOrderStatus = await completeOrder();
+    final completeOrderStatus =
+        await completeOrder(isPhone: isPhone, orderModel: orderModel);
     hideLoadingScreen();
     if (completeOrderStatus == FunctionStatus.success) {
+      if (isPhone) Get.back();
       showSnackBar(
         text: 'orderCompletedSuccess'.tr,
         snackBarType: SnackBarType.success,
@@ -524,11 +547,14 @@ class OrdersController extends GetxController {
     }
   }
 
-  Future<FunctionStatus> completeOrder() async {
+  Future<FunctionStatus> completeOrder(
+      {required bool isPhone, OrderModel? orderModel}) async {
     try {
       final orderReference = FirebaseFirestore.instance
           .collection('orders')
-          .doc(currentChosenOrder.value!.orderId);
+          .doc(isPhone
+              ? orderModel!.orderId
+              : currentChosenOrder.value!.orderId);
       await orderReference.update({'status': OrderStatus.complete.name});
       return FunctionStatus.success;
     } on FirebaseException catch (error) {
@@ -543,7 +569,7 @@ class OrdersController extends GetxController {
     return FunctionStatus.failure;
   }
 
-  void printOrderTap() {
+  void printOrderTap({required bool isPhone, OrderModel? orderModel}) {
     showSnackBar(
       text: 'orderPrintSuccess'.tr,
       snackBarType: SnackBarType.success,

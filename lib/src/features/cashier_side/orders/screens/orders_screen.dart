@@ -595,7 +595,8 @@ class OrdersScreen extends StatelessWidget {
                                               iconColor: Colors.white,
                                               text: 'return'.tr,
                                               onClick: () =>
-                                                  controller.returnOrderTap(),
+                                                  controller.returnOrderTap(
+                                                      isPhone: false),
                                             ),
                                           ),
                                           const SizedBox(width: 10),
@@ -626,7 +627,7 @@ class OrdersScreen extends StatelessWidget {
                                         iconColor: Colors.white,
                                         text: 'printInvoice'.tr,
                                         onClick: () =>
-                                            controller.printOrderTap(),
+                                            controller.printOrderTap(isPhone: screenType.isPhone),
                                       ),
                                     ],
                                   )
@@ -646,7 +647,8 @@ class OrdersScreen extends StatelessWidget {
                                                   iconColor: Colors.white,
                                                   text: 'complete'.tr,
                                                   onClick: () => controller
-                                                      .completeOrderTap(),
+                                                      .completeOrderTap(
+                                                          isPhone: false),
                                                 ),
                                               ),
                                               const SizedBox(width: 10),
@@ -678,7 +680,7 @@ class OrdersScreen extends StatelessWidget {
                                             iconColor: Colors.white,
                                             text: 'printInvoice'.tr,
                                             onClick: () =>
-                                                controller.printOrderTap(),
+                                                controller.printOrderTap(isPhone: screenType.isPhone),
                                           ),
                                         ],
                                       )
@@ -710,7 +712,7 @@ class OrdersScreen extends StatelessWidget {
                                               iconColor: Colors.white,
                                               text: 'print'.tr,
                                               onClick: () =>
-                                                  controller.printOrderTap(),
+                                                  controller.printOrderTap(isPhone: screenType.isPhone),
                                             ),
                                           ),
                                         ],

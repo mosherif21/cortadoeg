@@ -406,7 +406,7 @@ class ChooseCustomer extends StatelessWidget {
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor: Colors.grey.shade500,
+                backgroundColor: Colors.black,
                 child: Text(
                   customerModel.name[0].toUpperCase(),
                   style: const TextStyle(
@@ -417,7 +417,7 @@ class ChooseCustomer extends StatelessWidget {
               Text(
                 customerModel.name,
                 style: const TextStyle(
-                  color: Colors.black45,
+                  color: Colors.black,
                   fontWeight: FontWeight.w800,
                 ),
               )

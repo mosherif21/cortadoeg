@@ -107,10 +107,8 @@ class ChargeScreenPhone extends StatelessWidget {
                               iconColor: Colors.white,
                               text: 'charge'.tr,
                               enabled: controller.orderItems.isNotEmpty,
-                              onClick: () => Get.to(
-                                () => ChargeScreenPhone(controller: controller),
-                                transition: getPageTransition(),
-                              ),
+                              onClick: () =>
+                                  controller.onChargeTap(isPhone: true),
                             ),
                           ),
                         ),
@@ -332,6 +330,7 @@ class ChargeScreenPhone extends StatelessWidget {
                             buttonColor: Colors.black,
                             textColor: Colors.white,
                             borderRadius: 15,
+                            fontSize: 16,
                             elevation: 0,
                             icon: Icons.discount_outlined,
                             iconColor: Colors.white,
@@ -351,6 +350,10 @@ class ChargeScreenPhone extends StatelessWidget {
                             textColor: Colors.white,
                             borderRadius: 15,
                             elevation: 0,
+                            fontSize: controller.currentCustomerName.value ==
+                                    'guest'.tr
+                                ? 16
+                                : 15,
                             icon: controller.currentCustomerName.value ==
                                     'guest'.tr
                                 ? Icons.person
@@ -372,27 +375,55 @@ class ChargeScreenPhone extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: 10),
               Padding(
-                padding: const EdgeInsets.all(10),
-                child: SizedBox(
-                  height: 55,
-                  child: Obx(
-                    () => IconTextElevatedButton(
-                      buttonColor: Colors.black,
-                      textColor: Colors.white,
-                      borderRadius: 15,
-                      fontSize: 20,
-                      elevation: 0,
-                      icon: Icons.payments_outlined,
-                      iconColor: Colors.white,
-                      enabled: controller.orderItems.isNotEmpty,
-                      text:
-                          '${'charge'.tr} | \$${controller.orderTotal.value.toStringAsFixed(2)}',
-                      onClick: () => controller.onChargeTap(),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 50,
+                        child: IconTextElevatedButton(
+                          buttonColor: Colors.red,
+                          textColor: Colors.white,
+                          borderRadius: 15,
+                          fontSize: 16,
+                          elevation: 0,
+                          icon: Icons.cancel_rounded,
+                          iconColor: Colors.white,
+                          enabled: true,
+                          text: 'cancel'.tr,
+                          onClick: () => controller.onCancelOrderTap(
+                              isPhone: true, chargeScreen: true),
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: SizedBox(
+                        height: 50,
+                        child: Obx(
+                          () => IconTextElevatedButton(
+                            buttonColor: Colors.black,
+                            textColor: Colors.white,
+                            borderRadius: 15,
+                            fontSize: 16,
+                            elevation: 0,
+                            icon: Icons.payments_outlined,
+                            iconColor: Colors.white,
+                            enabled: controller.orderItems.isNotEmpty,
+                            text:
+                                '${'charge'.tr} | \$${controller.orderTotal.value.toStringAsFixed(2)}',
+                            onClick: () =>
+                                controller.onChargeTap(isPhone: true),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              const SizedBox(height: 10),
             ],
           ),
         ),
