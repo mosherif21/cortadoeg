@@ -11,9 +11,11 @@ import '../../../../general/app_init.dart';
 import '../../../../general/general_functions.dart';
 import '../../main_screen/controllers/main_screen_controller.dart';
 import '../../orders/components/models.dart';
+import '../../orders/screens/order_details_screen_phone.dart';
 import '../../orders/screens/order_screen.dart';
 import '../../orders/screens/order_screen_phone.dart';
 import '../../tables/components/models.dart';
+import '../screens/customer_orders_screen_phone.dart';
 
 class CustomersScreenController extends GetxController {
   final RxList<CustomerModel> customersList = <CustomerModel>[].obs;
@@ -50,27 +52,45 @@ class CustomersScreenController extends GetxController {
 
   void onOrderTap({required int chosenIndex, required bool isPhone}) async {
     final chosenOrder = customerOrders[chosenIndex];
-    if (currentChosenOrder.value == chosenOrder) {
-      currentChosenOrder.value = null;
-      MainScreenController.instance.showNewOrderButton.value = true;
-    } else {
+    if (isPhone) {
+      bool changed = false;
       if (chosenOrder.status == OrderStatus.active) {
-        final changed = await Get.to(
-          () => isPhone
-              ? OrderScreenPhone(
-                  orderModel: chosenOrder,
-                )
-              : OrderScreen(
-                  orderModel: chosenOrder,
-                ),
-          transition: Transition.noTransition,
+        final result = await Get.to(
+          () => OrderScreenPhone(orderModel: chosenOrder),
+          transition: getPageTransition(),
         );
-        if (changed) {
-          onCustomerOrdersRefresh();
+        if (result != null) {
+          changed = result;
         }
       } else {
-        currentChosenOrder.value = chosenOrder;
-        MainScreenController.instance.showNewOrderButton.value = false;
+        final result = await Get.to(
+          () => OrderDetailsScreenPhone(
+            orderModel: chosenOrder,
+            controller: this,
+          ),
+          transition: getPageTransition(),
+        );
+        if (result != null) {
+          changed = result;
+        }
+      }
+      if (changed) {
+        onCustomerOrdersRefresh();
+      }
+    } else {
+      if (currentChosenOrder.value == chosenOrder) {
+        currentChosenOrder.value = null;
+        MainScreenController.instance.showNewOrderButton.value = true;
+      } else {
+        if (chosenOrder.status == OrderStatus.active) {
+          Get.to(
+            () => OrderScreen(orderModel: chosenOrder),
+            transition: getPageTransition(),
+          );
+        } else {
+          currentChosenOrder.value = chosenOrder;
+          MainScreenController.instance.showNewOrderButton.value = false;
+        }
       }
     }
   }
@@ -134,14 +154,13 @@ class CustomersScreenController extends GetxController {
 
   void onCustomerOrdersRefresh() async {
     final index = chosenCustomerIndex.value;
-    final customerId = customersList[index - 1].customerId;
+    final chosenCustomerId = customersList[index - 1].customerId;
     loadingCustomerOrders.value = true;
     currentChosenOrder.value = null;
     customerOrdersRefreshController.refreshToIdle();
     customerOrdersRefreshController.resetNoData();
     showLoadingScreen();
-    final orders = await getOrdersByCustomerId(customerId);
-
+    final orders = await getOrdersByCustomerId(chosenCustomerId);
     hideLoadingScreen();
     if (orders != null) {
       chosenCustomerIndex.value = index;
@@ -229,6 +248,16 @@ class CustomersScreenController extends GetxController {
       chosenCustomerIndex.value = index;
       customerOrders.value = orders;
       loadingCustomerOrders.value = false;
+      if (isPhone) {
+        await Get.to(
+          () => CustomerOrdersScreenPhone(
+            controller: this,
+            customerId: customerId,
+          ),
+          transition: getPageTransition(),
+        );
+        chosenCustomerIndex.value = 0;
+      }
     } else {
       showSnackBar(
         text: 'errorOccurred'.tr,
@@ -421,9 +450,10 @@ class CustomersScreenController extends GetxController {
     }
   }
 
-  void onReopenOrderTap({required bool isPhone}) async {
+  void onReopenOrderTap(
+      {required bool isPhone, OrderModel? aOrderModel}) async {
     showLoadingScreen();
-    final orderModel = currentChosenOrder.value!;
+    final orderModel = isPhone ? aOrderModel! : currentChosenOrder.value!;
     late List<TableModel> tablesList;
     final tablesListGet = await getTables();
     if (tablesListGet != null) {
@@ -456,11 +486,9 @@ class CustomersScreenController extends GetxController {
     }
     final reopenOrderStatus =
         await reopenOrder(orderId: orderModel.orderId, tablesList: tablesList);
-
     hideLoadingScreen();
     if (reopenOrderStatus == FunctionStatus.success) {
       currentChosenOrder.value = null;
-      Get.back();
       await Get.to(
         () => isPhone
             ? OrderScreenPhone(
@@ -485,7 +513,7 @@ class CustomersScreenController extends GetxController {
               ),
         transition: Transition.noTransition,
       );
-      onCustomerOrdersRefresh();
+      if (isPhone) Get.back(result: true);
     } else {
       showSnackBar(
         text: 'errorOccurred'.tr,
@@ -570,16 +598,21 @@ class CustomersScreenController extends GetxController {
     return null;
   }
 
-  void returnOrderTap() async {
+  void returnOrderTap({required bool isPhone, OrderModel? orderModel}) async {
     showLoadingScreen();
-    final returnOrderStatus = await returnOrder();
+    final returnOrderStatus =
+        await returnOrder(isPhone: isPhone, orderModel: orderModel);
     hideLoadingScreen();
     if (returnOrderStatus == FunctionStatus.success) {
+      if (isPhone) {
+        Get.back(result: true);
+      } else {
+        currentChosenOrder.value = null;
+      }
       showSnackBar(
         text: 'orderReturnedSuccess'.tr,
         snackBarType: SnackBarType.success,
       );
-      onCustomerOrdersRefresh();
     } else {
       showSnackBar(
         text: 'errorOccurred'.tr,
@@ -588,11 +621,14 @@ class CustomersScreenController extends GetxController {
     }
   }
 
-  Future<FunctionStatus> returnOrder() async {
+  Future<FunctionStatus> returnOrder(
+      {required bool isPhone, OrderModel? orderModel}) async {
     try {
       final orderReference = FirebaseFirestore.instance
           .collection('orders')
-          .doc(currentChosenOrder.value!.orderId);
+          .doc(isPhone
+              ? orderModel!.orderId
+              : currentChosenOrder.value!.orderId);
       await orderReference.update({'status': OrderStatus.returned.name});
       return FunctionStatus.success;
     } on FirebaseException catch (error) {
@@ -607,16 +643,18 @@ class CustomersScreenController extends GetxController {
     return FunctionStatus.failure;
   }
 
-  void completeOrderTap() async {
+  void completeOrderTap({required bool isPhone, OrderModel? orderModel}) async {
     showLoadingScreen();
-    final completeOrderStatus = await completeOrder();
+    final completeOrderStatus =
+        await completeOrder(isPhone: isPhone, orderModel: orderModel);
     hideLoadingScreen();
     if (completeOrderStatus == FunctionStatus.success) {
+      if (isPhone) Get.back(result: true);
       showSnackBar(
         text: 'orderCompletedSuccess'.tr,
         snackBarType: SnackBarType.success,
       );
-      onCustomerOrdersRefresh();
+      currentChosenOrder.value = null;
     } else {
       showSnackBar(
         text: 'errorOccurred'.tr,
@@ -625,11 +663,14 @@ class CustomersScreenController extends GetxController {
     }
   }
 
-  Future<FunctionStatus> completeOrder() async {
+  Future<FunctionStatus> completeOrder(
+      {required bool isPhone, OrderModel? orderModel}) async {
     try {
       final orderReference = FirebaseFirestore.instance
           .collection('orders')
-          .doc(currentChosenOrder.value!.orderId);
+          .doc(isPhone
+              ? orderModel!.orderId
+              : currentChosenOrder.value!.orderId);
       await orderReference.update({'status': OrderStatus.complete.name});
       return FunctionStatus.success;
     } on FirebaseException catch (error) {
@@ -644,7 +685,7 @@ class CustomersScreenController extends GetxController {
     return FunctionStatus.failure;
   }
 
-  void printOrderTap() {
+  void printOrderTap({required bool isPhone, OrderModel? orderModel}) {
     showSnackBar(
       text: 'orderPrintSuccess'.tr,
       snackBarType: SnackBarType.success,

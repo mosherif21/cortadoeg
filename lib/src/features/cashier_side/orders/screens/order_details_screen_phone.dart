@@ -1,5 +1,4 @@
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:cortadoeg/src/features/cashier_side/orders/controllers/orders_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -15,7 +14,7 @@ class OrderDetailsScreenPhone extends StatelessWidget {
   const OrderDetailsScreenPhone(
       {super.key, required this.orderModel, required this.controller});
   final OrderModel orderModel;
-  final OrdersController controller;
+  final dynamic controller;
   @override
   Widget build(BuildContext context) {
     return Scaffold(

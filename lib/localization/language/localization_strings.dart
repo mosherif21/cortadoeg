@@ -747,6 +747,7 @@ class Languages extends Translations {
           'selectStatus': 'Select Status',
           'selectDate': 'Select Date',
           'orderDetails': 'Order Details',
+          'customerOrders': 'Customer Orders',
         },
       };
 }
