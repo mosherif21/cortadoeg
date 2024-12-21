@@ -748,6 +748,7 @@ class Languages extends Translations {
           'selectDate': 'Select Date',
           'orderDetails': 'Order Details',
           'customerOrders': 'Customer Orders',
+          'receiptPrintFailed': 'Receipt print failed',
         },
       };
 }

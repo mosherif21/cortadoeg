@@ -254,9 +254,7 @@ class Table extends StatelessWidget {
                     ? Colors.green
                     : tableModel.status == TableStatus.occupied
                         ? Colors.amber
-                        : tableModel.status == TableStatus.billed
-                            ? Colors.black
-                            : Colors.grey.shade400,
+                        : Colors.grey.shade400,
                 innerRadius: 20,
                 outerRadius: 30,
                 child: Text(
@@ -275,9 +273,7 @@ class Table extends StatelessWidget {
                     ? Colors.green
                     : tableModel.status == TableStatus.occupied
                         ? Colors.amber
-                        : tableModel.status == TableStatus.billed
-                            ? Colors.black
-                            : Colors.grey.shade400,
+                        : Colors.grey.shade400,
                 innerRadius: 20,
                 outerRadius: 30,
                 child: Text(

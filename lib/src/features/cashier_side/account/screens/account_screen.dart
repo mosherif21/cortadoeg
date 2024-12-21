@@ -27,14 +27,28 @@ class AccountScreen extends StatelessWidget {
               surfaceTintColor: Colors.white,
             ),
       backgroundColor: Colors.white,
-      body: const SafeArea(
-        child: StretchingOverscrollIndicator(
-          axisDirection: AxisDirection.down,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [Text('')],
-            ),
-          ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.only(top: 10, bottom: 10),
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.shade300, //New
+                    blurRadius: 5.0,
+                  )
+                ],
+                color: Colors.white,
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
+              ),
+              child: CircleAvatar(
+                radius: 80,
+                //backgroundImage: ,
+              ),
+            )
+          ],
         ),
       ),
     );

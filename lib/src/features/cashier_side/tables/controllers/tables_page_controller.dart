@@ -2,20 +2,16 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cortadoeg/src/features/cashier_side/main_screen/controllers/main_screen_controller.dart';
-import 'package:cortadoeg/src/features/cashier_side/tables/components/billed_selection.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../../../constants/enums.dart';
 import '../../../../general/app_init.dart';
-import '../../../../general/common_widgets/regular_bottom_sheet.dart';
 import '../../../../general/general_functions.dart';
 import '../../orders/components/models.dart';
 import '../../orders/screens/order_screen.dart';
 import '../../orders/screens/order_screen_phone.dart';
-import '../components/billed_selection_phone.dart';
 import '../components/models.dart';
 
 class TablesPageController extends GetxController {
@@ -321,29 +317,6 @@ class TablesPageController extends GetxController {
           );
         }
       }
-    } else if (tableStatus == TableStatus.billed && selectedTables.isEmpty) {
-      final screenType = GetScreenType(Get.context!);
-      final table = tablesList[tableIndex];
-      screenType.isPhone
-          ? showRegularBottomSheet(
-              BilledSelectionPhone(
-                tableIsEmptyPress: () =>
-                    onTableEmptyTap(orderId: table.currentOrderId!),
-                reopenOrderPress: () => onReopenOrderTap(
-                    orderId: table.currentOrderId!, isPhone: isPhone),
-              ),
-            )
-          : showDialog(
-              context: Get.context!,
-              builder: (BuildContext context) {
-                return BilledSelection(
-                  tableIsEmptyPress: () =>
-                      onTableEmptyTap(orderId: table.currentOrderId!),
-                  reopenOrderPress: () => onReopenOrderTap(
-                      orderId: table.currentOrderId!, isPhone: isPhone),
-                );
-              },
-            );
     } else if (tableStatus == TableStatus.unavailable &&
         selectedTables.isEmpty) {
       return;

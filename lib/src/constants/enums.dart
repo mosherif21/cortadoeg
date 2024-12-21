@@ -16,6 +16,6 @@ enum Role { admin, cashier, waiter, takeaway }
 
 enum AuthType { emailLogin, emailRegister, facebook, google, phone }
 
-enum TableStatus { available, occupied, billed, unavailable }
+enum TableStatus { available, occupied, unavailable }
 
 enum OrderStatus { active, complete, canceled, returned }

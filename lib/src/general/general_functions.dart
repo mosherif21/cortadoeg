@@ -1,10 +1,15 @@
+import 'dart:isolate';
+
 import 'package:animated_snack_bar/animated_snack_bar.dart';
 import 'package:cortadoeg/src/general/shared_preferences_functions.dart';
 import 'package:cortadoeg/src/general/validation_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_esc_pos_network/flutter_esc_pos_network.dart';
+import 'package:flutter_esc_pos_utils/flutter_esc_pos_utils.dart';
 import 'package:get/get.dart';
+import 'package:image/image.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -14,6 +19,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../constants/assets_strings.dart';
 import '../constants/enums.dart';
+import '../features/cashier_side/orders/components/models.dart';
 import 'app_init.dart';
 import 'common_widgets/language_select.dart';
 import 'common_widgets/language_select_phone.dart';
@@ -212,6 +218,273 @@ void displayAlertDialog({
               )
             : null);
   }
+}
+
+Future<FunctionStatus> chargeOrderPrinter(
+    {required OrderModel order,
+    required String? employeeName,
+    required bool openDrawer}) async {
+  final ByteData data = await rootBundle.load(kLogoImage);
+  final capabilitiesContent = await rootBundle
+      .loadString('packages/flutter_esc_pos_utils/resources/capabilities.json');
+  final logoBytes = data.buffer.asUint8List();
+  final ReceivePort receivePort = ReceivePort();
+  await Isolate.spawn(chargeOrderIsolate, {
+    'sendPort': receivePort.sendPort,
+    'orderValue': order,
+    'employeeName': employeeName ?? 'Karim Hassan',
+    'capabilitiesContent': capabilitiesContent,
+    'logoBytes': logoBytes,
+    'openDrawer': openDrawer,
+  });
+  final resultFromIsolate = await receivePort.first;
+  return (resultFromIsolate as String).compareTo('success') == 0
+      ? FunctionStatus.success
+      : FunctionStatus.failure;
+}
+
+void chargeOrderIsolate(Map<String, dynamic> data) async {
+  final SendPort sendPort = data['sendPort'];
+  final OrderModel order = data['orderValue'];
+  final String employeeName = data['employeeName'];
+  final String capabilitiesContent = data['capabilitiesContent'];
+  final Uint8List logoBytes = data['logoBytes'];
+  final bool openDrawer = data['openDrawer'];
+  final resultStatus = await printReceipt(
+    order: order,
+    employeeName: employeeName,
+    logoBytes: logoBytes,
+    capabilitiesContent: capabilitiesContent,
+    openDrawer: openDrawer,
+  );
+  sendPort.send(resultStatus == FunctionStatus.success ? 'success' : 'failure');
+}
+
+Future<FunctionStatus> printReceipt({
+  required OrderModel order,
+  required String employeeName,
+  required String capabilitiesContent,
+  required Uint8List logoBytes,
+  required bool openDrawer,
+}) async {
+  final receiptOrderItems = order.items
+      .map((item) => {
+            'name': item.name,
+            'qty': item.quantity,
+            'price': item.price,
+          })
+      .toList();
+  final receiptBytes = await generateReceiptBytes(
+    cafeName: 'Cortado Egypt - Louran Branch',
+    slogan: 'Fix What Others Have Ruined',
+    address: 'Louran, St 50 Al Akbal, Alexandria EG',
+    phone: '01111241552',
+    website: 'www.cortadoeg.com',
+    orderNumber: order.orderNumber.toString(),
+    printedAt: DateTime.now(),
+    orderTime: order.timestamp.toDate(),
+    creator: employeeName,
+    orderItems: receiptOrderItems,
+    discount: order.discountAmount,
+    total: order.totalAmount,
+    qrData: 'https://www.cortadoeg.com',
+    logoBytes: logoBytes,
+    capabilitiesContent: capabilitiesContent,
+    openDrawer: openDrawer,
+    orderId: order.orderId,
+    taxId: '342kjbn432fou34fjods2',
+  );
+  final printer = PrinterNetworkManager('192.168.1.8');
+  final PosPrintResult result = await printer.connect();
+  if (result == PosPrintResult.success) {
+    await printer.printTicket(receiptBytes);
+    printer.disconnect();
+    return FunctionStatus.success;
+  } else {
+    return FunctionStatus.failure;
+  }
+}
+
+Future<List<int>> generateReceiptBytes({
+  required String cafeName,
+  required String slogan,
+  required String address,
+  required String phone,
+  required String orderId,
+  required String taxId,
+  required String website,
+  required String orderNumber,
+  required DateTime printedAt,
+  required DateTime orderTime,
+  required String creator,
+  required List<Map<String, dynamic>> orderItems,
+  double? discount,
+  required double total,
+  required String qrData,
+  required Uint8List logoBytes,
+  required String capabilitiesContent,
+  required bool openDrawer,
+}) async {
+  final profile =
+      await CapabilityProfile.load(capabilitiesContent: capabilitiesContent);
+  final generator = Generator(PaperSize.mm80, profile);
+  List<int> bytes = [];
+  if (openDrawer) {
+    bytes += generator.drawer();
+  }
+  generator.beep();
+  final image = decodeImage(logoBytes);
+  if (image != null) {
+    final resizedImage = copyResize(image, width: 384);
+    bytes += generator.image(resizedImage);
+  }
+  bytes += generator.feed(1);
+
+  bytes += generator.text(cafeName,
+      styles: const PosStyles(
+          align: PosAlign.center, bold: true, fontType: PosFontType.fontA));
+  bytes += generator.text('Free Palestine',
+      styles: const PosStyles(
+          align: PosAlign.center, bold: true, fontType: PosFontType.fontA));
+  bytes += generator.feed(1);
+
+  bytes += generator.text(address,
+      styles: const PosStyles(
+          align: PosAlign.center, bold: true, fontType: PosFontType.fontA));
+  bytes += generator.text('Tel: $phone',
+      styles: const PosStyles(
+          align: PosAlign.center, bold: true, fontType: PosFontType.fontA));
+  bytes += generator.text('Website: $website',
+      styles: const PosStyles(
+          align: PosAlign.center, bold: true, fontType: PosFontType.fontA));
+  bytes += generator.feed(1);
+
+  bytes += generator.text('Order# $orderNumber',
+      styles: const PosStyles(
+        align: PosAlign.center,
+        bold: true,
+        fontType: PosFontType.fontA,
+        width: PosTextSize.size2,
+        height: PosTextSize.size2,
+      ));
+  bytes += generator.feed(1);
+
+  bytes += generator.text('Order ID: $orderId',
+      styles: const PosStyles(
+          align: PosAlign.left, bold: true, fontType: PosFontType.fontA));
+  bytes += generator.text(
+      'Printed At: ${DateFormat('yyyy/MM/dd hh:mm:ss a').format(printedAt)}',
+      styles: const PosStyles(
+          align: PosAlign.left, bold: true, fontType: PosFontType.fontA));
+  bytes += generator.text(
+      'Order Time: ${DateFormat('yyyy/MM/dd hh:mm:ss a').format(orderTime)}',
+      styles: const PosStyles(
+          align: PosAlign.left, bold: true, fontType: PosFontType.fontA));
+  bytes += generator.text('Creator: $creator',
+      styles: const PosStyles(
+          align: PosAlign.left, bold: true, fontType: PosFontType.fontA));
+  bytes += generator.hr(); // Horizontal line
+
+  bytes += generator.row([
+    PosColumn(
+        text: 'QTY',
+        width: 2,
+        styles: const PosStyles(
+            align: PosAlign.left, bold: true, fontType: PosFontType.fontA)),
+    PosColumn(
+        text: 'ITEM',
+        width: 6,
+        styles: const PosStyles(
+            align: PosAlign.left, bold: true, fontType: PosFontType.fontA)),
+    PosColumn(
+        text: 'PRICE',
+        width: 4,
+        styles: const PosStyles(
+            align: PosAlign.right, bold: true, fontType: PosFontType.fontA)),
+  ]);
+  bytes += generator.hr();
+
+  for (var item in orderItems) {
+    bytes += generator.row([
+      PosColumn(
+        text: '${item['qty']}',
+        width: 2,
+        styles: const PosStyles(
+            align: PosAlign.left, bold: true, fontType: PosFontType.fontA),
+      ),
+      PosColumn(
+        text: item['name'],
+        width: 6,
+        styles: const PosStyles(
+            align: PosAlign.left, bold: true, fontType: PosFontType.fontA),
+      ),
+      PosColumn(
+        text: 'EGP ${item['price'].toStringAsFixed(2)}',
+        width: 4,
+        styles: const PosStyles(
+            align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
+      ),
+    ]);
+  }
+  bytes += generator.hr();
+  if (discount != null) {
+    bytes += generator.row([
+      PosColumn(
+        text: 'Subtotal:',
+        width: 8,
+        styles: const PosStyles(
+            align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
+      ),
+      PosColumn(
+        text: 'EGP ${(total + discount).toStringAsFixed(2)}',
+        width: 4,
+        styles: const PosStyles(
+            align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
+      ),
+    ]);
+    bytes += generator.row([
+      PosColumn(
+        text: 'Discount:',
+        width: 8,
+        styles: const PosStyles(
+            align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
+      ),
+      PosColumn(
+        text: 'EGP ${discount.toStringAsFixed(2)}',
+        width: 4,
+        styles: const PosStyles(
+            align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
+      ),
+    ]);
+  }
+  bytes += generator.row([
+    PosColumn(
+      text: 'Total:',
+      width: 8,
+      styles: const PosStyles(
+          align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
+    ),
+    PosColumn(
+      text: 'EGP ${(total).toStringAsFixed(2)}',
+      width: 4,
+      styles: const PosStyles(
+          align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
+    ),
+  ]);
+
+  bytes += generator.feed(1);
+  bytes += generator.text(slogan,
+      styles: const PosStyles(
+          align: PosAlign.center, bold: true, fontType: PosFontType.fontA));
+  bytes += generator.feed(1);
+  bytes += generator.qrcode(qrData, size: QRSize.size4);
+  bytes += generator.text('Tax ID $taxId',
+      styles: const PosStyles(
+          align: PosAlign.center, bold: true, fontType: PosFontType.fontA));
+  bytes += generator.feed(1);
+
+  bytes += generator.cut();
+  return bytes;
 }
 
 Transition getPageTransition() {

@@ -284,50 +284,21 @@ class OrderDetailsScreenPhone extends StatelessWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 10),
-                          IconTextElevatedButton(
-                            buttonColor: Colors.green,
-                            textColor: Colors.white,
-                            borderRadius: 10,
-                            elevation: 0,
-                            icon: Icons.print_outlined,
-                            iconColor: Colors.white,
-                            text: 'printInvoice'.tr,
-                            onClick: () => controller.printOrderTap(
-                                isPhone: true, orderModel: orderModel),
-                          ),
                         ],
                       )
-                    : Row(
-                        children: [
-                          Expanded(
-                            child: IconTextElevatedButton(
-                              buttonColor: Colors.deepOrange,
-                              textColor: Colors.white,
-                              borderRadius: 10,
-                              elevation: 0,
-                              icon: Icons.refresh,
-                              iconColor: Colors.white,
-                              text: 'reopen'.tr,
-                              onClick: () => controller.onReopenOrderTap(
-                                  isPhone: true, aOrderModel: orderModel),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: IconTextElevatedButton(
-                              buttonColor: Colors.green,
-                              textColor: Colors.white,
-                              borderRadius: 10,
-                              elevation: 0,
-                              icon: Icons.print_outlined,
-                              iconColor: Colors.white,
-                              text: 'print'.tr,
-                              onClick: () => controller.printOrderTap(
-                                  isPhone: true, orderModel: orderModel),
-                            ),
-                          ),
-                        ],
+                    : SizedBox(
+                        width: double.infinity,
+                        child: IconTextElevatedButton(
+                          buttonColor: Colors.deepOrange,
+                          textColor: Colors.white,
+                          borderRadius: 10,
+                          elevation: 0,
+                          icon: Icons.refresh,
+                          iconColor: Colors.white,
+                          text: 'reopen'.tr,
+                          onClick: () => controller.onReopenOrderTap(
+                              isPhone: true, aOrderModel: orderModel),
+                        ),
                       ),
             const SizedBox(height: 20),
           ],

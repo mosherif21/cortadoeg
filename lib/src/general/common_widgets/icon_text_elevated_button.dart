@@ -39,7 +39,7 @@ class IconTextElevatedButton extends StatelessWidget {
         splashFactory: InkSparkle.splashFactory,
         onTap: enabled ? () => onClick() : null,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

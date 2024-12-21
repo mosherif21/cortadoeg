@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
+import '../../../../authentication/authentication_repository.dart';
 import '../../../../constants/enums.dart';
 import '../../../../general/app_init.dart';
 import '../../../../general/general_functions.dart';
@@ -83,10 +84,15 @@ class CustomersScreenController extends GetxController {
         MainScreenController.instance.showNewOrderButton.value = true;
       } else {
         if (chosenOrder.status == OrderStatus.active) {
-          Get.to(
+          final result = await Get.to(
             () => OrderScreen(orderModel: chosenOrder),
             transition: getPageTransition(),
           );
+          if (result != null) {
+            if (result) {
+              onCustomerOrdersRefresh();
+            }
+          }
         } else {
           currentChosenOrder.value = chosenOrder;
           MainScreenController.instance.showNewOrderButton.value = false;
@@ -474,8 +480,7 @@ class CustomersScreenController extends GetxController {
     for (var table in tablesList) {
       if (table.currentOrderId != null &&
           table.currentOrderId != orderModel.orderId &&
-          (table.status == TableStatus.occupied ||
-              table.status == TableStatus.billed)) {
+          table.status == TableStatus.occupied) {
         hideLoadingScreen();
         showSnackBar(
           text: 'conflictingTablesError'.tr,
@@ -513,7 +518,11 @@ class CustomersScreenController extends GetxController {
               ),
         transition: Transition.noTransition,
       );
-      if (isPhone) Get.back(result: true);
+      if (isPhone) {
+        Get.back(result: true);
+      } else {
+        onCustomerOrdersRefresh();
+      }
     } else {
       showSnackBar(
         text: 'errorOccurred'.tr,
@@ -608,6 +617,7 @@ class CustomersScreenController extends GetxController {
         Get.back(result: true);
       } else {
         currentChosenOrder.value = null;
+        onCustomerOrdersRefresh();
       }
       showSnackBar(
         text: 'orderReturnedSuccess'.tr,
@@ -649,7 +659,12 @@ class CustomersScreenController extends GetxController {
         await completeOrder(isPhone: isPhone, orderModel: orderModel);
     hideLoadingScreen();
     if (completeOrderStatus == FunctionStatus.success) {
-      if (isPhone) Get.back(result: true);
+      if (isPhone) {
+        Get.back(result: true);
+      } else {
+        currentChosenOrder.value = null;
+        onCustomerOrdersRefresh();
+      }
       showSnackBar(
         text: 'orderCompletedSuccess'.tr,
         snackBarType: SnackBarType.success,
@@ -685,11 +700,23 @@ class CustomersScreenController extends GetxController {
     return FunctionStatus.failure;
   }
 
-  void printOrderTap({required bool isPhone, OrderModel? orderModel}) {
-    showSnackBar(
-      text: 'orderPrintSuccess'.tr,
-      snackBarType: SnackBarType.success,
-    );
+  void printOrderTap(
+      {required bool isPhone, required OrderModel orderModel}) async {
+    showLoadingScreen();
+    final printStatus = await chargeOrderPrinter(
+        order: orderModel,
+        employeeName: AuthenticationRepository.instance.employeeInfo?.name,
+        openDrawer: false);
+    hideLoadingScreen();
+    if (printStatus == FunctionStatus.success) {
+      showSnackBar(
+        text: 'orderPrintSuccess'.tr,
+        snackBarType: SnackBarType.success,
+      );
+    } else {
+      showSnackBar(
+          text: 'receiptPrintFailed'.tr, snackBarType: SnackBarType.warning);
+    }
   }
 
   @override

@@ -23,10 +23,6 @@ class TableStatusIndicatorHint extends StatelessWidget {
               color: Colors.amber,
             ),
             TableStatusWidget(
-              text: 'billed'.tr,
-              color: Colors.black,
-            ),
-            TableStatusWidget(
               text: 'unavailable'.tr,
               color: Colors.grey.shade400,
             ),

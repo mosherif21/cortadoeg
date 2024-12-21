@@ -57,7 +57,7 @@ class OrdersScreenItemWidget extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: SizedBox(
-            height: 70,
+            height: 75,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,

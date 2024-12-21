@@ -173,7 +173,7 @@ class OrderScreen extends StatelessWidget {
                                                 .currentCustomerName.value,
                                             overflow: TextOverflow.ellipsis,
                                             style: const TextStyle(
-                                              fontSize: 16,
+                                              fontSize: 14,
                                               fontWeight: FontWeight.w600,
                                               color: Colors.black87,
                                             ),
@@ -510,7 +510,7 @@ class LoadingItem extends StatelessWidget {
         children: [
           const SizedBox(height: 5),
           Container(
-            height: 150,
+            height: 130,
             width: 200,
             decoration: const BoxDecoration(
               borderRadius: BorderRadius.all(Radius.circular(15)),

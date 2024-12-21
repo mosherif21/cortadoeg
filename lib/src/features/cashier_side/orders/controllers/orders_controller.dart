@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
+import '../../../../authentication/authentication_repository.dart';
 import '../../../../constants/enums.dart';
 import '../../../../general/app_init.dart';
 import '../../../../general/general_functions.dart';
@@ -67,7 +68,7 @@ class OrdersController extends GetxController {
       if (chosenOrder.status == OrderStatus.active) {
         Get.to(
           () => OrderScreenPhone(orderModel: chosenOrder),
-          transition: Transition.noTransition,
+          transition: getPageTransition(),
         );
       } else {
         Get.to(
@@ -75,7 +76,7 @@ class OrdersController extends GetxController {
             orderModel: chosenOrder,
             controller: this,
           ),
-          transition: Transition.noTransition,
+          transition: getPageTransition(),
         );
       }
     } else {
@@ -357,8 +358,7 @@ class OrdersController extends GetxController {
     for (var table in tablesList) {
       if (table.currentOrderId != null &&
           table.currentOrderId != orderModel.orderId &&
-          (table.status == TableStatus.occupied ||
-              table.status == TableStatus.billed)) {
+          table.status == TableStatus.occupied) {
         hideLoadingScreen();
         showSnackBar(
           text: 'conflictingTablesError'.tr,
@@ -569,10 +569,22 @@ class OrdersController extends GetxController {
     return FunctionStatus.failure;
   }
 
-  void printOrderTap({required bool isPhone, OrderModel? orderModel}) {
-    showSnackBar(
-      text: 'orderPrintSuccess'.tr,
-      snackBarType: SnackBarType.success,
-    );
+  void printOrderTap(
+      {required bool isPhone, required OrderModel orderModel}) async {
+    showLoadingScreen();
+    final printStatus = await chargeOrderPrinter(
+        order: orderModel,
+        employeeName: AuthenticationRepository.instance.employeeInfo?.name,
+        openDrawer: false);
+    hideLoadingScreen();
+    if (printStatus == FunctionStatus.success) {
+      showSnackBar(
+        text: 'orderPrintSuccess'.tr,
+        snackBarType: SnackBarType.success,
+      );
+    } else {
+      showSnackBar(
+          text: 'receiptPrintFailed'.tr, snackBarType: SnackBarType.warning);
+    }
   }
 }

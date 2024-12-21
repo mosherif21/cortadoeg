@@ -119,47 +119,43 @@ class CustomersScreen extends StatelessWidget {
                                                 ? addCustomerTile(
                                                     controller: controller,
                                                     context: context)
-                                                : Obx(
-                                                    () => customerTile(
+                                                : customerTile(
+                                                    customerModel: controller
+                                                            .filteredCustomers[
+                                                        index - 1],
+                                                    onTap: () => controller
+                                                        .onCustomerTap(
+                                                      index: index,
+                                                      customerId: controller
+                                                          .filteredCustomers[
+                                                              index - 1]
+                                                          .customerId,
+                                                      isPhone:
+                                                          screenType.isPhone,
+                                                    ),
+                                                    onEditTap: () =>
+                                                        controller.onEditPress(
+                                                      context: context,
                                                       customerModel: controller
                                                               .filteredCustomers[
                                                           index - 1],
-                                                      onTap: () => controller
-                                                          .onCustomerTap(
-                                                        index: index,
-                                                        customerId: controller
-                                                            .filteredCustomers[
-                                                                index - 1]
-                                                            .customerId,
-                                                        isPhone:
-                                                            screenType.isPhone,
-                                                      ),
-                                                      onEditTap: () =>
-                                                          controller
-                                                              .onEditPress(
-                                                        context: context,
-                                                        customerModel: controller
-                                                                .filteredCustomers[
-                                                            index - 1],
-                                                        index: index - 1,
-                                                        isPhone:
-                                                            screenType.isPhone,
-                                                      ),
-                                                      onDeleteTap: () =>
-                                                          controller
-                                                              .onDeleteTap(
-                                                        customerModel: controller
-                                                                .filteredCustomers[
-                                                            index - 1],
-                                                        index: index,
-                                                        isPhone:
-                                                            screenType.isPhone,
-                                                      ),
-                                                      chosen: controller
-                                                              .chosenCustomerIndex
-                                                              .value ==
-                                                          index,
+                                                      index: index - 1,
+                                                      isPhone:
+                                                          screenType.isPhone,
                                                     ),
+                                                    onDeleteTap: () =>
+                                                        controller.onDeleteTap(
+                                                      customerModel: controller
+                                                              .filteredCustomers[
+                                                          index - 1],
+                                                      index: index,
+                                                      isPhone:
+                                                          screenType.isPhone,
+                                                    ),
+                                                    chosen: controller
+                                                            .chosenCustomerIndex
+                                                            .value ==
+                                                        index,
                                                   );
                                           },
                                         )
@@ -300,40 +296,33 @@ class CustomersScreen extends StatelessWidget {
                                                                               controller,
                                                                           context:
                                                                               context)
-                                                                      : customerTile(
-                                                                          customerModel:
-                                                                              controller.filteredCustomers[index - 1],
-                                                                          onTap: () =>
-                                                                              controller.onCustomerTap(
-                                                                            index:
-                                                                                index,
-                                                                            customerId:
-                                                                                controller.filteredCustomers[index - 1].customerId,
-                                                                            isPhone:
-                                                                                screenType.isPhone,
-                                                                          ),
-                                                                          onEditTap: () =>
-                                                                              controller.onEditPress(
-                                                                            context:
-                                                                                context,
+                                                                      : Obx(
+                                                                          () =>
+                                                                              customerTile(
                                                                             customerModel:
                                                                                 controller.filteredCustomers[index - 1],
-                                                                            index:
-                                                                                index - 1,
-                                                                            isPhone:
-                                                                                screenType.isPhone,
+                                                                            onTap: () =>
+                                                                                controller.onCustomerTap(
+                                                                              index: index,
+                                                                              customerId: controller.filteredCustomers[index - 1].customerId,
+                                                                              isPhone: screenType.isPhone,
+                                                                            ),
+                                                                            onEditTap: () =>
+                                                                                controller.onEditPress(
+                                                                              context: context,
+                                                                              customerModel: controller.filteredCustomers[index - 1],
+                                                                              index: index - 1,
+                                                                              isPhone: screenType.isPhone,
+                                                                            ),
+                                                                            onDeleteTap: () =>
+                                                                                controller.onDeleteTap(
+                                                                              customerModel: controller.filteredCustomers[index - 1],
+                                                                              index: index,
+                                                                              isPhone: screenType.isPhone,
+                                                                            ),
+                                                                            chosen:
+                                                                                controller.chosenCustomerIndex.value == index,
                                                                           ),
-                                                                          onDeleteTap: () =>
-                                                                              controller.onDeleteTap(
-                                                                            customerModel:
-                                                                                controller.filteredCustomers[index - 1],
-                                                                            index:
-                                                                                index,
-                                                                            isPhone:
-                                                                                screenType.isPhone,
-                                                                          ),
-                                                                          chosen:
-                                                                              controller.chosenCustomerIndex.value == index,
                                                                         );
                                                                 },
                                                               )
@@ -831,7 +820,7 @@ class CustomersScreen extends StatelessWidget {
                                                                                 icon: Icons.print_outlined,
                                                                                 iconColor: Colors.white,
                                                                                 text: 'printInvoice'.tr,
-                                                                                onClick: () => controller.printOrderTap(isPhone: screenType.isPhone),
+                                                                                onClick: () => controller.printOrderTap(isPhone: screenType.isPhone, orderModel: controller.currentChosenOrder.value!),
                                                                               ),
                                                                             ],
                                                                           )
@@ -868,47 +857,17 @@ class CustomersScreen extends StatelessWidget {
                                                                                       ),
                                                                                     ],
                                                                                   ),
-                                                                                  const SizedBox(height: 10),
-                                                                                  IconTextElevatedButton(
-                                                                                    buttonColor: Colors.green,
-                                                                                    textColor: Colors.white,
-                                                                                    borderRadius: 10,
-                                                                                    elevation: 0,
-                                                                                    icon: Icons.print_outlined,
-                                                                                    iconColor: Colors.white,
-                                                                                    text: 'printInvoice'.tr,
-                                                                                    onClick: () => controller.printOrderTap(isPhone: screenType.isPhone),
-                                                                                  ),
                                                                                 ],
                                                                               )
-                                                                            : Row(
-                                                                                children: [
-                                                                                  Expanded(
-                                                                                    child: IconTextElevatedButton(
-                                                                                      buttonColor: Colors.deepOrange,
-                                                                                      textColor: Colors.white,
-                                                                                      borderRadius: 10,
-                                                                                      elevation: 0,
-                                                                                      icon: Icons.refresh,
-                                                                                      iconColor: Colors.white,
-                                                                                      text: 'reopen'.tr,
-                                                                                      onClick: () => controller.onReopenOrderTap(isPhone: screenType.isPhone),
-                                                                                    ),
-                                                                                  ),
-                                                                                  const SizedBox(width: 10),
-                                                                                  Expanded(
-                                                                                    child: IconTextElevatedButton(
-                                                                                      buttonColor: Colors.green,
-                                                                                      textColor: Colors.white,
-                                                                                      borderRadius: 10,
-                                                                                      elevation: 0,
-                                                                                      icon: Icons.print_outlined,
-                                                                                      iconColor: Colors.white,
-                                                                                      text: 'print'.tr,
-                                                                                      onClick: () => controller.printOrderTap(isPhone: screenType.isPhone),
-                                                                                    ),
-                                                                                  ),
-                                                                                ],
+                                                                            : IconTextElevatedButton(
+                                                                                buttonColor: Colors.deepOrange,
+                                                                                textColor: Colors.white,
+                                                                                borderRadius: 10,
+                                                                                elevation: 0,
+                                                                                icon: Icons.refresh,
+                                                                                iconColor: Colors.white,
+                                                                                text: 'reopen'.tr,
+                                                                                onClick: () => controller.onReopenOrderTap(isPhone: screenType.isPhone),
                                                                               ),
                                                                   ],
                                                                 ),
