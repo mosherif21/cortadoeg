@@ -12,6 +12,9 @@ const String kCoffeeCup2Image = "assets/images/coffee_cup2.jpg";
 const String kCostaCupImage = "assets/images/costa_coffee.png";
 const String kReopenOrderImage = "assets/images/reopen_order.png";
 const String kEmptyTableImage = "assets/images/empty_table.png";
+const String kMaleProfileImage = "assets/images/profile_placeholder_male.jpg";
+const String kFemaleProfileImage =
+    "assets/images/profile_placeholder_female.jpg";
 
 //--Lottie assets
 const kNoInternetSwitchAnim = "assets/lottie_animations/noInternetAnim.json";

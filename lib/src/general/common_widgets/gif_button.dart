@@ -45,3 +45,51 @@ class GifButton extends StatelessWidget {
     );
   }
 }
+
+class IconElevatedButton extends StatelessWidget {
+  final IconData iconData;
+  final String text;
+  final VoidCallback onPressed;
+  final Color iconColor;
+  final Color textColor;
+
+  const IconElevatedButton({
+    super.key,
+    required this.iconData,
+    required this.iconColor,
+    required this.textColor,
+    required this.text,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(20))),
+        elevation: 5,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.grey,
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            iconData,
+            color: iconColor,
+            size: 100,
+          ),
+          const SizedBox(height: 8),
+          AutoSizeText(
+            text,
+            style: TextStyle(
+                fontSize: 25.0, fontWeight: FontWeight.w600, color: textColor),
+            maxLines: 1,
+          ),
+        ],
+      ),
+    );
+  }
+}

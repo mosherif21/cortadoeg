@@ -70,6 +70,7 @@ dependencies:
   flutter_esc_pos_network: ^1.0.3
   image: ^4.0.0
 
+
   #state management dependencies
   get: ^4.6.6
 

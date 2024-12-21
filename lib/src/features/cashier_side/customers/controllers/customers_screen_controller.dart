@@ -479,7 +479,6 @@ class CustomersScreenController extends GetxController {
 
     for (var table in tablesList) {
       if (table.currentOrderId != null &&
-          table.currentOrderId != orderModel.orderId &&
           table.status == TableStatus.occupied) {
         hideLoadingScreen();
         showSnackBar(

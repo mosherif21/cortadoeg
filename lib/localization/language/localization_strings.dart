@@ -214,7 +214,6 @@ class Languages extends Translations {
           'birthDate': 'تاريخ الميلاد',
           'enterGender': 'اختر جنسك',
           'enterPhoto': 'يرجى إضافة صورتك',
-          'enterNationalIDPhoto': 'يرجى إضافة صورة هويتك الوطنية',
           'addPhoto': 'إضافة صورة',
           'changePhoto': 'تغيير الصورة',
           'choosePicMethod': 'يرجى اختيار طريقة لإضافة صورتك',
@@ -584,7 +583,6 @@ class Languages extends Translations {
           'birthDate': 'Birth date',
           'enterGender': 'Choose your gender',
           'enterPhoto': 'Please add your photo',
-          'enterNationalIDPhoto': 'Please add your National ID photo',
           'addPhoto': 'Add photo',
           'changePhoto': 'Change photo',
           'choosePicMethod': 'Please choose a method to add your photo',
@@ -749,6 +747,10 @@ class Languages extends Translations {
           'orderDetails': 'Order Details',
           'customerOrders': 'Customer Orders',
           'receiptPrintFailed': 'Receipt print failed',
+          'cashier': 'Cashier',
+          'waiter': 'Waiter',
+          'admin': 'Admin',
+          'takeawayRole': 'Takeaway Waiter',
         },
       };
 }
