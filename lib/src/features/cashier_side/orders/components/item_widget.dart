@@ -30,7 +30,7 @@ class ItemCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            const SizedBox(height: 5),
+            const SizedBox(height: 10),
             ClipRRect(
               borderRadius: const BorderRadius.all(Radius.circular(15)),
               child: Image.asset(
@@ -40,6 +40,7 @@ class ItemCard extends StatelessWidget {
                 fit: BoxFit.contain,
               ),
             ),
+            const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Row(

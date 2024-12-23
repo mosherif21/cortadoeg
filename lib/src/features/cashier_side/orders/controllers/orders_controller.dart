@@ -9,7 +9,6 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
-import '../../../../authentication/authentication_repository.dart';
 import '../../../../constants/enums.dart';
 import '../../../../general/app_init.dart';
 import '../../../../general/general_functions.dart';
@@ -571,10 +570,8 @@ class OrdersController extends GetxController {
   void printOrderTap(
       {required bool isPhone, required OrderModel orderModel}) async {
     showLoadingScreen();
-    final printStatus = await chargeOrderPrinter(
-        order: orderModel,
-        employeeName: AuthenticationRepository.instance.employeeInfo?.name,
-        openDrawer: false);
+    final printStatus =
+        await chargeOrderPrinter(order: orderModel, openDrawer: false);
     hideLoadingScreen();
     if (printStatus == FunctionStatus.success) {
       showSnackBar(

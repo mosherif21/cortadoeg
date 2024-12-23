@@ -42,14 +42,18 @@ class OrderModel {
   String? discountType;
   double? discountValue;
   String? customerId;
+  final String employeeId;
+  final String employeeName;
   String? customerName;
-  final double totalAmount;
-  final double discountAmount;
-  final double subtotalAmount;
-  final double taxTotalAmount;
+  double totalAmount;
+  double discountAmount;
+  double subtotalAmount;
+  double taxTotalAmount;
 
   OrderModel({
     required this.orderId,
+    required this.employeeId,
+    required this.employeeName,
     required this.isTakeaway,
     required this.orderNumber,
     this.tableNumbers,
@@ -71,6 +75,8 @@ class OrderModel {
       'isTakeaway': isTakeaway,
       'tableNumbers': tableNumbers,
       'orderNumber': orderNumber,
+      'employeeId': employeeId,
+      'employeeName': employeeName,
       'items': items.map((item) => item.toFirestore()).toList(),
       'status': status.name,
       'timestamp': timestamp,
@@ -98,6 +104,8 @@ class OrderModel {
       discountType: map['discountType'],
       orderNumber: map['orderNumber'],
       customerId: map['customerId'],
+      employeeId: map['employeeId'],
+      employeeName: map['employeeName'],
       customerName: map['customerName'],
       discountValue: map['discountValue']?.toDouble(),
       subtotalAmount: map['subtotalAmount'].toDouble(),

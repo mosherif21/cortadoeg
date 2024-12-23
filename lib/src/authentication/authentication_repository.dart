@@ -516,7 +516,7 @@ class AuthenticationRepository extends GetxController {
     await _auth.signOut();
   }
 
-  Future<void> logoutAuthUser() async {
+  Future<FunctionStatus> logoutAuthUser() async {
     try {
       await logoutAuth();
       await signOutGoogle();
@@ -529,6 +529,7 @@ class AuthenticationRepository extends GetxController {
       verificationId = '';
       userRole = Role.cashier;
       employeeInfo = null;
+      return FunctionStatus.success;
     } on FirebaseAuthException catch (ex) {
       if (kDebugMode) {
         AppInit.logger.e(ex.code);
@@ -536,6 +537,7 @@ class AuthenticationRepository extends GetxController {
     } catch (e) {
       if (kDebugMode) e.printError();
     }
+    return FunctionStatus.failure;
   }
 }
 

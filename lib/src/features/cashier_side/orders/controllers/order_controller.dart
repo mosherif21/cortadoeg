@@ -682,10 +682,12 @@ class OrderController extends GetxController {
     final chargeOrderStatus = await chargeOrder(orderId: orderModel.orderId);
     hideLoadingScreen();
     if (chargeOrderStatus == FunctionStatus.success) {
-      chargeOrderPrinter(
-          order: orderModel,
-          employeeName: AuthenticationRepository.instance.employeeInfo?.name,
-          openDrawer: true);
+      orderModel.status = OrderStatus.complete;
+      orderModel.subtotalAmount = orderSubtotal.value;
+      orderModel.taxTotalAmount = orderTax.value;
+      orderModel.discountAmount = discountAmount.value;
+      orderModel.totalAmount = orderTotal.value;
+      chargeOrderPrinter(order: orderModel, openDrawer: true);
       if (isPhone) Get.back();
       Get.back(result: true);
       showSnackBar(
@@ -714,8 +716,10 @@ class OrderController extends GetxController {
       });
       if (tablesIds != null) {
         for (var tableId in tablesIds!) {
-          batch.update(firestore.collection('tables').doc(tableId),
-              {'status': TableStatus.available.name});
+          batch.update(firestore.collection('tables').doc(tableId), {
+            'status': TableStatus.available.name,
+            'currentOrderId': null,
+          });
         }
       } else {
         if (orderModel.tableNumbers != null) {

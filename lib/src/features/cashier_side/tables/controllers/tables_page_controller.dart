@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cortadoeg/src/authentication/authentication_repository.dart';
 import 'package:cortadoeg/src/features/cashier_side/main_screen/controllers/main_screen_controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
@@ -514,6 +515,7 @@ class TablesPageController extends GetxController {
     try {
       final orderNumber = await generateOrderNumber();
       if (orderNumber != null) {
+        final employeeInfo = AuthenticationRepository.instance.employeeInfo!;
         final firestore = FirebaseFirestore.instance;
         final orderDoc = firestore.collection('orders').doc();
         final newOrder = OrderModel(
@@ -528,6 +530,8 @@ class TablesPageController extends GetxController {
           subtotalAmount: 0.0,
           taxTotalAmount: 0.0,
           isTakeaway: isTakeaway,
+          employeeId: employeeInfo.id,
+          employeeName: employeeInfo.name,
         );
         await firestore.runTransaction((transaction) async {
           transaction.set(orderDoc, newOrder.toFirestore());

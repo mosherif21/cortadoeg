@@ -751,6 +751,10 @@ class Languages extends Translations {
           'waiter': 'Waiter',
           'admin': 'Admin',
           'takeawayRole': 'Takeaway Waiter',
+          'accountOption1': 'Personal information',
+          'accountOption2': 'Login & Password',
+          'accountOption3': 'Log out',
+          'logoutFailed': 'Log out failed, please try again',
         },
       };
 }

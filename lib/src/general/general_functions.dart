@@ -221,9 +221,7 @@ void displayAlertDialog({
 }
 
 Future<FunctionStatus> chargeOrderPrinter(
-    {required OrderModel order,
-    required String? employeeName,
-    required bool openDrawer}) async {
+    {required OrderModel order, required bool openDrawer}) async {
   final ByteData data = await rootBundle.load(kLogoImage);
   final capabilitiesContent = await rootBundle
       .loadString('packages/flutter_esc_pos_utils/resources/capabilities.json');
@@ -232,7 +230,6 @@ Future<FunctionStatus> chargeOrderPrinter(
   await Isolate.spawn(chargeOrderIsolate, {
     'sendPort': receivePort.sendPort,
     'orderValue': order,
-    'employeeName': employeeName ?? 'Karim Hassan',
     'capabilitiesContent': capabilitiesContent,
     'logoBytes': logoBytes,
     'openDrawer': openDrawer,
@@ -246,13 +243,11 @@ Future<FunctionStatus> chargeOrderPrinter(
 void chargeOrderIsolate(Map<String, dynamic> data) async {
   final SendPort sendPort = data['sendPort'];
   final OrderModel order = data['orderValue'];
-  final String employeeName = data['employeeName'];
   final String capabilitiesContent = data['capabilitiesContent'];
   final Uint8List logoBytes = data['logoBytes'];
   final bool openDrawer = data['openDrawer'];
   final resultStatus = await printReceipt(
     order: order,
-    employeeName: employeeName,
     logoBytes: logoBytes,
     capabilitiesContent: capabilitiesContent,
     openDrawer: openDrawer,
@@ -262,45 +257,57 @@ void chargeOrderIsolate(Map<String, dynamic> data) async {
 
 Future<FunctionStatus> printReceipt({
   required OrderModel order,
-  required String employeeName,
   required String capabilitiesContent,
   required Uint8List logoBytes,
   required bool openDrawer,
 }) async {
-  final receiptOrderItems = order.items
-      .map((item) => {
-            'name': item.name,
-            'qty': item.quantity,
-            'price': item.price,
-          })
-      .toList();
-  final receiptBytes = await generateReceiptBytes(
-    cafeName: 'Cortado Egypt - Louran Branch',
-    slogan: 'Fix What Others Have Ruined',
-    address: 'Louran, St 50 Al Akbal, Alexandria EG',
-    phone: '01111241552',
-    website: 'www.cortadoeg.com',
-    orderNumber: order.orderNumber.toString(),
-    printedAt: DateTime.now(),
-    orderTime: order.timestamp.toDate(),
-    creator: employeeName,
-    orderItems: receiptOrderItems,
-    discount: order.discountAmount,
-    total: order.totalAmount,
-    qrData: 'https://www.cortadoeg.com',
-    logoBytes: logoBytes,
-    capabilitiesContent: capabilitiesContent,
-    openDrawer: openDrawer,
-    orderId: order.orderId,
-    taxId: '342kjbn432fou34fjods2',
-  );
-  final printer = PrinterNetworkManager('192.168.1.8');
-  final PosPrintResult result = await printer.connect();
-  if (result == PosPrintResult.success) {
-    await printer.printTicket(receiptBytes);
-    printer.disconnect();
-    return FunctionStatus.success;
-  } else {
+  try {
+    final receiptOrderItems = order.items
+        .map((item) => {
+              'name': item.name,
+              'qty': item.quantity,
+              'price': item.price,
+            })
+        .toList();
+    final receiptBytes = await generateReceiptBytes(
+      cafeName: 'Cortado Egypt - Louran Branch',
+      slogan: 'Fix What Others Have Ruined',
+      address: '50 Al Akbal Street, Louran, Alexandria EG',
+      phone: '01111241552',
+      website: 'www.cortadoeg.com',
+      orderNumber: order.orderNumber.toString(),
+      printedAt: DateTime.now(),
+      orderTime: order.timestamp.toDate(),
+      creator: order.employeeName,
+      orderItems: receiptOrderItems,
+      discount: order.discountAmount,
+      total: order.totalAmount,
+      qrData: 'https://www.cortadoeg.com',
+      logoBytes: logoBytes,
+      capabilitiesContent: capabilitiesContent,
+      openDrawer: openDrawer,
+      orderId: order.orderId,
+      taxId: '648-394-425',
+    );
+    final printer = PrinterNetworkManager('192.168.1.8');
+    final PosPrintResult result = await printer.connect();
+    if (result == PosPrintResult.success) {
+      await printer.printTicket(receiptBytes);
+      printer.disconnect();
+      if (kDebugMode) {
+        AppInit.logger.i('Receipt printed Successfully');
+      }
+      return FunctionStatus.success;
+    } else {
+      if (kDebugMode) {
+        AppInit.logger.e('Failed to connect to printer');
+      }
+      return FunctionStatus.failure;
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      AppInit.logger.e(e.toString());
+    }
     return FunctionStatus.failure;
   }
 }
@@ -318,7 +325,7 @@ Future<List<int>> generateReceiptBytes({
   required DateTime orderTime,
   required String creator,
   required List<Map<String, dynamic>> orderItems,
-  double? discount,
+  required double discount,
   required double total,
   required String qrData,
   required Uint8List logoBytes,
@@ -330,9 +337,9 @@ Future<List<int>> generateReceiptBytes({
   final generator = Generator(PaperSize.mm80, profile);
   List<int> bytes = [];
   if (openDrawer) {
+    generator.beep();
     bytes += generator.drawer();
   }
-  generator.beep();
   final image = decodeImage(logoBytes);
   if (image != null) {
     final resizedImage = copyResize(image, width: 384);
@@ -354,7 +361,7 @@ Future<List<int>> generateReceiptBytes({
   bytes += generator.text('Tel: $phone',
       styles: const PosStyles(
           align: PosAlign.center, bold: true, fontType: PosFontType.fontA));
-  bytes += generator.text('Website: $website',
+  bytes += generator.text('Visit us: $website',
       styles: const PosStyles(
           align: PosAlign.center, bold: true, fontType: PosFontType.fontA));
   bytes += generator.feed(1);
@@ -369,9 +376,9 @@ Future<List<int>> generateReceiptBytes({
       ));
   bytes += generator.feed(1);
 
-  bytes += generator.text('Order ID: $orderId',
-      styles: const PosStyles(
-          align: PosAlign.left, bold: true, fontType: PosFontType.fontA));
+  // bytes += generator.text('Order ID: $orderId',
+  //     styles: const PosStyles(
+  //         align: PosAlign.left, bold: true, fontType: PosFontType.fontA));
   bytes += generator.text(
       'Printed At: ${DateFormat('yyyy/MM/dd hh:mm:ss a').format(printedAt)}',
       styles: const PosStyles(
@@ -427,7 +434,7 @@ Future<List<int>> generateReceiptBytes({
     ]);
   }
   bytes += generator.hr();
-  if (discount != null) {
+  if (discount > 0) {
     bytes += generator.row([
       PosColumn(
         text: 'Subtotal:',
@@ -465,7 +472,7 @@ Future<List<int>> generateReceiptBytes({
           align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
     ),
     PosColumn(
-      text: 'EGP ${(total).toStringAsFixed(2)}',
+      text: 'EGP ${total.toStringAsFixed(2)}',
       width: 4,
       styles: const PosStyles(
           align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
@@ -478,7 +485,7 @@ Future<List<int>> generateReceiptBytes({
           align: PosAlign.center, bold: true, fontType: PosFontType.fontA));
   bytes += generator.feed(1);
   bytes += generator.qrcode(qrData, size: QRSize.size4);
-  bytes += generator.text('Tax ID $taxId',
+  bytes += generator.text('Tax-ID $taxId',
       styles: const PosStyles(
           align: PosAlign.center, bold: true, fontType: PosFontType.fontA));
   bytes += generator.feed(1);

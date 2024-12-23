@@ -1,4 +1,6 @@
 import 'package:cortadoeg/src/authentication/models.dart';
+import 'package:cortadoeg/src/constants/enums.dart';
+import 'package:cortadoeg/src/features/authentication/screens/auth_screen.dart';
 import 'package:cortadoeg/src/features/cashier_side/account/components/photo_select.dart';
 import 'package:cortadoeg/src/general/app_init.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,8 +17,8 @@ import '../components/photo_select_phone.dart';
 
 class AccountScreenController extends GetxController {
   static AccountScreenController get instance => Get.find();
-  late Rx<XFile?> profileImage = Rx<XFile?>(null);
-  late Rxn<ImageProvider> profileMemoryImage = Rxn<ImageProvider>(null);
+  final Rx<XFile?> profileImage = Rx<XFile?>(null);
+  final Rxn<ImageProvider> profileMemoryImage = Rxn<ImageProvider>(null);
   final isProfileImageLoaded = false.obs;
   final isProfileImageChanged = false.obs;
   final picker = ImagePicker();
@@ -25,6 +27,7 @@ class AccountScreenController extends GetxController {
   late final User currentUser;
   late final EmployeeModel userInfo;
   late final AuthenticationRepository authRep;
+  final RxInt chosenProfileOption = 0.obs;
 
   @override
   void onInit() async {
@@ -102,6 +105,21 @@ class AccountScreenController extends GetxController {
       );
     }
   }
+
+  void logout() async {
+    showLoadingScreen();
+    final logoutStatus =
+        await AuthenticationRepository.instance.logoutAuthUser();
+    hideLoadingScreen();
+    if (logoutStatus == FunctionStatus.success) {
+      Get.offAll(() => const AuthenticationScreen());
+    } else {
+      showSnackBar(text: 'logoutFailed'.tr, snackBarType: SnackBarType.error);
+    }
+  }
+
+  void onAccountOptionTap(int index) =>
+      index == 2 ? logout() : chosenProfileOption.value = index;
 
   @override
   void onClose() async {

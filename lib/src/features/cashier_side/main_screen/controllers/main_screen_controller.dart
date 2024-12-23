@@ -1,5 +1,6 @@
 import 'package:bcrypt/bcrypt.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cortadoeg/src/authentication/authentication_repository.dart';
 import 'package:cortadoeg/src/features/cashier_side/orders/components/models.dart';
 import 'package:cortadoeg/src/features/cashier_side/tables/controllers/tables_page_controller.dart';
 import 'package:cortadoeg/src/general/general_functions.dart';
@@ -178,6 +179,7 @@ class MainScreenController extends GetxController {
       final orderNumber = await generateOrderNumber();
       if (orderNumber != null) {
         final orderDoc = FirebaseFirestore.instance.collection('orders').doc();
+        final employeeInfo = AuthenticationRepository.instance.employeeInfo!;
         final takeawayOrder = OrderModel(
           orderNumber: orderNumber,
           orderId: orderDoc.id,
@@ -190,6 +192,8 @@ class MainScreenController extends GetxController {
           subtotalAmount: 0.0,
           taxTotalAmount: 0.0,
           isTakeaway: true,
+          employeeId: employeeInfo.id,
+          employeeName: employeeInfo.name,
         );
         await orderDoc.set(takeawayOrder.toFirestore());
         return takeawayOrder;
