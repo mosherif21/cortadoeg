@@ -22,10 +22,9 @@ String? validateNumbersOnly(String? value) {
   if (value == null || value.isEmpty) {
     return 'textEmpty'.tr;
   }
-  // Check if the value is a valid number (integer or double)
-  final isNumberOnly = RegExp(r'^\d+(\.\d+)?$').hasMatch(value);
-  if (!isNumberOnly) {
-    return 'enterNumber'.tr;
+  final validNumberFormat = RegExp(r'^(?:\+20|20|0)1[0-9]{9}$');
+  if (!validNumberFormat.hasMatch(value.trim())) {
+    return 'invalidPhoneNumber'.tr;
   }
   return null;
 }

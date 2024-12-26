@@ -290,7 +290,7 @@ class OrderScreen extends StatelessWidget {
                                                 ),
                                               ),
                                               Text(
-                                                '\$${controller.orderSubtotal.value.toStringAsFixed(2)}',
+                                                'EGP ${controller.orderSubtotal.value.toStringAsFixed(2)}',
                                                 style: const TextStyle(
                                                   color: Colors.black,
                                                   fontWeight: FontWeight.w800,
@@ -336,7 +336,7 @@ class OrderScreen extends StatelessWidget {
                                                 child: Row(
                                                   children: [
                                                     Text(
-                                                      '-\$${controller.discountAmount.value.toStringAsFixed(2)}',
+                                                      '-EGP ${controller.discountAmount.value.toStringAsFixed(2)}',
                                                       style: const TextStyle(
                                                         color: Colors.black,
                                                         fontWeight:
@@ -376,7 +376,7 @@ class OrderScreen extends StatelessWidget {
                                                 ),
                                               ),
                                               Text(
-                                                '\$${controller.orderTax.value.toStringAsFixed(2)}',
+                                                'EGP ${controller.orderTax.value.toStringAsFixed(2)}',
                                                 style: const TextStyle(
                                                   color: Colors.black,
                                                   fontWeight: FontWeight.w800,
@@ -403,7 +403,7 @@ class OrderScreen extends StatelessWidget {
                                                 ),
                                               ),
                                               Text(
-                                                '\$${controller.orderTotal.value.toStringAsFixed(2)}',
+                                                'EGP ${controller.orderTotal.value.toStringAsFixed(2)}',
                                                 style: const TextStyle(
                                                   color: Colors.black,
                                                   fontWeight: FontWeight.w800,

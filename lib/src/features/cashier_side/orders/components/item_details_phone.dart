@@ -174,7 +174,7 @@ class ItemDetailsPhone extends StatelessWidget {
                         fontSize: 18,
                         enabled: true,
                         buttonText:
-                            '${orderItem != null ? 'updateOrder'.tr : 'addToOrder'.tr} | \$${(controller.selectedSize.value.price * controller.itemQuantity.value).toStringAsFixed(2)}',
+                            '${orderItem != null ? 'updateOrder'.tr : 'addToOrder'.tr} | EGP ${(controller.selectedSize.value.price * controller.itemQuantity.value).toStringAsFixed(2)}',
                         onPressed: () => controller.onAddTap(),
                         color: Colors.black,
                       ),

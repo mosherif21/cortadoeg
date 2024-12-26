@@ -67,7 +67,7 @@ class ItemCardPhone extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '\$${price.toStringAsFixed(2)}',
+                      'EGP ${price.toStringAsFixed(2)}',
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,

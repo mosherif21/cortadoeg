@@ -481,7 +481,7 @@ class OrdersScreen extends StatelessWidget {
                                             ),
                                           ),
                                           Text(
-                                            '\$${controller.currentChosenOrder.value!.subtotalAmount.toStringAsFixed(2)}',
+                                            'EGP ${controller.currentChosenOrder.value!.subtotalAmount.toStringAsFixed(2)}',
                                             style: const TextStyle(
                                               color: Colors.black,
                                               fontWeight: FontWeight.w800,
@@ -508,7 +508,7 @@ class OrdersScreen extends StatelessWidget {
                                             ),
                                           ),
                                           Text(
-                                            '-\$${controller.currentChosenOrder.value!.discountAmount.toStringAsFixed(2)}',
+                                            '-EGP ${controller.currentChosenOrder.value!.discountAmount.toStringAsFixed(2)}',
                                             style: const TextStyle(
                                               color: Colors.black,
                                               fontWeight: FontWeight.w800,
@@ -535,7 +535,7 @@ class OrdersScreen extends StatelessWidget {
                                             ),
                                           ),
                                           Text(
-                                            '\$${controller.currentChosenOrder.value!.taxTotalAmount.toStringAsFixed(2)}',
+                                            'EGP ${controller.currentChosenOrder.value!.taxTotalAmount.toStringAsFixed(2)}',
                                             style: const TextStyle(
                                               color: Colors.black,
                                               fontWeight: FontWeight.w800,
@@ -562,7 +562,7 @@ class OrdersScreen extends StatelessWidget {
                                             ),
                                           ),
                                           Text(
-                                            '\$${controller.currentChosenOrder.value!.totalAmount.toStringAsFixed(2)}',
+                                            'EGP ${controller.currentChosenOrder.value!.totalAmount.toStringAsFixed(2)}',
                                             style: const TextStyle(
                                               color: Colors.black,
                                               fontWeight: FontWeight.w800,

@@ -154,7 +154,7 @@ class OrderWidget extends StatelessWidget {
     final orderTax = taxableAmount * (0 / 100);
     final orderTotal = roundToNearestHalfOrWhole(taxableAmount + orderTax);
 
-    return orderTotal == 0 ? '\$0' : '\$${orderTotal.toString()}';
+    return orderTotal == 0 ? 'EGP 0' : 'EGP ${orderTotal.toString()}';
   }
 
   String formatOrderDetails({

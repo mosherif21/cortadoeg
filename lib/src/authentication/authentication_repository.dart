@@ -48,6 +48,30 @@ class AuthenticationRepository extends GetxController {
     super.onInit();
   }
 
+  Future<String> linkWithEmailAndPassword(String email, String password) async {
+    try {
+      final credential =
+          EmailAuthProvider.credential(email: email, password: password);
+      await fireUser.value!.linkWithCredential(credential);
+      await fireUser.value!.reauthenticateWithCredential(credential);
+      await fireUser.value!.updateEmail(email);
+      await updateUserEmailFirestore(email: email);
+      employeeInfo?.email = email;
+      return 'success';
+    } on FirebaseAuthException catch (e) {
+      final ex = SignUpWithEmailAndPasswordFailure.code(e.code);
+      if (kDebugMode) {
+        AppInit.logger.e('FIREBASE AUTH EXCEPTION : ${e.toString()}');
+      }
+      return ex.errorMessage;
+    } catch (e) {
+      if (kDebugMode) {
+        AppInit.logger.e(e.toString());
+      }
+    }
+    return 'unknownError'.tr;
+  }
+
   Future<FunctionStatus> sendVerificationEmail() async {
     try {
       if (_auth.currentUser != null) {
@@ -157,7 +181,7 @@ class AuthenticationRepository extends GetxController {
 
   Future<void> updateUserEmailFirestore({required String email}) async {
     final userId = fireUser.value!.uid;
-    final firestoreUsersCollRef = _firestore.collection('users');
+    final firestoreUsersCollRef = _firestore.collection('employees');
     try {
       await firestoreUsersCollRef.doc(userId).update({'email': email});
     } on FirebaseException catch (error) {
@@ -169,6 +193,34 @@ class AuthenticationRepository extends GetxController {
         AppInit.logger.e(e.toString());
       }
     }
+  }
+
+  Future<FunctionStatus> updateEmployeePersonalInfo({
+    required String name,
+    required String phone,
+    required String gender,
+    required Timestamp birthDate,
+  }) async {
+    final userId = fireUser.value!.uid;
+    final firestoreUsersCollRef = _firestore.collection('employees');
+    try {
+      await firestoreUsersCollRef.doc(userId).update({
+        'name': name,
+        'phone': phone,
+        'gender': gender,
+        'birthDate': birthDate,
+      });
+      return FunctionStatus.success;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        AppInit.logger.e(e.toString());
+      }
+    }
+    return FunctionStatus.failure;
   }
 
   Future<String> updateUserEmailAuthentication({required String email}) async {
@@ -199,7 +251,7 @@ class AuthenticationRepository extends GetxController {
   Future<FunctionStatus> updateUserPhoneFirestore(
       {required String phone}) async {
     final String userId = fireUser.value!.uid;
-    final firestoreUsersCollRef = _firestore.collection('users');
+    final firestoreUsersCollRef = _firestore.collection('employees');
     try {
       await firestoreUsersCollRef.doc(userId).update({'phoneNumber': phone});
       return FunctionStatus.success;

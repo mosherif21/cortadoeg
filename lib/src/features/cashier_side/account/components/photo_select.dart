@@ -34,7 +34,7 @@ class PhotoSelect extends StatelessWidget {
               AutoSizeText(
                 headerText,
                 style: const TextStyle(
-                  fontSize: 30,
+                  fontSize: 22,
                   color: Colors.black87,
                   fontWeight: FontWeight.w800,
                 ),

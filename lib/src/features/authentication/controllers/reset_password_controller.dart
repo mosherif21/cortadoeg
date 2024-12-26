@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:line_icons/line_icons.dart';
 import 'package:sweetsheet/sweetsheet.dart';
@@ -58,7 +58,8 @@ class ResetPasswordController extends GetxController {
         },
         negativeButtonOnPressed: () => Get.back(),
         mainIcon: LineIcons.checkCircleAlt,
-        color: SweetSheetColor.NICE,
+        color: CustomSheetColor(
+            main: Colors.black, accent: Colors.black87, icon: Colors.white),
       );
     }
   }

@@ -52,7 +52,7 @@ class NotificationsButton extends StatelessWidget {
           ),
         ),
         onTap: () {
-          displayChangeLang();
+          
           // Get.to(
           //       () => const NotificationsScreen(),
           // );

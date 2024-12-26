@@ -6,6 +6,7 @@ import '../../../../constants/enums.dart';
 const accountOptionIcon = [
   Icons.account_circle_rounded,
   Icons.lock_outline_rounded,
+  Icons.language_rounded,
   Icons.logout_rounded,
 ];
 String getRoleName(Role role) {

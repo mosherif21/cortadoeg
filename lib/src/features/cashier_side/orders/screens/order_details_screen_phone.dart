@@ -123,7 +123,7 @@ class OrderDetailsScreenPhone extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '\$${orderModel.subtotalAmount.toStringAsFixed(2)}',
+                        'EGP ${orderModel.subtotalAmount.toStringAsFixed(2)}',
                         style: const TextStyle(
                           color: Colors.black,
                           fontWeight: FontWeight.w800,
@@ -145,7 +145,7 @@ class OrderDetailsScreenPhone extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '-\$${orderModel.discountAmount.toStringAsFixed(2)}',
+                        '-EGP ${orderModel.discountAmount.toStringAsFixed(2)}',
                         style: const TextStyle(
                           color: Colors.black,
                           fontWeight: FontWeight.w800,
@@ -167,7 +167,7 @@ class OrderDetailsScreenPhone extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '\$${orderModel.taxTotalAmount.toStringAsFixed(2)}',
+                        'EGP ${orderModel.taxTotalAmount.toStringAsFixed(2)}',
                         style: const TextStyle(
                           color: Colors.black,
                           fontWeight: FontWeight.w800,
@@ -189,7 +189,7 @@ class OrderDetailsScreenPhone extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '\$${orderModel.totalAmount.toStringAsFixed(2)}',
+                        'EGP ${orderModel.totalAmount.toStringAsFixed(2)}',
                         style: const TextStyle(
                           color: Colors.black,
                           fontWeight: FontWeight.w800,

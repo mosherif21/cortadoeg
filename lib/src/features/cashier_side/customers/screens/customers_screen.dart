@@ -682,7 +682,7 @@ class CustomersScreen extends StatelessWidget {
                                                                                     ),
                                                                                   ),
                                                                                   Text(
-                                                                                    '\$${controller.currentChosenOrder.value!.subtotalAmount.toStringAsFixed(2)}',
+                                                                                    'EGP ${controller.currentChosenOrder.value!.subtotalAmount.toStringAsFixed(2)}',
                                                                                     style: const TextStyle(
                                                                                       color: Colors.black,
                                                                                       fontWeight: FontWeight.w800,
@@ -709,7 +709,7 @@ class CustomersScreen extends StatelessWidget {
                                                                                   GestureDetector(
                                                                                     onTap: () {},
                                                                                     child: Text(
-                                                                                      '-\$${controller.currentChosenOrder.value!.discountAmount.toStringAsFixed(2)}',
+                                                                                      '-EGP ${controller.currentChosenOrder.value!.discountAmount.toStringAsFixed(2)}',
                                                                                       style: const TextStyle(
                                                                                         color: Colors.black,
                                                                                         fontWeight: FontWeight.w800,
@@ -735,7 +735,7 @@ class CustomersScreen extends StatelessWidget {
                                                                                     ),
                                                                                   ),
                                                                                   Text(
-                                                                                    '\$${controller.currentChosenOrder.value!.taxTotalAmount.toStringAsFixed(2)}',
+                                                                                    'EGP ${controller.currentChosenOrder.value!.taxTotalAmount.toStringAsFixed(2)}',
                                                                                     style: const TextStyle(
                                                                                       color: Colors.black,
                                                                                       fontWeight: FontWeight.w800,
@@ -760,7 +760,7 @@ class CustomersScreen extends StatelessWidget {
                                                                                     ),
                                                                                   ),
                                                                                   Text(
-                                                                                    '\$${controller.currentChosenOrder.value!.totalAmount.toStringAsFixed(2)}',
+                                                                                    'EGP ${controller.currentChosenOrder.value!.totalAmount.toStringAsFixed(2)}',
                                                                                     style: const TextStyle(
                                                                                       color: Colors.black,
                                                                                       fontWeight: FontWeight.w800,
@@ -1065,6 +1065,8 @@ class CustomersScreen extends StatelessWidget {
                       maxLength: 10,
                     ),
                   ],
+                  validator: (number) async =>
+                      validateNumbersOnly(number?.completeNumber),
                   pickerDialogStyle: PickerDialogStyle(
                     searchFieldInputDecoration:
                         InputDecoration(hintText: 'searchCountry'.tr),

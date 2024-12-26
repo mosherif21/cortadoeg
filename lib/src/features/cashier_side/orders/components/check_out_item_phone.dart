@@ -108,7 +108,7 @@ class CheckOutItemPhone extends StatelessWidget {
                           ],
                         ),
                         Text(
-                          '\$${(orderItemModel.price * orderItemModel.quantity).toStringAsFixed(2)}',
+                          'EGP ${(orderItemModel.price * orderItemModel.quantity).toStringAsFixed(2)}',
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w800,

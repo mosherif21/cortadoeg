@@ -91,7 +91,7 @@ class OrderScreenPhone extends StatelessWidget {
                             ),
                             Obx(
                               () => Text(
-                                '\$${controller.orderTotal.value.toStringAsFixed(2)}',
+                                'EGP ${controller.orderTotal.value.toStringAsFixed(2)}',
                                 style: const TextStyle(
                                   color: Colors.black,
                                   fontWeight: FontWeight.w800,

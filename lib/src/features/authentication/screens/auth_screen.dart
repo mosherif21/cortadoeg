@@ -52,7 +52,7 @@ class AuthenticationScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         const ButtonLanguageSelect(color: Colors.black54),
-                        SizedBox(height: screenHeight * 0.13),
+                        SizedBox(height: screenHeight * 0.05),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -62,7 +62,7 @@ class AuthenticationScreen extends StatelessWidget {
                             ),
                             Container(
                               constraints: const BoxConstraints(maxWidth: 500),
-                              child: RegularCard(
+                              child: const RegularCard(
                                   padding: 35, child: AuthenticationForm()),
                             ),
                           ],

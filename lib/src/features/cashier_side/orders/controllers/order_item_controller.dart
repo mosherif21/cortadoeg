@@ -48,7 +48,7 @@ class OrderItemController extends GetxController {
   }
 
   String formattedSize(String size, double price) {
-    return '$size - \$${price.toStringAsFixed(2)}';
+    return '$size - EGP ${price.toStringAsFixed(2)}';
   }
 
   void onAddTap() {

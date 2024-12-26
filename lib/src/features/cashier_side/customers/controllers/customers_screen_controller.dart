@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cortadoeg/src/features/cashier_side/customers/components/add_customer_widget.dart';
+import 'package:cortadoeg/src/general/validation_functions.dart';
 import 'package:expansion_tile_group/expansion_tile_group.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -182,7 +183,10 @@ class CustomersScreenController extends GetxController {
   void addCustomerPress({required bool isPhone}) async {
     final discountText = discountTextController.text.trim();
     final name = nameTextController.text.trim();
-    if (formKey.currentState!.validate() && isNumeric(discountText)) {
+
+    if (formKey.currentState!.validate() &&
+        isNumeric(discountText) &&
+        validateNumbersOnly(number.value) == null) {
       final customerModel = CustomerModel(
         customerId: '',
         name: name,

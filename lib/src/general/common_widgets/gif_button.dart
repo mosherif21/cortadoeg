@@ -85,7 +85,7 @@ class IconElevatedButton extends StatelessWidget {
           AutoSizeText(
             text,
             style: TextStyle(
-                fontSize: 25.0, fontWeight: FontWeight.w600, color: textColor),
+                fontSize: 22, fontWeight: FontWeight.w600, color: textColor),
             maxLines: 1,
           ),
         ],

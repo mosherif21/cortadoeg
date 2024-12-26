@@ -8,7 +8,6 @@ import 'package:hawk_fab_menu/hawk_fab_menu.dart';
 
 import '../../account/screens/account_screen.dart';
 import '../../orders/screens/orders_screen.dart';
-import '../../settings/screens/settings_screen.dart';
 import '../../tables/screens/tables_screen.dart';
 import '../components/main_screen_pages_appbar.dart';
 import '../components/navigation_bar.dart';
@@ -140,8 +139,6 @@ class MainScreen extends StatelessWidget {
                           return const CustomersScreen();
                         case 3:
                           return const AccountScreen();
-                        case 4:
-                          return const SettingsScreen();
                         default:
                           return const TablesScreen(navBarAccess: true);
                       }

@@ -8,6 +8,7 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import '../../../../constants/enums.dart';
 import '../../../../general/app_init.dart';
 import '../../../../general/general_functions.dart';
+import '../../../../general/validation_functions.dart';
 import '../components/models.dart';
 
 class CustomerChooseController extends GetxController {
@@ -96,7 +97,9 @@ class CustomerChooseController extends GetxController {
   void addCustomerPress() async {
     final discountText = discountTextController.text.trim();
     final name = nameTextController.text.trim();
-    if (formKey.currentState!.validate() && isNumeric(discountText)) {
+    if (formKey.currentState!.validate() &&
+        isNumeric(discountText) &&
+        validateNumbersOnly(number.value) == null) {
       final customerModel = CustomerModel(
         customerId: '',
         name: name,

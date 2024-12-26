@@ -7,6 +7,8 @@ const String kUkFlagImage = "assets/gifs/uk_flag.gif";
 //--Images Assets
 const String kLogoImage = "assets/images/logo.png";
 const String kLogoDarkImage = "assets/images/logo_white.png";
+const String kGoogleImage = "assets/images/google.png";
+const String kFacebookImage = "assets/images/facebook.png";
 const String kCoffeeCupImage = "assets/images/coffee_cup.png";
 const String kCoffeeCup2Image = "assets/images/coffee_cup2.jpg";
 const String kCostaCupImage = "assets/images/costa_coffee.png";
@@ -24,6 +26,8 @@ const kChooseCustomerAnim = "assets/lottie_animations/chooseCustomerAnim.json";
 const kEmptyCartAnim = "assets/lottie_animations/empty_cart.json";
 const String kEmailVerificationAnim =
     "assets/lottie_animations/email_verification.json";
+const String kPasswordResetAnim =
+    "assets/lottie_animations/password_reset.json";
 const String kDeleteAnim = "assets/lottie_animations/delete.json";
 const String kLoadingCoffeeAnim =
     "assets/lottie_animations/loading_coffee.json";

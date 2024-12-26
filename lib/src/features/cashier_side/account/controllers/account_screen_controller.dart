@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:cortadoeg/src/authentication/models.dart';
 import 'package:cortadoeg/src/constants/enums.dart';
-import 'package:cortadoeg/src/features/authentication/screens/auth_screen.dart';
 import 'package:cortadoeg/src/features/cashier_side/account/components/photo_select.dart';
+import 'package:cortadoeg/src/features/cashier_side/account/controllers/login_password_form_controller.dart';
+import 'package:cortadoeg/src/features/cashier_side/account/controllers/personal_info_form_controller.dart';
 import 'package:cortadoeg/src/general/app_init.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -28,6 +31,7 @@ class AccountScreenController extends GetxController {
   late final EmployeeModel userInfo;
   late final AuthenticationRepository authRep;
   final RxInt chosenProfileOption = 0.obs;
+  final gender = ''.obs;
 
   @override
   void onInit() async {
@@ -68,7 +72,19 @@ class AccountScreenController extends GetxController {
     final addedImage = await picker.pickImage(source: ImageSource.gallery);
     if (addedImage != null) {
       profileImage.value = addedImage;
-      isProfileImageChanged.value = true;
+      showLoadingScreen();
+      final saveStatus = await saveProfileImage();
+      hideLoadingScreen();
+      if (saveStatus == FunctionStatus.success) {
+        isProfileImageChanged.value = true;
+        showSnackBar(
+            text: 'profileImageChangeSuccess'.tr,
+            snackBarType: SnackBarType.success);
+      } else {
+        showSnackBar(
+            text: 'profileImageChangeFail'.tr,
+            snackBarType: SnackBarType.error);
+      }
     }
   }
 
@@ -81,6 +97,25 @@ class AccountScreenController extends GetxController {
         isProfileImageChanged.value = true;
       }
     }
+  }
+
+  Future<FunctionStatus> saveProfileImage() async {
+    try {
+      final File file = File(profileImage.value!.path);
+      final String fileName = 'users/$userId/profilePic';
+      final Reference storageRef =
+          FirebaseStorage.instance.ref().child(fileName);
+      final UploadTask uploadTask = storageRef.putFile(file);
+      await uploadTask;
+      //final String downloadUrl = await storageRef.getDownloadURL();
+      isProfileImageChanged.value = false;
+      return FunctionStatus.success;
+    } on FirebaseException catch (e) {
+      AppInit.logger.e("An unexpected error occurred: ${e.message}");
+    } catch (e) {
+      AppInit.logger.e("An unexpected error occurred: $e");
+    }
+    return FunctionStatus.failure;
   }
 
   void onEditProfileTap({required bool isPhone}) {
@@ -106,20 +141,21 @@ class AccountScreenController extends GetxController {
     }
   }
 
-  void logout() async {
-    showLoadingScreen();
-    final logoutStatus =
-        await AuthenticationRepository.instance.logoutAuthUser();
-    hideLoadingScreen();
-    if (logoutStatus == FunctionStatus.success) {
-      Get.offAll(() => const AuthenticationScreen());
+  void onAccountOptionTap(int index) {
+    if (index == 3) {
+      logoutDialogue();
+    } else if (index == 2) {
+      displayChangeLang();
     } else {
-      showSnackBar(text: 'logoutFailed'.tr, snackBarType: SnackBarType.error);
+      chosenProfileOption.value = index;
+      if (Get.isRegistered<PersonalInfoFormController>()) {
+        Get.delete<PersonalInfoFormController>();
+      }
+      if (Get.isRegistered<LoginPasswordFormController>()) {
+        Get.delete<LoginPasswordFormController>();
+      }
     }
   }
-
-  void onAccountOptionTap(int index) =>
-      index == 2 ? logout() : chosenProfileOption.value = index;
 
   @override
   void onClose() async {

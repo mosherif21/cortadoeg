@@ -83,7 +83,7 @@ class ChargeScreenPhone extends StatelessWidget {
                             ),
                             Obx(
                               () => Text(
-                                '\$${controller.orderTotal.value.toStringAsFixed(2)}',
+                                'EGP ${controller.orderTotal.value.toStringAsFixed(2)}',
                                 style: const TextStyle(
                                   color: Colors.black,
                                   fontWeight: FontWeight.w800,
@@ -166,7 +166,7 @@ class ChargeScreenPhone extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              '\$${controller.orderSubtotal.value.toStringAsFixed(2)}',
+                              'EGP ${controller.orderSubtotal.value.toStringAsFixed(2)}',
                               style: const TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.w800,
@@ -208,7 +208,7 @@ class ChargeScreenPhone extends StatelessWidget {
                               child: Row(
                                 children: [
                                   Text(
-                                    '-\$${controller.discountAmount.value.toStringAsFixed(2)}',
+                                    '-EGP ${controller.discountAmount.value.toStringAsFixed(2)}',
                                     style: const TextStyle(
                                       color: Colors.black,
                                       fontWeight: FontWeight.w800,
@@ -242,7 +242,7 @@ class ChargeScreenPhone extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              '\$${controller.orderTax.value.toStringAsFixed(2)}',
+                              'EGP ${controller.orderTax.value.toStringAsFixed(2)}',
                               style: const TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.w800,
@@ -304,7 +304,7 @@ class ChargeScreenPhone extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              '\$${controller.orderTotal.value.toStringAsFixed(2)}',
+                              'EGP ${controller.orderTotal.value.toStringAsFixed(2)}',
                               style: const TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.w800,
@@ -413,7 +413,7 @@ class ChargeScreenPhone extends StatelessWidget {
                             iconColor: Colors.white,
                             enabled: controller.orderItems.isNotEmpty,
                             text:
-                                '${'charge'.tr} | \$${controller.orderTotal.value.toStringAsFixed(2)}',
+                                '${'charge'.tr} | EGP ${controller.orderTotal.value.toStringAsFixed(2)}',
                             onClick: () =>
                                 controller.onChargeTap(isPhone: true),
                           ),

@@ -132,8 +132,6 @@ class MainScreenController extends GetxController {
         return 'customers'.tr;
       case 3:
         return 'account'.tr;
-      case 4:
-        return 'settings'.tr;
       default:
         return 'tablesView'.tr;
     }

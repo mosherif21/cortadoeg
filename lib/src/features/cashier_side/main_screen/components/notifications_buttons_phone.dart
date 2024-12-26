@@ -37,7 +37,6 @@ class NotificationsButtonPhone extends StatelessWidget {
                 ),
         ),
         onTap: () {
-          displayChangeLang();
           // Get.to(
           //       () => const NotificationsScreen(),
           // );

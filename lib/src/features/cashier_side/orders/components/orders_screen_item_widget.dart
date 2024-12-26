@@ -99,7 +99,7 @@ class OrdersScreenItemWidget extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '\$${(orderItemModel.price * orderItemModel.quantity).toStringAsFixed(2)}',
+                      'EGP ${(orderItemModel.price * orderItemModel.quantity).toStringAsFixed(2)}',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
@@ -122,7 +122,7 @@ class OrdersScreenItemWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '${orderItemModel.size} - \$${orderItemModel.price.toStringAsFixed(2)}',
+          '${orderItemModel.size} - EGP ${orderItemModel.price.toStringAsFixed(2)}',
           style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w800,

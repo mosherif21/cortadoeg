@@ -26,11 +26,17 @@ class LoggedInResetPasswordPage extends StatelessWidget {
     final screenType = GetScreenType(context);
     return Scaffold(
       appBar: AppBar(
-        leading: screenType.isPhone
-            ? const RegularBackButton(padding: 0)
-            : const CircleBackButton(padding: 5),
+        leading: const RegularBackButton(padding: 0),
         elevation: 0,
+        title: AutoSizeText(
+          'changePassword'.tr,
+          maxLines: 1,
+          style: const TextStyle(
+              color: Colors.black87, fontWeight: FontWeight.w600, fontSize: 22),
+        ),
         backgroundColor: Colors.white,
+        foregroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
       ),
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -47,7 +53,7 @@ class LoggedInResetPasswordPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Lottie.asset(
-                        kEmailVerificationAnim,
+                        kPasswordResetAnim,
                         fit: BoxFit.contain,
                         height: screenHeight * 0.4,
                       ),
@@ -91,7 +97,7 @@ class LoggedInResetPasswordPage extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Lottie.asset(
-                          kEmailVerificationAnim,
+                          kPasswordResetAnim,
                           fit: BoxFit.contain,
                           height: screenHeight * 0.7,
                         ),
@@ -106,7 +112,7 @@ class LoggedInResetPasswordPage extends StatelessWidget {
                                 'loggedInPasswordResetLink'.tr,
                                 style: TextStyle(
                                   color: Colors.black,
-                                  fontSize: AppInit.notWebMobile ? 25 : 14,
+                                  fontSize: AppInit.notWebMobile ? 25 : 16,
                                   fontWeight: FontWeight.w700,
                                 ),
                                 maxLines: 2,

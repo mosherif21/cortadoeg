@@ -17,8 +17,10 @@ import 'package:share_plus/share_plus.dart';
 import 'package:sweetsheet/sweetsheet.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../authentication/authentication_repository.dart';
 import '../constants/assets_strings.dart';
 import '../constants/enums.dart';
+import '../features/authentication/screens/auth_screen.dart';
 import '../features/cashier_side/orders/components/models.dart';
 import 'app_init.dart';
 import 'common_widgets/language_select.dart';
@@ -281,6 +283,7 @@ Future<FunctionStatus> printReceipt({
       creator: order.employeeName,
       orderItems: receiptOrderItems,
       discount: order.discountAmount,
+      subtotal: order.subtotalAmount,
       total: order.totalAmount,
       qrData: 'https://www.cortadoeg.com',
       logoBytes: logoBytes,
@@ -326,6 +329,7 @@ Future<List<int>> generateReceiptBytes({
   required String creator,
   required List<Map<String, dynamic>> orderItems,
   required double discount,
+  required double subtotal,
   required double total,
   required String qrData,
   required Uint8List logoBytes,
@@ -337,7 +341,6 @@ Future<List<int>> generateReceiptBytes({
   final generator = Generator(PaperSize.mm80, profile);
   List<int> bytes = [];
   if (openDrawer) {
-    generator.beep();
     bytes += generator.drawer();
   }
   final image = decodeImage(logoBytes);
@@ -375,10 +378,6 @@ Future<List<int>> generateReceiptBytes({
         height: PosTextSize.size2,
       ));
   bytes += generator.feed(1);
-
-  // bytes += generator.text('Order ID: $orderId',
-  //     styles: const PosStyles(
-  //         align: PosAlign.left, bold: true, fontType: PosFontType.fontA));
   bytes += generator.text(
       'Printed At: ${DateFormat('yyyy/MM/dd hh:mm:ss a').format(printedAt)}',
       styles: const PosStyles(
@@ -443,7 +442,7 @@ Future<List<int>> generateReceiptBytes({
             align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
       ),
       PosColumn(
-        text: 'EGP ${(total + discount).toStringAsFixed(2)}',
+        text: 'EGP ${subtotal.toStringAsFixed(2)}',
         width: 4,
         styles: const PosStyles(
             align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
@@ -654,7 +653,8 @@ Future<bool> handleGeneralPermission({
         },
         negativeButtonOnPressed: () => Get.back(),
         mainIcon: Icons.settings,
-        color: SweetSheetColor.WARNING,
+        color: CustomSheetColor(
+            main: Colors.black, accent: Colors.black87, icon: Colors.white),
       );
     }
   } catch (err) {
@@ -664,6 +664,28 @@ Future<bool> handleGeneralPermission({
   }
 
   return false;
+}
+
+void logoutDialogue() => displayAlertDialog(
+      title: 'logout'.tr,
+      body: 'logoutConfirm'.tr,
+      positiveButtonText: 'yes'.tr,
+      negativeButtonText: 'no'.tr,
+      positiveButtonOnPressed: () => logout(),
+      negativeButtonOnPressed: () => Get.back(),
+      mainIcon: Icons.logout,
+      color: CustomSheetColor(
+          main: Colors.black, accent: Colors.black87, icon: Colors.white),
+    );
+void logout() async {
+  showLoadingScreen();
+  final logoutStatus = await AuthenticationRepository.instance.logoutAuthUser();
+  hideLoadingScreen();
+  if (logoutStatus == FunctionStatus.success) {
+    Get.offAll(() => const AuthenticationScreen());
+  } else {
+    showSnackBar(text: 'logoutFailed'.tr, snackBarType: SnackBarType.error);
+  }
 }
 
 class GetScreenType {

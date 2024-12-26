@@ -35,7 +35,7 @@ class ItemCard extends StatelessWidget {
               borderRadius: const BorderRadius.all(Radius.circular(15)),
               child: Image.asset(
                 imageUrl ?? kLogoImage,
-                height: 150,
+                height: 130,
                 width: double.infinity,
                 fit: BoxFit.contain,
               ),
@@ -46,17 +46,21 @@ class ItemCard extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  AutoSizeText(
-                    title,
-                    maxLines: 2,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                  SizedBox(
+                    width: 100,
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      style: const TextStyle(
+                        overflow: TextOverflow.ellipsis,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
                     ),
                   ),
                   Text(
-                    '\$${price.toStringAsFixed(2)}',
+                    'EGP ${price.toStringAsFixed(2)}',
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
