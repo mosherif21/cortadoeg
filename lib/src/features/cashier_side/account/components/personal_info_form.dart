@@ -416,7 +416,8 @@ class PersonalInfoForm extends StatelessWidget {
                         borderRadius: BorderRadius.circular(15),
                       ),
                     ),
-                    onPressed: controller.onSaveChanges,
+                    onPressed: () =>
+                        controller.onSaveChanges(screenType.isPhone),
                     child: Text(
                       'saveChanges'.tr,
                       style: const TextStyle(

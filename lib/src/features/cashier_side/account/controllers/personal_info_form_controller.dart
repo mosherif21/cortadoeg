@@ -64,7 +64,7 @@ class PersonalInfoFormController extends GetxController {
     }
   }
 
-  void onSaveChanges() async {
+  void onSaveChanges(bool isPhone) async {
     if (formKey.currentState!.validate()) {
       showLoadingScreen();
       final name =
@@ -77,6 +77,7 @@ class PersonalInfoFormController extends GetxController {
       );
       hideLoadingScreen();
       if (saveStatus == FunctionStatus.success) {
+        if (isPhone) Get.back();
         showSnackBar(
             text: 'personalInfoSaveSuccess'.tr,
             snackBarType: SnackBarType.success);
