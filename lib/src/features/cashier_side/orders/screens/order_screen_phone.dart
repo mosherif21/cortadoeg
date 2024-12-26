@@ -293,7 +293,7 @@ class OrderScreenPhone extends StatelessWidget {
                       isTakeaway: orderModel.isTakeaway,
                       orderNumber: orderModel.orderNumber.toString(),
                       tablesNo: orderModel.tableNumbers,
-                      titleFontSize: 18,
+                      titleFontSize: 22,
                     ),
                     Obx(
                       () => controller.loadingCategories.value

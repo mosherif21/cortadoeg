@@ -28,6 +28,7 @@ class EmailChangePage extends StatelessWidget {
       appBar: AppBar(
         leading: const RegularBackButton(padding: 0),
         elevation: 0,
+        centerTitle: screenType.isPhone,
         title: AutoSizeText(
           'changeEmail'.tr,
           maxLines: 1,

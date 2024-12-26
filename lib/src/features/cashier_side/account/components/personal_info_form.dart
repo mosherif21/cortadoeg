@@ -1,5 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cortadoeg/src/features/cashier_side/account/controllers/personal_info_form_controller.dart';
+import 'package:cortadoeg/src/general/general_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -12,22 +13,35 @@ class PersonalInfoForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(PersonalInfoFormController());
+    final screenType = GetScreenType(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 25),
+      padding: EdgeInsets.symmetric(
+          vertical: screenType.isPhone ? 16 : 50, horizontal: 25),
       child: SingleChildScrollView(
         child: Form(
           key: controller.formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'personalInformation'.tr,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+              if (!screenType.isPhone)
+                Text(
+                  'personalInformation'.tr,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              const SizedBox(height: 16),
+              AutoSizeText(
+                'enterGender'.tr,
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: screenType.isPhone ? 18 : 14,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -78,7 +92,8 @@ class PersonalInfoForm extends StatelessWidget {
                         AutoSizeText(
                           'firstName'.tr,
                           maxLines: 1,
-                          style: const TextStyle(
+                          style: TextStyle(
+                            fontSize: screenType.isPhone ? 18 : 14,
                             color: Colors.grey,
                             fontWeight: FontWeight.w600,
                           ),
@@ -126,7 +141,8 @@ class PersonalInfoForm extends StatelessWidget {
                         AutoSizeText(
                           'lastName'.tr,
                           maxLines: 1,
-                          style: const TextStyle(
+                          style: TextStyle(
+                            fontSize: screenType.isPhone ? 18 : 14,
                             color: Colors.grey,
                             fontWeight: FontWeight.w600,
                           ),
@@ -175,7 +191,8 @@ class PersonalInfoForm extends StatelessWidget {
                   AutoSizeText(
                     'email'.tr,
                     maxLines: 1,
-                    style: const TextStyle(
+                    style: TextStyle(
+                      fontSize: screenType.isPhone ? 18 : 14,
                       color: Colors.grey,
                       fontWeight: FontWeight.w600,
                     ),
@@ -190,35 +207,37 @@ class PersonalInfoForm extends StatelessWidget {
                     child: Row(
                       children: [
                         Expanded(
-                          child: TextFormField(
-                            enabled: false,
-                            textInputAction: TextInputAction.next,
-                            inputFormatters: [
-                              LengthLimitingTextInputFormatter(100)
-                            ],
-                            controller: controller.emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            cursorColor: Colors.black,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black),
-                            decoration: InputDecoration(
-                              hintStyle: const TextStyle(
+                          child: Obx(
+                            () => TextFormField(
+                              enabled: false,
+                              textInputAction: TextInputAction.next,
+                              inputFormatters: [
+                                LengthLimitingTextInputFormatter(100)
+                              ],
+                              initialValue: controller.authRep.userEmail.value,
+                              keyboardType: TextInputType.emailAddress,
+                              cursorColor: Colors.black,
+                              style: const TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.black54),
-                              border: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              filled: true,
-                              fillColor: Colors.grey[200],
-                              hintText: 'enterEmail'.tr,
+                                  color: Colors.black),
+                              decoration: InputDecoration(
+                                hintStyle: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black54),
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                filled: true,
+                                fillColor: Colors.grey[200],
+                                hintText: 'enterEmail'.tr,
+                              ),
+                              validator: validateEmail,
                             ),
-                            validator: validateEmail,
                           ),
                         ),
                         Obx(
                           () => Material(
-                            borderRadius: BorderRadius.circular(15),
+                            borderRadius: BorderRadius.circular(10),
                             color: Colors.transparent,
                             child: InkWell(
                               splashFactory: InkSparkle.splashFactory,
@@ -229,7 +248,7 @@ class PersonalInfoForm extends StatelessWidget {
                                       ? () => controller.verifyEmail()
                                       : null,
                               child: Padding(
-                                padding: const EdgeInsets.all(10),
+                                padding: const EdgeInsets.all(5),
                                 child: Row(
                                   children: [
                                     Icon(
@@ -285,7 +304,8 @@ class PersonalInfoForm extends StatelessWidget {
                         AutoSizeText(
                           'phoneNumber'.tr,
                           maxLines: 1,
-                          style: const TextStyle(
+                          style: TextStyle(
+                            fontSize: screenType.isPhone ? 18 : 14,
                             color: Colors.grey,
                             fontWeight: FontWeight.w600,
                           ),
@@ -333,7 +353,8 @@ class PersonalInfoForm extends StatelessWidget {
                         AutoSizeText(
                           'dateOfBirth'.tr,
                           maxLines: 1,
-                          style: const TextStyle(
+                          style: TextStyle(
+                            fontSize: screenType.isPhone ? 18 : 14,
                             color: Colors.grey,
                             fontWeight: FontWeight.w600,
                           ),
@@ -381,9 +402,10 @@ class PersonalInfoForm extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 32),
+              //if (screenType.isPhone) const Spacer(),
               Center(
                 child: SizedBox(
-                  width: 400,
+                  width: screenType.isPhone ? double.maxFinite : 400,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,

@@ -30,6 +30,7 @@ class AuthenticationRepository extends GetxController {
   GoogleSignIn? googleSignIn;
   Role userRole = Role.cashier;
   late EmployeeModel? employeeInfo;
+  final userEmail = ''.obs;
 
   @override
   void onInit() {
@@ -42,10 +43,38 @@ class AuthenticationRepository extends GetxController {
       if (user != null) {
         isEmailVerified.value = user.emailVerified;
         checkAuthenticationProviders();
+        if (user.email != null) {
+          if (employeeInfo != null) {
+            userEmail.value = user.email!;
+            employeeInfo!.email = user.email!;
+            updateUserEmailFirestore(email: user.email!);
+          }
+        }
       }
     });
 
     super.onInit();
+  }
+
+  Future<String> resetPassword(String oldPassword, String password) async {
+    try {
+      final credential = EmailAuthProvider.credential(
+          email: userEmail.value, password: oldPassword);
+      await fireUser.value!.reauthenticateWithCredential(credential);
+      await fireUser.value!.updatePassword(password);
+      return 'success';
+    } on FirebaseAuthException catch (e) {
+      final ex = SignInWithEmailAndPasswordFailure.code(e.code);
+      if (kDebugMode) {
+        AppInit.logger.e('FIREBASE AUTH EXCEPTION : ${e.toString()}');
+      }
+      return ex.errorMessage;
+    } catch (e) {
+      if (kDebugMode) {
+        AppInit.logger.e(e.toString());
+      }
+    }
+    return 'unknownError'.tr;
   }
 
   Future<String> linkWithEmailAndPassword(String email, String password) async {
@@ -120,13 +149,13 @@ class AuthenticationRepository extends GetxController {
           setNotificationsLanguage();
           if (fireUser.value!.email != null) {
             final authenticationEmail = fireUser.value!.email!;
-            if (authenticationEmail.isNotEmpty &&
-                employeeInfo!.email != authenticationEmail) {
+            userEmail.value = authenticationEmail;
+            if (employeeInfo!.email != authenticationEmail) {
+              updateUserEmailFirestore(email: authenticationEmail);
               if (kDebugMode) {
                 AppInit.logger.i(
                     'Firestore email is not equal to Authentication email, updating it...');
               }
-              updateUserEmailFirestore(email: authenticationEmail);
             }
           }
           return FunctionStatus.success;
@@ -184,6 +213,7 @@ class AuthenticationRepository extends GetxController {
     final firestoreUsersCollRef = _firestore.collection('employees');
     try {
       await firestoreUsersCollRef.doc(userId).update({'email': email});
+      employeeInfo!.email = email;
     } on FirebaseException catch (error) {
       if (kDebugMode) {
         AppInit.logger.e(error.toString());
@@ -373,6 +403,7 @@ class AuthenticationRepository extends GetxController {
             await updateUserEmailAuthentication(email: googleUser.email);
             await updateUserEmailFirestore(email: googleUser.email);
             employeeInfo!.email = googleUser.email;
+            userEmail.value = googleUser.email;
           }
         }
         return 'successGoogleLink'.tr;
@@ -448,9 +479,7 @@ class AuthenticationRepository extends GetxController {
       final credential = EmailAuthProvider.credential(
           email: fireUser.value!.email!, password: password);
       await fireUser.value!.reauthenticateWithCredential(credential);
-      await fireUser.value!.updateEmail(newEmail);
-      await updateUserEmailFirestore(email: newEmail);
-      employeeInfo!.email = newEmail;
+      await fireUser.value!.verifyBeforeUpdateEmail(newEmail);
       return 'success';
     } on FirebaseAuthException catch (ex) {
       if (kDebugMode) {
@@ -464,7 +493,8 @@ class AuthenticationRepository extends GetxController {
         return 'missingEmail'.tr;
       } else if (ex.code == 'user-not-found') {
         return 'noRegisteredEmail'.tr;
-      } else if (ex.code == 'wrong-password') {
+      } else if (ex.code == 'wrong-password' ||
+          ex.code == 'invalid-credential') {
         return 'wrongPassword'.tr;
       } else if (ex.code == 'requires-recent-login') {
         return 'requireRecentLoginError'.tr;
@@ -477,7 +507,7 @@ class AuthenticationRepository extends GetxController {
     return 'unknownError'.tr;
   }
 
-  Future<String> resetPassword({required String email}) async {
+  Future<String> sendResetPasswordLink({required String email}) async {
     String returnMessage = 'unknownError'.tr;
     try {
       await _auth.setLanguageCode(isLangEnglish() ? 'en' : 'ar');

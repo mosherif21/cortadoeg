@@ -654,7 +654,7 @@ Future<bool> handleGeneralPermission({
         negativeButtonOnPressed: () => Get.back(),
         mainIcon: Icons.settings,
         color: CustomSheetColor(
-            main: Colors.black, accent: Colors.black87, icon: Colors.white),
+            main: Colors.black, accent: Colors.black, icon: Colors.white),
       );
     }
   } catch (err) {
@@ -675,7 +675,7 @@ void logoutDialogue() => displayAlertDialog(
       negativeButtonOnPressed: () => Get.back(),
       mainIcon: Icons.logout,
       color: CustomSheetColor(
-          main: Colors.black, accent: Colors.black87, icon: Colors.white),
+          main: Colors.black, accent: Colors.black, icon: Colors.white),
     );
 void logout() async {
   showLoadingScreen();

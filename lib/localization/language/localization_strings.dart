@@ -96,9 +96,9 @@ class Languages extends Translations {
           'failedToChangeSetting': 'فشل تغيير الإعداد، يرجى المحاولة مرة أخرى',
           'deleteAccountBody':
               'إذا كنت تحذف حسابك لأنك لا تستخدمه، فلا داعي للقلق لأننا لا نشارك أيًا من معلوماتك مع أي منظمة خارجية. يرجى العلم أن بياناتك آمنة.',
-          'emailChangedSuccess': 'تم تغيير بريدك الإلكتروني بنجاح',
+          'emailChangedSuccess': 'تم إرسال رابط تغيير البريد الإلكتروني بنجاح',
           'enterChangeEmailData':
-              'يرجى إدخال البريد الإلكتروني الجديد وكلمة المرور لتغيير بريدك الإلكتروني',
+              'الرجاء إدخال البريد الإلكتروني الجديد وكلمة المرور للحصول على رابط تغيير البريد الإلكتروني',
           'linkEmailPassword': 'ربط البريد الإلكتروني وكلمة المرور',
           'verificationSent': 'تم إرسال التحقق',
           'verifyEmailSent': 'تم إرسال رابط التحقق عبر البريد الإلكتروني بنجاح',
@@ -497,9 +497,9 @@ class Languages extends Translations {
           'failedToChangeSetting': 'Failed to change setting, please try again',
           'deleteAccountBody':
               'If you\'re deleting your account because you don\'t use it, you don\'t have to worry because we don\'t share any of your information with any third-party organization. Please know that your data is safe.',
-          'emailChangedSuccess': 'Your email was changed successfully',
+          'emailChangedSuccess': 'Email change link was sent successfully',
           'enterChangeEmailData':
-              'Please enter the new email and your password to change your email',
+              'Please enter the new email and your password to get the change email link',
           'linkEmailPassword': 'Link email and password',
           'verificationSent': 'Verification sent',
           'verifyEmailSent': 'Email verification link sent successfully',
@@ -818,6 +818,11 @@ class Languages extends Translations {
           'signInSocialNetwork': 'Sign in with social networks',
           'linkSocialAccounts':
               'Link your social accounts to sign in quickly next time',
+          'resetPasswordSuccess': 'Password was reset successfully',
+          'currentPasswordLabel': 'Current Password',
+          'currentPasswordHint': 'Enter your current password',
+          'passwordResetData':
+              'Please enter your password and the new password',
         },
       };
 }

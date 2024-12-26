@@ -19,7 +19,6 @@ class PersonalInfoFormController extends GetxController {
   final verificationSent = false.obs;
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
-  final emailController = TextEditingController();
   final phoneController = TextEditingController();
   final dobController = TextEditingController();
   late final GlobalKey<FormState> formKey;
@@ -36,7 +35,6 @@ class PersonalInfoFormController extends GetxController {
     firstNameController.text = firstName;
     lastNameController.text = lastName;
     gender.value = userInfo.gender ?? '';
-    emailController.text = userInfo.email;
     phoneController.text = userInfo.phone;
     if (userInfo.birthDate != null) {
       dobController.text = DateFormat(
@@ -118,7 +116,6 @@ class PersonalInfoFormController extends GetxController {
   void onClose() async {
     firstNameController.dispose();
     lastNameController.dispose();
-    emailController.dispose();
     phoneController.dispose();
     dobController.dispose();
     super.onClose();

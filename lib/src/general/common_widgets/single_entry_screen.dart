@@ -8,7 +8,7 @@ import 'package:lottie/lottie.dart';
 
 import '../../constants/enums.dart';
 import '../../constants/sizes.dart';
-import '../../features/authentication/controllers/reset_password_controller.dart';
+import '../../features/authentication/controllers/password_reset_link_controller.dart';
 import '../app_init.dart';
 import '../general_functions.dart';
 import 'back_button.dart';
@@ -40,7 +40,7 @@ class SingleEntryScreen extends StatelessWidget {
     final screenWidth = getScreenWidth(context);
     final screenType = GetScreenType(context);
     if (inputType == InputType.email) {
-      Get.put(ResetPasswordController());
+      Get.put(PasswordResetLinkController());
     }
     return Scaffold(
       appBar: AppBar(
@@ -85,13 +85,13 @@ class SingleEntryScreen extends StatelessWidget {
                         height: 20.0,
                       ),
                       Form(
-                        key: ResetPasswordController.instance.formKey,
+                        key: PasswordResetLinkController.instance.formKey,
                         child: TextFormFieldRegular(
                           labelText: textFormTitle,
                           hintText: textFormHint,
                           prefixIconData: prefixIconData,
-                          textController:
-                              ResetPasswordController.instance.emailController,
+                          textController: PasswordResetLinkController
+                              .instance.emailController,
                           inputType: inputType,
                           editable: true,
                           textInputAction: TextInputAction.done,
@@ -103,7 +103,8 @@ class SingleEntryScreen extends StatelessWidget {
                         buttonText: buttonTitle,
                         enabled: true,
                         onPressed: () {
-                          final controller = ResetPasswordController.instance;
+                          final controller =
+                              PasswordResetLinkController.instance;
                           controller.resetPassword();
                         },
                         color: Colors.black,
@@ -139,12 +140,13 @@ class SingleEntryScreen extends StatelessWidget {
                                 height: 20.0,
                               ),
                               Form(
-                                key: ResetPasswordController.instance.formKey,
+                                key: PasswordResetLinkController
+                                    .instance.formKey,
                                 child: TextFormFieldRegular(
                                   labelText: textFormTitle,
                                   hintText: textFormHint,
                                   prefixIconData: prefixIconData,
-                                  textController: ResetPasswordController
+                                  textController: PasswordResetLinkController
                                       .instance.emailController,
                                   inputType: inputType,
                                   editable: true,
@@ -158,7 +160,7 @@ class SingleEntryScreen extends StatelessWidget {
                                 enabled: true,
                                 onPressed: () {
                                   final controller =
-                                      ResetPasswordController.instance;
+                                      PasswordResetLinkController.instance;
                                   controller.resetPassword();
                                 },
                                 color: Colors.black,

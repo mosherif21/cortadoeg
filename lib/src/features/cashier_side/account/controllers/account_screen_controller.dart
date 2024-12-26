@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:cortadoeg/src/authentication/models.dart';
 import 'package:cortadoeg/src/constants/enums.dart';
+import 'package:cortadoeg/src/features/cashier_side/account/components/login_password_screen.dart';
+import 'package:cortadoeg/src/features/cashier_side/account/components/personal_info_screen.dart';
 import 'package:cortadoeg/src/features/cashier_side/account/components/photo_select.dart';
 import 'package:cortadoeg/src/features/cashier_side/account/controllers/login_password_form_controller.dart';
 import 'package:cortadoeg/src/features/cashier_side/account/controllers/personal_info_form_controller.dart';
@@ -141,18 +143,26 @@ class AccountScreenController extends GetxController {
     }
   }
 
-  void onAccountOptionTap(int index) {
+  void onAccountOptionTap(int index, bool isPhone) {
     if (index == 3) {
       logoutDialogue();
     } else if (index == 2) {
       displayChangeLang();
     } else {
-      chosenProfileOption.value = index;
-      if (Get.isRegistered<PersonalInfoFormController>()) {
-        Get.delete<PersonalInfoFormController>();
-      }
-      if (Get.isRegistered<LoginPasswordFormController>()) {
-        Get.delete<LoginPasswordFormController>();
+      if (isPhone) {
+        Get.to(
+            () => index == 0
+                ? const PersonalInfoScreen()
+                : const LoginPasswordScreenScreen(),
+            transition: getPageTransition());
+      } else {
+        chosenProfileOption.value = index;
+        if (Get.isRegistered<PersonalInfoFormController>()) {
+          Get.delete<PersonalInfoFormController>();
+        }
+        if (Get.isRegistered<LoginPasswordFormController>()) {
+          Get.delete<LoginPasswordFormController>();
+        }
       }
     }
   }

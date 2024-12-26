@@ -87,7 +87,7 @@ class SideNavigationBar extends StatelessWidget {
         return SizedBox(
           height: 180,
           child: Padding(
-            padding: const EdgeInsets.all(5),
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
             child: Image.asset(kLogoDarkImage),
           ),
         );
