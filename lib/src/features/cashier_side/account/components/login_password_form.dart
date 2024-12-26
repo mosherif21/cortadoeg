@@ -373,7 +373,7 @@ class LoginPasswordForm extends StatelessWidget {
                       ),
               ],
             ),
-            const SizedBox(height: 30),
+            SizedBox(height: screenType.isPhone ? 15 : 30),
             Text(
               'signInSocialNetwork'.tr,
               style: const TextStyle(
