@@ -12,7 +12,6 @@ import 'package:cortadoeg/src/general/general_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:passcode_screen/passcode_screen.dart';
 
 import '../../../../constants/enums.dart';
 import '../../tables/components/models.dart';
@@ -55,12 +54,11 @@ class OrderController extends GetxController {
   final RxDouble orderTax = 0.0.obs;
   final double taxRate = 0;
 
-  late final StreamController<bool> verificationNotifier;
   @override
   void onInit() async {
     searchBarTextController = TextEditingController();
     discountTextController = TextEditingController();
-    verificationNotifier = StreamController<bool>.broadcast();
+
     if (orderModel.discountType != null && orderModel.discountValue != null) {
       discountType = orderModel.discountType!;
       discountValue = orderModel.discountValue!;
@@ -407,9 +405,17 @@ class OrderController extends GetxController {
   }
 
   void onEditItemPress(int index, BuildContext context, bool isPhone) async {
-    if (hasPermission(AuthenticationRepository.instance.employeeInfo!,
-        UserPermission.editOrderItemsWithPass)) {
-      final passcodeValid = await showPassCodeScreen(index, context);
+    final hasEditItemsPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.editOrderItems);
+    final hasEditItemsPassPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.editOrderItemsWithPass);
+    if (hasEditItemsPermission || hasEditItemsPassPermission) {
+      final passcodeValid = hasEditItemsPermission
+          ? true
+          : await MainScreenController.instance.showPassCodeScreen(
+              context: context, passcodeType: PasscodeType.editOrderItems);
       if (passcodeValid) {
         if (Get.context!.mounted) {
           editItem(index, context, isPhone);
@@ -423,47 +429,19 @@ class OrderController extends GetxController {
     }
   }
 
-  Future<bool> showPassCodeScreen(int index, BuildContext context) async {
-    bool valid = false;
-    await showDialog(
-      useSafeArea: false,
-      context: context,
-      builder: (context) {
-        return PasscodeScreen(
-          digits: isLangEnglish()
-              ? ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
-              : ['١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩', '٠'],
-          title: Text(
-            'enterPasscode'.tr,
-            style: const TextStyle(color: Colors.white, fontSize: 25),
-          ),
-          passwordEnteredCallback: (String enteredPasscode) {
-            bool isValid = MainScreenController.instance
-                .verifyEditOrderItemPasscode(enteredPasscode);
-            verificationNotifier.add(isValid);
-          },
-          cancelButton: Text(
-            'cancel'.tr,
-            style: const TextStyle(color: Colors.white),
-          ),
-          isValidCallback: () => valid = true,
-          cancelCallback: () => Get.back(),
-          deleteButton: Text(
-            'delete'.tr,
-            style: const TextStyle(color: Colors.white),
-          ),
-          shouldTriggerVerification: verificationNotifier.stream,
-        );
-      },
-    );
-    return valid;
-  }
-
   Future<bool> onDeleteItem(
       int itemIndex, BuildContext context, OrderItemModel orderItem) async {
-    if (hasPermission(AuthenticationRepository.instance.employeeInfo!,
-        UserPermission.editOrderItemsWithPass)) {
-      final passcodeValid = await showPassCodeScreen(itemIndex, context);
+    final hasEditItemsPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.editOrderItems);
+    final hasEditItemsPassPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.editOrderItemsWithPass);
+    if (hasEditItemsPermission || hasEditItemsPassPermission) {
+      final passcodeValid = hasEditItemsPermission
+          ? true
+          : await MainScreenController.instance.showPassCodeScreen(
+              context: context, passcodeType: PasscodeType.editOrderItems);
       if (passcodeValid) {
         final itemDeleted = await deleteItem(itemIndex, orderItem);
         return itemDeleted;
@@ -677,27 +655,55 @@ class OrderController extends GetxController {
     }
   }
 
-  void onChargeTap({required bool isPhone}) async {
-    showLoadingScreen();
-    final chargeOrderStatus = await chargeOrder(orderId: orderModel.orderId);
-    hideLoadingScreen();
-    if (chargeOrderStatus == FunctionStatus.success) {
-      orderModel.status = OrderStatus.complete;
-      orderModel.subtotalAmount = orderSubtotal.value;
-      orderModel.taxTotalAmount = orderTax.value;
-      orderModel.discountAmount = discountAmount.value;
-      orderModel.totalAmount = orderTotal.value;
-      chargeOrderPrinter(order: orderModel, openDrawer: true);
-      if (isPhone) Get.back();
-      Get.back(result: true);
-      showSnackBar(
-        text: 'orderChargedSuccess'.tr,
-        snackBarType: SnackBarType.success,
-      );
+  void onChargeTap(
+      {required bool isPhone, required BuildContext context}) async {
+    final hasChargeOrderPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.finalizeOrders);
+    final hasChargeOrderPassPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.finalizeOrdersWithPass);
+    if (hasChargeOrderPermission || hasChargeOrderPassPermission) {
+      final passcodeValid = hasChargeOrderPermission
+          ? true
+          : await MainScreenController.instance.showPassCodeScreen(
+              context: context, passcodeType: PasscodeType.finalizeOrders);
+      if (passcodeValid) {
+        showLoadingScreen();
+        final chargeOrderStatus =
+            await chargeOrder(orderId: orderModel.orderId);
+        hideLoadingScreen();
+        if (chargeOrderStatus == FunctionStatus.success) {
+          orderModel.status = OrderStatus.complete;
+          orderModel.subtotalAmount = orderSubtotal.value;
+          orderModel.taxTotalAmount = orderTax.value;
+          orderModel.discountAmount = discountAmount.value;
+          orderModel.totalAmount = orderTotal.value;
+          chargeOrderPrinter(order: orderModel, openDrawer: true);
+          if (isPhone) Get.back();
+          Get.back(result: true);
+          if (orderModel.isTakeaway) {
+            sendNotification(
+              employeeId: orderModel.employeeId,
+              orderNumber: orderModel.orderNumber.toString(),
+              notificationType: NotificationType.takeawayOrderReady,
+            );
+          }
+          showSnackBar(
+            text: 'orderChargedSuccess'.tr,
+            snackBarType: SnackBarType.success,
+          );
+        } else {
+          hideLoadingScreen();
+          showSnackBar(
+            text: 'errorOccurred'.tr,
+            snackBarType: SnackBarType.error,
+          );
+        }
+      }
     } else {
-      hideLoadingScreen();
       showSnackBar(
-        text: 'errorOccurred'.tr,
+        text: 'functionNotAllowed'.tr,
         snackBarType: SnackBarType.error,
       );
     }
@@ -831,49 +837,71 @@ class OrderController extends GetxController {
   }
 
   void onCancelOrderTap(
-      {required bool isPhone, required bool chargeScreen}) async {
-    showLoadingScreen();
+      {required BuildContext context,
+      required bool isPhone,
+      required bool chargeScreen}) async {
+    final cancelOrdersPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.cancelOrders);
+    final cancelOrdersPassPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.cancelOrdersWithPass);
+    if (cancelOrdersPermission || cancelOrdersPassPermission) {
+      final passcodeValid = cancelOrdersPermission
+          ? true
+          : await MainScreenController.instance.showPassCodeScreen(
+              context: context, passcodeType: PasscodeType.cancelOrders);
+      if (passcodeValid) {
+        showLoadingScreen();
 
-    // Step 1: Check if the order is a takeaway order
-    if (orderModel.isTakeaway) {
-      final cancelStatus = await cancelOrder(orderId: orderModel.orderId);
-      hideLoadingScreen();
-      handleCancelStatus(cancelStatus, orderModel, isPhone, chargeScreen);
-      return;
-    }
-
-    // Step 2: Fetch associated tables
-    late List<String> tables;
-    if (orderModel.tableNumbers == null) {
-      tables = [];
-    } else {
-      if (tablesIds != null) {
-        tables = tablesIds!;
-      } else {
-        final tablesListGet = await getTables();
-        if (tablesListGet != null) {
-          final tablesList = tablesListGet.where((table) {
-            return orderModel.tableNumbers!.contains(table.number);
-          }).toList();
-          tables = tablesList.map((table) => table.tableId).toList();
-        } else {
+        // Step 1: Check if the order is a takeaway order
+        if (orderModel.isTakeaway) {
+          final cancelStatus = await cancelOrder(orderId: orderModel.orderId);
           hideLoadingScreen();
-          showSnackBar(
-            text: 'errorOccurred'.tr,
-            snackBarType: SnackBarType.error,
-          );
+          handleCancelStatus(cancelStatus, orderModel, isPhone, chargeScreen);
           return;
         }
-      }
-    }
 
-    // Step 3: Cancel order and update tables
-    final cancelOrderStatus = await cancelOrder(
-      orderId: orderModel.orderId,
-      tablesIds: tables,
-    );
-    hideLoadingScreen();
-    handleCancelStatus(cancelOrderStatus, orderModel, isPhone, chargeScreen);
+        // Step 2: Fetch associated tables
+        late List<String> tables;
+        if (orderModel.tableNumbers == null) {
+          tables = [];
+        } else {
+          if (tablesIds != null) {
+            tables = tablesIds!;
+          } else {
+            final tablesListGet = await getTables();
+            if (tablesListGet != null) {
+              final tablesList = tablesListGet.where((table) {
+                return orderModel.tableNumbers!.contains(table.number);
+              }).toList();
+              tables = tablesList.map((table) => table.tableId).toList();
+            } else {
+              hideLoadingScreen();
+              showSnackBar(
+                text: 'errorOccurred'.tr,
+                snackBarType: SnackBarType.error,
+              );
+              return;
+            }
+          }
+        }
+
+        // Step 3: Cancel order and update tables
+        final cancelOrderStatus = await cancelOrder(
+          orderId: orderModel.orderId,
+          tablesIds: tables,
+        );
+        hideLoadingScreen();
+        handleCancelStatus(
+            cancelOrderStatus, orderModel, isPhone, chargeScreen);
+      }
+    } else {
+      showSnackBar(
+        text: 'functionNotAllowed'.tr,
+        snackBarType: SnackBarType.error,
+      );
+    }
   }
 
   Future<FunctionStatus> cancelOrder({
@@ -966,9 +994,17 @@ class OrderController extends GetxController {
 
   onQuantityChangedPhone(
       int newQuantity, int index, BuildContext context) async {
-    if (hasPermission(AuthenticationRepository.instance.employeeInfo!,
-        UserPermission.editOrderItemsWithPass)) {
-      final passcodeValid = await showPassCodeScreen(index, context);
+    final hasEditItemsPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.editOrderItems);
+    final hasEditItemsPassPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.editOrderItemsWithPass);
+    if (hasEditItemsPermission || hasEditItemsPassPermission) {
+      final passcodeValid = hasEditItemsPermission
+          ? true
+          : await MainScreenController.instance.showPassCodeScreen(
+              context: context, passcodeType: PasscodeType.editOrderItems);
       if (passcodeValid) {
         showLoadingScreen();
         final changeQuantityStatus = await changeOrderItemQuantity(
@@ -1012,7 +1048,7 @@ class OrderController extends GetxController {
 
   @override
   void onClose() async {
-    verificationNotifier.close();
+    //
     super.onClose();
   }
 }

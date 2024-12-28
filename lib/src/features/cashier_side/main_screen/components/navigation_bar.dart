@@ -120,7 +120,7 @@ class SideNavigationBar extends StatelessWidget {
             onLongPress:
                 (!_isPhone) ? () => _controller.toggleExtended() : null,
             onTap: (_isPhone) ? () => Get.back() : null,
-            iconSize: 27),
+            iconSize: 25),
       ],
     );
   }

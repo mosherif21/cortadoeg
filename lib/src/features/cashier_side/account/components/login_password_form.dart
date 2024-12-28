@@ -89,7 +89,7 @@ class LoginPasswordForm extends StatelessWidget {
                             ),
                             const SizedBox(height: 10),
                             SizedBox(
-                              width: 180,
+                              width: isLangEnglish() ? 180 : 200,
                               child: Material(
                                 borderRadius: BorderRadius.circular(15),
                                 color: Colors.transparent,

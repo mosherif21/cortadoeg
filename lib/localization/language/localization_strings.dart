@@ -404,6 +404,17 @@ class Languages extends Translations {
           'signInSocialNetwork': 'تسجيل الدخول باستخدام الشبكات الاجتماعية',
           'linkSocialAccounts':
               'قم بربط حساباتك الاجتماعية لتسجيل الدخول بسرعة في المرة القادمة',
+          'resetPasswordSuccess': 'تم إعادة تعيين كلمة المرور بنجاح',
+          'currentPasswordLabel': 'كلمة المرور الحالية',
+          'currentPasswordHint': 'أدخل كلمة المرور الحالية',
+          'passwordResetData': 'يرجى إدخال كلمة المرور وكلمة المرور الجديدة',
+          'openDrawer': 'فتح درج النقود',
+          'closeDayShift': 'إغلاق وردية اليوم',
+          'openDayShift': 'فتح وردية اليوم',
+          'drawerOpenedSuccessfully': 'تم فتح درج النقود بنجاح',
+          'drawerOpenedFailed': 'فشل في فتح درج النقود',
+          'openingDrawer': 'جاري فتح درج النقود',
+          'printingReceipt': 'جاري طباعة إيصال الطلب',
         },
         'en_US': {
           'skip': 'Skip',
@@ -823,6 +834,13 @@ class Languages extends Translations {
           'currentPasswordHint': 'Enter your current password',
           'passwordResetData':
               'Please enter your password and the new password',
+          'openDrawer': 'Open cash drawer',
+          'closeDayShift': 'Close day shift',
+          'openDayShift': 'Open day shift',
+          'drawerOpenedSuccessfully': 'Cash drawer opened successfully',
+          'drawerOpenedFailed': 'Cash drawer opening failed',
+          'openingDrawer': 'Opening cash drawer',
+          'printingReceipt': 'Printing order receipt',
         },
       };
 }

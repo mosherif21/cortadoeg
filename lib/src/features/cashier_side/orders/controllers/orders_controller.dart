@@ -9,6 +9,8 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
+import '../../../../authentication/authentication_repository.dart';
+import '../../../../authentication/models.dart';
 import '../../../../constants/enums.dart';
 import '../../../../general/app_init.dart';
 import '../../../../general/general_functions.dart';
@@ -295,6 +297,10 @@ class OrdersController extends GetxController {
         query = query.where('timestamp',
             isLessThanOrEqualTo: Timestamp.fromDate(dateTo!));
       }
+      if (!hasPermission(AuthenticationRepository.instance.employeeInfo!,
+          UserPermission.manageOrders)) {
+        query = query.where('isTakeaway', isEqualTo: true);
+      }
 
       ordersListener = query.snapshots().listen((snapshot) {
         final List<OrderModel> updatedOrders = snapshot.docs.map((doc) {
@@ -335,70 +341,80 @@ class OrdersController extends GetxController {
 
   void onReopenOrderTap(
       {required bool isPhone, OrderModel? aOrderModel}) async {
-    showLoadingScreen();
-    final orderModel = isPhone ? aOrderModel! : currentChosenOrder.value!;
-    late List<TableModel> tablesList;
-    final tablesListGet = await getTables();
-    if (tablesListGet != null) {
-      tablesList = tablesListGet;
-    } else {
-      hideLoadingScreen();
-      showSnackBar(
-        text: 'errorOccurred'.tr,
-        snackBarType: SnackBarType.error,
-      );
-      return;
-    }
-
-    tablesList = tablesList.where((table) {
-      return orderModel.tableNumbers!.contains(table.number);
-    }).toList();
-
-    for (var table in tablesList) {
-      if (table.currentOrderId != null &&
-          table.status == TableStatus.occupied) {
+    final hasManageOrdersPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.manageOrders);
+    if (hasManageOrdersPermission) {
+      showLoadingScreen();
+      final orderModel = isPhone ? aOrderModel! : currentChosenOrder.value!;
+      late List<TableModel> tablesList;
+      final tablesListGet = await getTables();
+      if (tablesListGet != null) {
+        tablesList = tablesListGet;
+      } else {
         hideLoadingScreen();
         showSnackBar(
-          text: 'conflictingTablesError'.tr,
+          text: 'errorOccurred'.tr,
           snackBarType: SnackBarType.error,
         );
         return;
       }
-    }
-    final reopenOrderStatus =
-        await reopenOrder(orderId: orderModel.orderId, tablesList: tablesList);
 
-    hideLoadingScreen();
-    if (reopenOrderStatus == FunctionStatus.success) {
-      currentChosenOrder.value = null;
-      if (isPhone) Get.back();
-      Get.to(
-        () => isPhone
-            ? OrderScreenPhone(
-                orderModel: orderModel,
-                tablesIds: orderModel.tableNumbers != null
-                    ? tablesList
-                        .where((table) =>
-                            orderModel.tableNumbers!.contains(table.number))
-                        .map((table) => table.tableId)
-                        .toList()
-                    : [],
-              )
-            : OrderScreen(
-                orderModel: orderModel,
-                tablesIds: orderModel.tableNumbers != null
-                    ? tablesList
-                        .where((table) =>
-                            orderModel.tableNumbers!.contains(table.number))
-                        .map((table) => table.tableId)
-                        .toList()
-                    : [],
-              ),
-        transition: Transition.noTransition,
-      );
+      tablesList = tablesList.where((table) {
+        return orderModel.tableNumbers!.contains(table.number);
+      }).toList();
+
+      for (var table in tablesList) {
+        if (table.currentOrderId != null &&
+            table.status == TableStatus.occupied) {
+          hideLoadingScreen();
+          showSnackBar(
+            text: 'conflictingTablesError'.tr,
+            snackBarType: SnackBarType.error,
+          );
+          return;
+        }
+      }
+      final reopenOrderStatus = await reopenOrder(
+          orderId: orderModel.orderId, tablesList: tablesList);
+
+      hideLoadingScreen();
+      if (reopenOrderStatus == FunctionStatus.success) {
+        currentChosenOrder.value = null;
+        if (isPhone) Get.back();
+        Get.to(
+          () => isPhone
+              ? OrderScreenPhone(
+                  orderModel: orderModel,
+                  tablesIds: orderModel.tableNumbers != null
+                      ? tablesList
+                          .where((table) =>
+                              orderModel.tableNumbers!.contains(table.number))
+                          .map((table) => table.tableId)
+                          .toList()
+                      : [],
+                )
+              : OrderScreen(
+                  orderModel: orderModel,
+                  tablesIds: orderModel.tableNumbers != null
+                      ? tablesList
+                          .where((table) =>
+                              orderModel.tableNumbers!.contains(table.number))
+                          .map((table) => table.tableId)
+                          .toList()
+                      : [],
+                ),
+          transition: Transition.noTransition,
+        );
+      } else {
+        showSnackBar(
+          text: 'errorOccurred'.tr,
+          snackBarType: SnackBarType.error,
+        );
+      }
     } else {
       showSnackBar(
-        text: 'errorOccurred'.tr,
+        text: 'functionNotAllowed'.tr,
         snackBarType: SnackBarType.error,
       );
     }
@@ -480,24 +496,46 @@ class OrdersController extends GetxController {
     return null;
   }
 
-  void returnOrderTap({required bool isPhone, OrderModel? orderModel}) async {
-    showLoadingScreen();
-    final returnOrderStatus =
-        await returnOrder(isPhone: isPhone, orderModel: orderModel);
-    hideLoadingScreen();
-    if (returnOrderStatus == FunctionStatus.success) {
-      if (isPhone) {
-        Get.back();
-      } else {
-        currentChosenOrder.value = null;
+  void returnOrderTap(
+      {required bool isPhone,
+      OrderModel? orderModel,
+      required BuildContext context}) async {
+    final hasReturnOrdersPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.returnOrders);
+    final hasReturnOrdersPassPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.returnOrdersWithPass);
+    if (hasReturnOrdersPermission || hasReturnOrdersPassPermission) {
+      final passcodeValid = hasReturnOrdersPermission
+          ? true
+          : await MainScreenController.instance.showPassCodeScreen(
+              context: context, passcodeType: PasscodeType.returnOrders);
+      if (passcodeValid) {
+        showLoadingScreen();
+        final returnOrderStatus =
+            await returnOrder(isPhone: isPhone, orderModel: orderModel);
+        hideLoadingScreen();
+        if (returnOrderStatus == FunctionStatus.success) {
+          if (isPhone) {
+            Get.back();
+          } else {
+            currentChosenOrder.value = null;
+          }
+          showSnackBar(
+            text: 'orderReturnedSuccess'.tr,
+            snackBarType: SnackBarType.success,
+          );
+        } else {
+          showSnackBar(
+            text: 'errorOccurred'.tr,
+            snackBarType: SnackBarType.error,
+          );
+        }
       }
-      showSnackBar(
-        text: 'orderReturnedSuccess'.tr,
-        snackBarType: SnackBarType.success,
-      );
     } else {
       showSnackBar(
-        text: 'errorOccurred'.tr,
+        text: 'functionNotAllowed'.tr,
         snackBarType: SnackBarType.error,
       );
     }
@@ -569,18 +607,28 @@ class OrdersController extends GetxController {
 
   void printOrderTap(
       {required bool isPhone, required OrderModel orderModel}) async {
-    showLoadingScreen();
-    final printStatus =
-        await chargeOrderPrinter(order: orderModel, openDrawer: false);
-    hideLoadingScreen();
-    if (printStatus == FunctionStatus.success) {
-      showSnackBar(
-        text: 'orderPrintSuccess'.tr,
-        snackBarType: SnackBarType.success,
-      );
+    final hasManageOrdersPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.manageOrders);
+    if (hasManageOrdersPermission) {
+      showLoadingScreen();
+      final printStatus =
+          await chargeOrderPrinter(order: orderModel, openDrawer: false);
+      hideLoadingScreen();
+      if (printStatus == FunctionStatus.success) {
+        showSnackBar(
+          text: 'orderPrintSuccess'.tr,
+          snackBarType: SnackBarType.success,
+        );
+      } else {
+        showSnackBar(
+            text: 'receiptPrintFailed'.tr, snackBarType: SnackBarType.warning);
+      }
     } else {
       showSnackBar(
-          text: 'receiptPrintFailed'.tr, snackBarType: SnackBarType.warning);
+        text: 'functionNotAllowed'.tr,
+        snackBarType: SnackBarType.error,
+      );
     }
   }
 }

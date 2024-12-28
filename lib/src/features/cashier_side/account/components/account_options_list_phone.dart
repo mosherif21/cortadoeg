@@ -26,7 +26,7 @@ class AccountOptionsListPhone extends StatelessWidget {
           )
         ],
         color: Colors.white,
-        borderRadius: const BorderRadius.all(Radius.circular(10)),
+        borderRadius: const BorderRadius.all(Radius.circular(15)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,

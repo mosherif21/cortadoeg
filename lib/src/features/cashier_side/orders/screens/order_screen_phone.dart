@@ -238,6 +238,7 @@ class OrderScreenPhone extends StatelessWidget {
                             onClick: () => controller.onCancelOrderTap(
                               isPhone: true,
                               chargeScreen: false,
+                              context: context,
                             ),
                           ),
                         ),

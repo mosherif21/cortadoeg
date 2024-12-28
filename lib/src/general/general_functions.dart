@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:isolate';
 
 import 'package:animated_snack_bar/animated_snack_bar.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_esc_pos_network/flutter_esc_pos_network.dart';
 import 'package:flutter_esc_pos_utils/flutter_esc_pos_utils.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart';
 import 'package:image/image.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
@@ -242,6 +244,28 @@ Future<FunctionStatus> chargeOrderPrinter(
       : FunctionStatus.failure;
 }
 
+Future<FunctionStatus> openDrawerTap() async {
+  final capabilitiesContent = await rootBundle
+      .loadString('packages/flutter_esc_pos_utils/resources/capabilities.json');
+  final ReceivePort receivePort = ReceivePort();
+  await Isolate.spawn(openDrawerIsolate, {
+    'capabilitiesContent': capabilitiesContent,
+    'sendPort': receivePort.sendPort
+  });
+  final resultFromIsolate = await receivePort.first;
+  return (resultFromIsolate as String).compareTo('success') == 0
+      ? FunctionStatus.success
+      : FunctionStatus.failure;
+}
+
+void openDrawerIsolate(Map<String, dynamic> data) async {
+  final SendPort sendPort = data['sendPort'];
+  final String capabilitiesContent = data['capabilitiesContent'];
+  final resultStatus =
+      await openDrawer(capabilitiesContent: capabilitiesContent);
+  sendPort.send(resultStatus == FunctionStatus.success ? 'success' : 'failure');
+}
+
 void chargeOrderIsolate(Map<String, dynamic> data) async {
   final SendPort sendPort = data['sendPort'];
   final OrderModel order = data['orderValue'];
@@ -255,6 +279,39 @@ void chargeOrderIsolate(Map<String, dynamic> data) async {
     openDrawer: openDrawer,
   );
   sendPort.send(resultStatus == FunctionStatus.success ? 'success' : 'failure');
+}
+
+Future<FunctionStatus> sendNotification({
+  required String employeeId,
+  required String orderNumber,
+  required NotificationType notificationType,
+}) async {
+  final url = Uri.parse('https://sendnotification-e7icdbybjq-uc.a.run.app');
+  final headers = {'Content-Type': 'application/json'};
+  final body = json.encode({
+    'employeeId': employeeId,
+    'orderNumber': orderNumber,
+    'notificationType': notificationType.name,
+  });
+  try {
+    final response = await post(url, headers: headers, body: body);
+    if (response.statusCode == 200) {
+      if (kDebugMode) {
+        AppInit.logger.i(
+            'Notifications sent with type: $notificationType and response: ${response.body}');
+      }
+      return FunctionStatus.success;
+    } else {
+      if (kDebugMode) {
+        AppInit.logger.e('Notifications send failed');
+      }
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      AppInit.logger.e('Notifications send failed ${e.toString()}');
+    }
+  }
+  return FunctionStatus.failure;
 }
 
 Future<FunctionStatus> printReceipt({
@@ -299,6 +356,36 @@ Future<FunctionStatus> printReceipt({
       printer.disconnect();
       if (kDebugMode) {
         AppInit.logger.i('Receipt printed Successfully');
+      }
+      return FunctionStatus.success;
+    } else {
+      if (kDebugMode) {
+        AppInit.logger.e('Failed to connect to printer');
+      }
+      return FunctionStatus.failure;
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      AppInit.logger.e(e.toString());
+    }
+    return FunctionStatus.failure;
+  }
+}
+
+Future<FunctionStatus> openDrawer({required String capabilitiesContent}) async {
+  try {
+    final profile =
+        await CapabilityProfile.load(capabilitiesContent: capabilitiesContent);
+    final generator = Generator(PaperSize.mm80, profile);
+    List<int> openDrawerBytes = [];
+    openDrawerBytes += generator.drawer();
+    final printer = PrinterNetworkManager('192.168.1.8');
+    final PosPrintResult result = await printer.connect();
+    if (result == PosPrintResult.success) {
+      await printer.printTicket(openDrawerBytes);
+      printer.disconnect();
+      if (kDebugMode) {
+        AppInit.logger.i('Cash drawer opened Successfully');
       }
       return FunctionStatus.success;
     } else {

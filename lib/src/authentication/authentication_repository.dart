@@ -44,11 +44,11 @@ class AuthenticationRepository extends GetxController {
         isEmailVerified.value = user.emailVerified;
         checkAuthenticationProviders();
         if (user.email != null) {
-          if (employeeInfo != null) {
-            userEmail.value = user.email!;
-            employeeInfo!.email = user.email!;
-            updateUserEmailFirestore(email: user.email!);
-          }
+          userEmail.value = user.email!;
+          // if (employeeInfo != null) {
+          //  employeeInfo!.email = user.email!;
+          //  updateUserEmailFirestore(email: user.email!);
+          // }
         }
       }
     });
@@ -184,14 +184,21 @@ class AuthenticationRepository extends GetxController {
     try {
       if (fireUser.value != null) {
         if (AppInit.notificationToken.isNotEmpty) {
-          await _firestore
-              .collection('fcmTokens')
-              .doc(fireUser.value!.uid)
-              .set({
-            'fcmToken${AppInit.isAndroid ? 'Android' : 'Ios'}':
-                AppInit.notificationToken,
+          final batch = _firestore.batch();
+          batch.set(
+              _firestore.collection('fcmTokens').doc(fireUser.value!.uid), {
+            'fcmToken': AppInit.notificationToken,
             'notificationsLang': isLangEnglish() ? 'en' : 'ar',
           });
+          if (userRole == Role.cashier) {
+            batch.set(
+                _firestore.collection('fcmTokens').doc('cashierFcmToken'), {
+              'fcmToken': AppInit.notificationToken,
+              'notificationsLang': isLangEnglish() ? 'en' : 'ar',
+              'cashierEmployeeId': employeeInfo!.id,
+            });
+          }
+          await batch.commit();
         }
       }
       return FunctionStatus.success;

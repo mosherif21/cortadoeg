@@ -19,3 +19,5 @@ enum AuthType { emailLogin, emailRegister, facebook, google, phone }
 enum TableStatus { available, occupied, unavailable }
 
 enum OrderStatus { active, complete, canceled, returned }
+
+enum NotificationType { newTakeawayOrder, takeawayOrderReady }

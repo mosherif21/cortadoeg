@@ -107,8 +107,8 @@ class ChargeScreenPhone extends StatelessWidget {
                               iconColor: Colors.white,
                               text: 'charge'.tr,
                               enabled: controller.orderItems.isNotEmpty,
-                              onClick: () =>
-                                  controller.onChargeTap(isPhone: true),
+                              onClick: () => controller.onChargeTap(
+                                  isPhone: true, context: context),
                             ),
                           ),
                         ),
@@ -394,7 +394,9 @@ class ChargeScreenPhone extends StatelessWidget {
                           enabled: true,
                           text: 'cancel'.tr,
                           onClick: () => controller.onCancelOrderTap(
-                              isPhone: true, chargeScreen: true),
+                              isPhone: true,
+                              chargeScreen: true,
+                              context: context),
                         ),
                       ),
                     ),
@@ -414,8 +416,8 @@ class ChargeScreenPhone extends StatelessWidget {
                             enabled: controller.orderItems.isNotEmpty,
                             text:
                                 '${'charge'.tr} | EGP ${controller.orderTotal.value.toStringAsFixed(2)}',
-                            onClick: () =>
-                                controller.onChargeTap(isPhone: true),
+                            onClick: () => controller.onChargeTap(
+                                isPhone: true, context: context),
                           ),
                         ),
                       ),

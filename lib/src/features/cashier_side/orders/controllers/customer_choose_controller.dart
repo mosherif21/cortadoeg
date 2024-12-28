@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
+import '../../../../authentication/authentication_repository.dart';
+import '../../../../authentication/models.dart';
 import '../../../../constants/enums.dart';
 import '../../../../general/app_init.dart';
 import '../../../../general/general_functions.dart';
@@ -95,29 +97,39 @@ class CustomerChooseController extends GetxController {
   }
 
   void addCustomerPress() async {
-    final discountText = discountTextController.text.trim();
-    final name = nameTextController.text.trim();
-    if (formKey.currentState!.validate() &&
-        isNumeric(discountText) &&
-        validateNumbersOnly(number.value) == null) {
-      final customerModel = CustomerModel(
-        customerId: '',
-        name: name,
-        number: number.value,
-        discountType: percentageChosen.value ? 'percentage' : 'value',
-        discountValue: double.parse(discountText),
-      );
-      final newCustomer =
-          await addCustomerDatabase(customerModel: customerModel);
-      if (newCustomer != null) {
-        customersList.add(newCustomer);
-        Get.back(result: newCustomer);
-      } else {
-        showSnackBar(
-          text: 'errorOccurred'.tr,
-          snackBarType: SnackBarType.error,
+    final manageCustomersPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.manageCustomers);
+    if (manageCustomersPermission) {
+      final discountText = discountTextController.text.trim();
+      final name = nameTextController.text.trim();
+      if (formKey.currentState!.validate() &&
+          isNumeric(discountText) &&
+          validateNumbersOnly(number.value) == null) {
+        final customerModel = CustomerModel(
+          customerId: '',
+          name: name,
+          number: number.value,
+          discountType: percentageChosen.value ? 'percentage' : 'value',
+          discountValue: double.parse(discountText),
         );
+        final newCustomer =
+            await addCustomerDatabase(customerModel: customerModel);
+        if (newCustomer != null) {
+          customersList.add(newCustomer);
+          Get.back(result: newCustomer);
+        } else {
+          showSnackBar(
+            text: 'errorOccurred'.tr,
+            snackBarType: SnackBarType.error,
+          );
+        }
       }
+    } else {
+      showSnackBar(
+        text: 'functionNotAllowed'.tr,
+        snackBarType: SnackBarType.error,
+      );
     }
   }
 

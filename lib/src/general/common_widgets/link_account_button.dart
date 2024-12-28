@@ -23,7 +23,7 @@ class LinkAccountButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Material(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         color: Colors.transparent,
         child: InkWell(
           splashFactory: InkSparkle.splashFactory,

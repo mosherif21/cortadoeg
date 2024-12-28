@@ -56,6 +56,7 @@
                   android:value="@string/facebook_client_token" /> -->
 
         </activity>
+        <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver" />
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />

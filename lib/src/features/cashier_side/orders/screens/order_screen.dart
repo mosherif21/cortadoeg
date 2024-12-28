@@ -433,6 +433,7 @@ class OrderScreen extends StatelessWidget {
                                             controller.onCancelOrderTap(
                                           isPhone: false,
                                           chargeScreen: false,
+                                          context: context,
                                         ),
                                       ),
                                     ),
@@ -460,8 +461,8 @@ class OrderScreen extends StatelessWidget {
                                   icon: Icons.payments_outlined,
                                   iconColor: Colors.white,
                                   text: 'charge'.tr,
-                                  onClick: () =>
-                                      controller.onChargeTap(isPhone: false),
+                                  onClick: () => controller.onChargeTap(
+                                      isPhone: false, context: context),
                                 ),
                               ],
                             ),

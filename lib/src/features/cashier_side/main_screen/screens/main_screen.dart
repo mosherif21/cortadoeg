@@ -3,9 +3,13 @@ import 'package:cortadoeg/src/features/cashier_side/customers/screens/customers_
 import 'package:cortadoeg/src/features/cashier_side/main_screen/controllers/main_screen_controller.dart';
 import 'package:cortadoeg/src/general/general_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:hawk_fab_menu/hawk_fab_menu.dart';
 
+import '../../../../authentication/authentication_repository.dart';
+import '../../../../authentication/models.dart';
+import '../../../../constants/enums.dart';
 import '../../account/screens/account_screen.dart';
 import '../../orders/screens/orders_screen.dart';
 import '../../tables/screens/tables_screen.dart';
@@ -45,11 +49,35 @@ class MainScreen extends StatelessWidget {
           iconColor: Colors.white,
           items: [
             HawkFabMenuItem(
-              label: 'dineInOrder'.tr,
-              ontap: () => Get.to(
-                () => const TablesScreen(navBarAccess: false),
-                transition: Transition.noTransition,
+              label: 'closeDayShift'.tr,
+              ontap: () {
+              },
+              icon: const Icon(
+                Icons.add_business_rounded,
+                color: Colors.white,
+                size: 35,
               ),
+              color: Colors.black,
+              labelColor: Colors.white,
+              labelBackgroundColor: Colors.black,
+              labelFontSize: 20,
+            ),
+            HawkFabMenuItem(
+              label: 'openDrawer'.tr,
+              ontap: () => mainController.onOpenDrawerTap(context),
+              icon: const Icon(
+                FontAwesomeIcons.cashRegister,
+                color: Colors.white,
+                size: 32,
+              ),
+              color: Colors.black,
+              labelColor: Colors.white,
+              labelBackgroundColor: Colors.black,
+              labelFontSize: 20,
+            ),
+            HawkFabMenuItem(
+              label: 'dineInOrder'.tr,
+              ontap: () => mainController.dineInOrderTap(context: context),
               icon: const Icon(
                 Icons.table_bar,
                 color: Colors.white,
@@ -132,7 +160,12 @@ class MainScreen extends StatelessWidget {
                     itemBuilder: (BuildContext context, int index) {
                       switch (index) {
                         case 0:
-                          return const TablesScreen(navBarAccess: true);
+                          return hasPermission(
+                                  AuthenticationRepository
+                                      .instance.employeeInfo!,
+                                  UserPermission.manageTables)
+                              ? const TablesScreen(navBarAccess: true)
+                              : const SizedBox.shrink();
                         case 1:
                           return const OrdersScreen();
                         case 2:
@@ -140,7 +173,7 @@ class MainScreen extends StatelessWidget {
                         case 3:
                           return const AccountScreen();
                         default:
-                          return const TablesScreen(navBarAccess: true);
+                          return const SizedBox.shrink();
                       }
                     },
                   ),
