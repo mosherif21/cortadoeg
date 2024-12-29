@@ -364,26 +364,26 @@ class OrdersController extends GetxController {
 
   void onReopenOrderTap(
       {required bool isPhone, OrderModel? aOrderModel}) async {
-    showLoadingScreen();
-    final orderModel = isPhone ? aOrderModel! : currentChosenOrder.value!;
-    final orderShiftIsActive = await checkIfShiftActive(orderModel.shiftId);
-    if (orderShiftIsActive == null) {
-      hideLoadingScreen();
-      showSnackBar(
-        text: 'errorOccurred'.tr,
-        snackBarType: SnackBarType.error,
-      );
-    } else if (!orderShiftIsActive) {
-      hideLoadingScreen();
-      showSnackBar(
-        text: 'orderShiftInActive'.tr,
-        snackBarType: SnackBarType.error,
-      );
-    } else {
-      final hasManageOrdersPermission = hasPermission(
-          AuthenticationRepository.instance.employeeInfo!,
-          UserPermission.manageOrders);
-      if (hasManageOrdersPermission) {
+    final hasManageOrdersPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.manageOrders);
+    if (hasManageOrdersPermission) {
+      showLoadingScreen();
+      final orderModel = isPhone ? aOrderModel! : currentChosenOrder.value!;
+      final orderShiftIsActive = await checkIfShiftActive(orderModel.shiftId);
+      if (orderShiftIsActive == null) {
+        hideLoadingScreen();
+        showSnackBar(
+          text: 'errorOccurred'.tr,
+          snackBarType: SnackBarType.error,
+        );
+      } else if (!orderShiftIsActive) {
+        hideLoadingScreen();
+        showSnackBar(
+          text: 'orderShiftInActive'.tr,
+          snackBarType: SnackBarType.error,
+        );
+      } else {
         final orderModel = isPhone ? aOrderModel! : currentChosenOrder.value!;
         late List<TableModel> tablesList;
         final tablesListGet = await getTables();
@@ -451,13 +451,12 @@ class OrdersController extends GetxController {
             snackBarType: SnackBarType.error,
           );
         }
-      } else {
-        hideLoadingScreen();
-        showSnackBar(
-          text: 'functionNotAllowed'.tr,
-          snackBarType: SnackBarType.error,
-        );
       }
+    } else {
+      showSnackBar(
+        text: 'functionNotAllowed'.tr,
+        snackBarType: SnackBarType.error,
+      );
     }
   }
 
@@ -545,34 +544,34 @@ class OrdersController extends GetxController {
       {required bool isPhone,
       OrderModel? orderModel,
       required BuildContext context}) async {
-    showLoadingScreen();
-    final order = isPhone ? orderModel! : currentChosenOrder.value!;
-    final orderShiftIsActive = await checkIfShiftActive(order.shiftId);
-    if (orderShiftIsActive == null) {
-      hideLoadingScreen();
-      showSnackBar(
-        text: 'errorOccurred'.tr,
-        snackBarType: SnackBarType.error,
-      );
-    } else if (!orderShiftIsActive) {
-      hideLoadingScreen();
-      showSnackBar(
-        text: 'orderShiftInActive'.tr,
-        snackBarType: SnackBarType.error,
-      );
-    } else {
-      final hasReturnOrdersPermission = hasPermission(
-          AuthenticationRepository.instance.employeeInfo!,
-          UserPermission.returnOrders);
-      final hasReturnOrdersPassPermission = hasPermission(
-          AuthenticationRepository.instance.employeeInfo!,
-          UserPermission.returnOrdersWithPass);
-      if (hasReturnOrdersPermission || hasReturnOrdersPassPermission) {
-        final passcodeValid = hasReturnOrdersPermission
-            ? true
-            : await MainScreenController.instance.showPassCodeScreen(
-                context: context, passcodeType: PasscodeType.returnOrders);
-        if (passcodeValid) {
+    final hasReturnOrdersPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.returnOrders);
+    final hasReturnOrdersPassPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.returnOrdersWithPass);
+    if (hasReturnOrdersPermission || hasReturnOrdersPassPermission) {
+      final passcodeValid = hasReturnOrdersPermission
+          ? true
+          : await MainScreenController.instance.showPassCodeScreen(
+              context: context, passcodeType: PasscodeType.returnOrders);
+      if (passcodeValid) {
+        showLoadingScreen();
+        final order = isPhone ? orderModel! : currentChosenOrder.value!;
+        final orderShiftIsActive = await checkIfShiftActive(order.shiftId);
+        if (orderShiftIsActive == null) {
+          hideLoadingScreen();
+          showSnackBar(
+            text: 'errorOccurred'.tr,
+            snackBarType: SnackBarType.error,
+          );
+        } else if (!orderShiftIsActive) {
+          hideLoadingScreen();
+          showSnackBar(
+            text: 'orderShiftInActive'.tr,
+            snackBarType: SnackBarType.error,
+          );
+        } else {
           final returnOrderStatus =
               await returnOrder(isPhone: isPhone, orderModel: order);
           hideLoadingScreen();
@@ -593,13 +592,12 @@ class OrdersController extends GetxController {
             );
           }
         }
-      } else {
-        hideLoadingScreen();
-        showSnackBar(
-          text: 'functionNotAllowed'.tr,
-          snackBarType: SnackBarType.error,
-        );
       }
+    } else {
+      showSnackBar(
+        text: 'functionNotAllowed'.tr,
+        snackBarType: SnackBarType.error,
+      );
     }
   }
 
@@ -629,38 +627,48 @@ class OrdersController extends GetxController {
   }
 
   void completeOrderTap({required bool isPhone, OrderModel? orderModel}) async {
-    showLoadingScreen();
-    final order = isPhone ? orderModel! : currentChosenOrder.value!;
-    final orderShiftIsActive = await checkIfShiftActive(order.shiftId);
-    if (orderShiftIsActive == null) {
-      hideLoadingScreen();
-      showSnackBar(
-        text: 'errorOccurred'.tr,
-        snackBarType: SnackBarType.error,
-      );
-    } else if (!orderShiftIsActive) {
-      hideLoadingScreen();
-      showSnackBar(
-        text: 'orderShiftInActive'.tr,
-        snackBarType: SnackBarType.error,
-      );
-    } else {
-      final completeOrderStatus =
-          await completeOrder(isPhone: isPhone, orderModel: order);
-      hideLoadingScreen();
-      if (completeOrderStatus == FunctionStatus.success) {
-        if (isPhone) Get.back();
-        showSnackBar(
-          text: 'orderCompletedSuccess'.tr,
-          snackBarType: SnackBarType.success,
-        );
-        currentChosenOrder.value = null;
-      } else {
+    final hasManageOrdersPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.manageOrders);
+    if (hasManageOrdersPermission) {
+      showLoadingScreen();
+      final order = isPhone ? orderModel! : currentChosenOrder.value!;
+      final orderShiftIsActive = await checkIfShiftActive(order.shiftId);
+      if (orderShiftIsActive == null) {
+        hideLoadingScreen();
         showSnackBar(
           text: 'errorOccurred'.tr,
           snackBarType: SnackBarType.error,
         );
+      } else if (!orderShiftIsActive) {
+        hideLoadingScreen();
+        showSnackBar(
+          text: 'orderShiftInActive'.tr,
+          snackBarType: SnackBarType.error,
+        );
+      } else {
+        final completeOrderStatus =
+            await completeOrder(isPhone: isPhone, orderModel: order);
+        hideLoadingScreen();
+        if (completeOrderStatus == FunctionStatus.success) {
+          if (isPhone) Get.back();
+          showSnackBar(
+            text: 'orderCompletedSuccess'.tr,
+            snackBarType: SnackBarType.success,
+          );
+          currentChosenOrder.value = null;
+        } else {
+          showSnackBar(
+            text: 'errorOccurred'.tr,
+            snackBarType: SnackBarType.error,
+          );
+        }
       }
+    } else {
+      showSnackBar(
+        text: 'functionNotAllowed'.tr,
+        snackBarType: SnackBarType.error,
+      );
     }
   }
 

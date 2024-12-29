@@ -77,6 +77,10 @@ class PersonalInfoFormController extends GetxController {
       );
       hideLoadingScreen();
       if (saveStatus == FunctionStatus.success) {
+        authRep.employeeInfo!.name = name;
+        authRep.employeeInfo!.phone = phoneController.text.trim();
+        authRep.employeeInfo!.birthDate = userInfo.birthDate!;
+        authRep.employeeInfo!.gender = gender.value;
         if (isPhone) Get.back();
         showSnackBar(
             text: 'personalInfoSaveSuccess'.tr,

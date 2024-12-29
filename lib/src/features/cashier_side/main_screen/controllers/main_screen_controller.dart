@@ -23,6 +23,7 @@ import '../../orders/screens/order_screen.dart';
 import '../../orders/screens/order_screen_phone.dart';
 import '../../tables/screens/tables_screen.dart';
 import '../components/open_day_shift_widget.dart';
+import '../components/open_day_shift_widget_phone.dart';
 
 class MainScreenController extends GetxController {
   static MainScreenController get instance => Get.find();
@@ -336,22 +337,32 @@ class MainScreenController extends GetxController {
   }
 
   openDayShiftTap({required bool isPhone}) {
-    if (isPhone) {
-      RegularBottomSheet.showRegularBottomSheet(
-        OpenDayShiftWidget(
-          openShiftPressed: (openingAmount) => openDayShift(openingAmount),
-          openingAmountTextController: openingAmountTextController,
-        ),
-      );
-    } else {
-      showDialog(
-        context: Get.context!,
-        builder: (BuildContext context) {
-          return OpenDayShiftWidget(
+    final hasManageDayShiftsPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.manageDayShifts);
+    if (hasManageDayShiftsPermission) {
+      if (isPhone) {
+        RegularBottomSheet.showRegularBottomSheet(
+          OpenDayShiftWidgetPhone(
             openShiftPressed: (openingAmount) => openDayShift(openingAmount),
             openingAmountTextController: openingAmountTextController,
-          );
-        },
+          ),
+        );
+      } else {
+        showDialog(
+          context: Get.context!,
+          builder: (BuildContext context) {
+            return OpenDayShiftWidget(
+              openShiftPressed: (openingAmount) => openDayShift(openingAmount),
+              openingAmountTextController: openingAmountTextController,
+            );
+          },
+        );
+      }
+    } else {
+      showSnackBar(
+        text: 'functionNotAllowed'.tr,
+        snackBarType: SnackBarType.error,
       );
     }
   }
@@ -374,34 +385,44 @@ class MainScreenController extends GetxController {
   }
 
   closeDayShiftTap({required bool isPhone}) async {
-    showLoadingScreen();
-    final shiftHasActiveOrders =
-        await getShiftActiveOrders(currentActiveShiftId.value!);
-    hideLoadingScreen();
-    if (shiftHasActiveOrders) {
-      showSnackBar(
-        text: 'shiftHasActiveOrders'.tr,
-        snackBarType: SnackBarType.error,
-      );
-    } else {
-      if (isPhone) {
-        RegularBottomSheet.showRegularBottomSheet(
-          CloseDayShiftWidget(
-              closeShiftPressed: (closingAmount) =>
-                  closeDayShift(closingAmount),
-              closingAmountTextController: closingAmountTextController),
+    final hasManageDayShiftsPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.manageDayShifts);
+    if (hasManageDayShiftsPermission) {
+      showLoadingScreen();
+      final shiftHasActiveOrders =
+          await getShiftActiveOrders(currentActiveShiftId.value!);
+      hideLoadingScreen();
+      if (shiftHasActiveOrders) {
+        showSnackBar(
+          text: 'shiftHasActiveOrders'.tr,
+          snackBarType: SnackBarType.error,
         );
       } else {
-        showDialog(
-          context: Get.context!,
-          builder: (BuildContext context) {
-            return CloseDayShiftWidget(
+        if (isPhone) {
+          RegularBottomSheet.showRegularBottomSheet(
+            CloseDayShiftWidget(
                 closeShiftPressed: (closingAmount) =>
                     closeDayShift(closingAmount),
-                closingAmountTextController: closingAmountTextController);
-          },
-        );
+                closingAmountTextController: closingAmountTextController),
+          );
+        } else {
+          showDialog(
+            context: Get.context!,
+            builder: (BuildContext context) {
+              return CloseDayShiftWidget(
+                  closeShiftPressed: (closingAmount) =>
+                      closeDayShift(closingAmount),
+                  closingAmountTextController: closingAmountTextController);
+            },
+          );
+        }
       }
+    } else {
+      showSnackBar(
+        text: 'functionNotAllowed'.tr,
+        snackBarType: SnackBarType.error,
+      );
     }
   }
 
