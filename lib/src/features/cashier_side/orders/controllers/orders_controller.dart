@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cortadoeg/src/features/cashier_side/main_screen/components/models.dart';
 import 'package:cortadoeg/src/features/cashier_side/orders/components/models.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -339,99 +340,143 @@ class OrdersController extends GetxController {
     }
   }
 
+  Future<bool?> checkIfShiftActive(String shiftId) async {
+    try {
+      final shiftDoc = await FirebaseFirestore.instance
+          .collection('custody_shifts')
+          .doc(shiftId)
+          .get();
+      if (shiftDoc.exists) {
+        return shiftDoc['isActive'] as bool;
+      }
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+      return false;
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+    }
+    return null;
+  }
+
   void onReopenOrderTap(
       {required bool isPhone, OrderModel? aOrderModel}) async {
-    final hasManageOrdersPermission = hasPermission(
-        AuthenticationRepository.instance.employeeInfo!,
-        UserPermission.manageOrders);
-    if (hasManageOrdersPermission) {
-      showLoadingScreen();
-      final orderModel = isPhone ? aOrderModel! : currentChosenOrder.value!;
-      late List<TableModel> tablesList;
-      final tablesListGet = await getTables();
-      if (tablesListGet != null) {
-        tablesList = tablesListGet;
-      } else {
-        hideLoadingScreen();
-        showSnackBar(
-          text: 'errorOccurred'.tr,
-          snackBarType: SnackBarType.error,
-        );
-        return;
-      }
-
-      tablesList = tablesList.where((table) {
-        return orderModel.tableNumbers!.contains(table.number);
-      }).toList();
-
-      for (var table in tablesList) {
-        if (table.currentOrderId != null &&
-            table.status == TableStatus.occupied) {
+    showLoadingScreen();
+    final orderModel = isPhone ? aOrderModel! : currentChosenOrder.value!;
+    final orderShiftIsActive = await checkIfShiftActive(orderModel.shiftId);
+    if (orderShiftIsActive == null) {
+      hideLoadingScreen();
+      showSnackBar(
+        text: 'errorOccurred'.tr,
+        snackBarType: SnackBarType.error,
+      );
+    } else if (!orderShiftIsActive) {
+      hideLoadingScreen();
+      showSnackBar(
+        text: 'orderShiftInActive'.tr,
+        snackBarType: SnackBarType.error,
+      );
+    } else {
+      final hasManageOrdersPermission = hasPermission(
+          AuthenticationRepository.instance.employeeInfo!,
+          UserPermission.manageOrders);
+      if (hasManageOrdersPermission) {
+        final orderModel = isPhone ? aOrderModel! : currentChosenOrder.value!;
+        late List<TableModel> tablesList;
+        final tablesListGet = await getTables();
+        if (tablesListGet != null) {
+          tablesList = tablesListGet;
+        } else {
           hideLoadingScreen();
           showSnackBar(
-            text: 'conflictingTablesError'.tr,
+            text: 'errorOccurred'.tr,
             snackBarType: SnackBarType.error,
           );
           return;
         }
-      }
-      final reopenOrderStatus = await reopenOrder(
-          orderId: orderModel.orderId, tablesList: tablesList);
 
-      hideLoadingScreen();
-      if (reopenOrderStatus == FunctionStatus.success) {
-        currentChosenOrder.value = null;
-        if (isPhone) Get.back();
-        Get.to(
-          () => isPhone
-              ? OrderScreenPhone(
-                  orderModel: orderModel,
-                  tablesIds: orderModel.tableNumbers != null
-                      ? tablesList
-                          .where((table) =>
-                              orderModel.tableNumbers!.contains(table.number))
-                          .map((table) => table.tableId)
-                          .toList()
-                      : [],
-                )
-              : OrderScreen(
-                  orderModel: orderModel,
-                  tablesIds: orderModel.tableNumbers != null
-                      ? tablesList
-                          .where((table) =>
-                              orderModel.tableNumbers!.contains(table.number))
-                          .map((table) => table.tableId)
-                          .toList()
-                      : [],
-                ),
-          transition: Transition.noTransition,
-        );
+        tablesList = tablesList.where((table) {
+          return orderModel.tableNumbers!.contains(table.number);
+        }).toList();
+
+        for (var table in tablesList) {
+          if (table.currentOrderId != null &&
+              table.status == TableStatus.occupied) {
+            hideLoadingScreen();
+            showSnackBar(
+              text: 'conflictingTablesError'.tr,
+              snackBarType: SnackBarType.error,
+            );
+            return;
+          }
+        }
+        final reopenOrderStatus =
+            await reopenOrder(orderModel: orderModel, tablesList: tablesList);
+
+        hideLoadingScreen();
+        if (reopenOrderStatus == FunctionStatus.success) {
+          currentChosenOrder.value = null;
+          MainScreenController.instance.showNewOrderButton.value = true;
+          if (isPhone) Get.back();
+          Get.to(
+            () => isPhone
+                ? OrderScreenPhone(
+                    orderModel: orderModel,
+                    tablesIds: orderModel.tableNumbers != null
+                        ? tablesList
+                            .where((table) =>
+                                orderModel.tableNumbers!.contains(table.number))
+                            .map((table) => table.tableId)
+                            .toList()
+                        : [],
+                  )
+                : OrderScreen(
+                    orderModel: orderModel,
+                    tablesIds: orderModel.tableNumbers != null
+                        ? tablesList
+                            .where((table) =>
+                                orderModel.tableNumbers!.contains(table.number))
+                            .map((table) => table.tableId)
+                            .toList()
+                        : [],
+                  ),
+            transition: Transition.noTransition,
+          );
+        } else {
+          showSnackBar(
+            text: 'errorOccurred'.tr,
+            snackBarType: SnackBarType.error,
+          );
+        }
       } else {
+        hideLoadingScreen();
         showSnackBar(
-          text: 'errorOccurred'.tr,
+          text: 'functionNotAllowed'.tr,
           snackBarType: SnackBarType.error,
         );
       }
-    } else {
-      showSnackBar(
-        text: 'functionNotAllowed'.tr,
-        snackBarType: SnackBarType.error,
-      );
     }
   }
 
   Future<FunctionStatus> reopenOrder(
-      {required String orderId, required List<TableModel> tablesList}) async {
+      {required OrderModel orderModel,
+      required List<TableModel> tablesList}) async {
     try {
       final firestore = FirebaseFirestore.instance;
-      final batch = firestore.batch();
-      batch.update(firestore.collection('orders').doc(orderId), {
+      final batch = MainScreenController.instance.getLogCustodyTransactionBatch(
+          type: TransactionType.reopenSale,
+          amount: orderModel.totalAmount,
+          shiftId: orderModel.shiftId);
+      batch.update(firestore.collection('orders').doc(orderModel.orderId), {
         'status': OrderStatus.active.name,
       });
       for (var table in tablesList) {
         batch.update(firestore.collection('tables').doc(table.tableId), {
           'status': TableStatus.occupied.name,
-          'currentOrderId': orderId,
+          'currentOrderId': orderModel.orderId,
         });
       }
       await batch.commit();
@@ -500,56 +545,76 @@ class OrdersController extends GetxController {
       {required bool isPhone,
       OrderModel? orderModel,
       required BuildContext context}) async {
-    final hasReturnOrdersPermission = hasPermission(
-        AuthenticationRepository.instance.employeeInfo!,
-        UserPermission.returnOrders);
-    final hasReturnOrdersPassPermission = hasPermission(
-        AuthenticationRepository.instance.employeeInfo!,
-        UserPermission.returnOrdersWithPass);
-    if (hasReturnOrdersPermission || hasReturnOrdersPassPermission) {
-      final passcodeValid = hasReturnOrdersPermission
-          ? true
-          : await MainScreenController.instance.showPassCodeScreen(
-              context: context, passcodeType: PasscodeType.returnOrders);
-      if (passcodeValid) {
-        showLoadingScreen();
-        final returnOrderStatus =
-            await returnOrder(isPhone: isPhone, orderModel: orderModel);
-        hideLoadingScreen();
-        if (returnOrderStatus == FunctionStatus.success) {
-          if (isPhone) {
-            Get.back();
-          } else {
-            currentChosenOrder.value = null;
-          }
-          showSnackBar(
-            text: 'orderReturnedSuccess'.tr,
-            snackBarType: SnackBarType.success,
-          );
-        } else {
-          showSnackBar(
-            text: 'errorOccurred'.tr,
-            snackBarType: SnackBarType.error,
-          );
-        }
-      }
-    } else {
+    showLoadingScreen();
+    final order = isPhone ? orderModel! : currentChosenOrder.value!;
+    final orderShiftIsActive = await checkIfShiftActive(order.shiftId);
+    if (orderShiftIsActive == null) {
+      hideLoadingScreen();
       showSnackBar(
-        text: 'functionNotAllowed'.tr,
+        text: 'errorOccurred'.tr,
         snackBarType: SnackBarType.error,
       );
+    } else if (!orderShiftIsActive) {
+      hideLoadingScreen();
+      showSnackBar(
+        text: 'orderShiftInActive'.tr,
+        snackBarType: SnackBarType.error,
+      );
+    } else {
+      final hasReturnOrdersPermission = hasPermission(
+          AuthenticationRepository.instance.employeeInfo!,
+          UserPermission.returnOrders);
+      final hasReturnOrdersPassPermission = hasPermission(
+          AuthenticationRepository.instance.employeeInfo!,
+          UserPermission.returnOrdersWithPass);
+      if (hasReturnOrdersPermission || hasReturnOrdersPassPermission) {
+        final passcodeValid = hasReturnOrdersPermission
+            ? true
+            : await MainScreenController.instance.showPassCodeScreen(
+                context: context, passcodeType: PasscodeType.returnOrders);
+        if (passcodeValid) {
+          final returnOrderStatus =
+              await returnOrder(isPhone: isPhone, orderModel: order);
+          hideLoadingScreen();
+          if (returnOrderStatus == FunctionStatus.success) {
+            if (isPhone) {
+              Get.back();
+            } else {
+              currentChosenOrder.value = null;
+            }
+            showSnackBar(
+              text: 'orderReturnedSuccess'.tr,
+              snackBarType: SnackBarType.success,
+            );
+          } else {
+            showSnackBar(
+              text: 'errorOccurred'.tr,
+              snackBarType: SnackBarType.error,
+            );
+          }
+        }
+      } else {
+        hideLoadingScreen();
+        showSnackBar(
+          text: 'functionNotAllowed'.tr,
+          snackBarType: SnackBarType.error,
+        );
+      }
     }
   }
 
   Future<FunctionStatus> returnOrder(
-      {required bool isPhone, OrderModel? orderModel}) async {
+      {required bool isPhone, required OrderModel orderModel}) async {
     try {
       final orderReference = FirebaseFirestore.instance
           .collection('orders')
-          .doc(isPhone
-              ? orderModel!.orderId
-              : currentChosenOrder.value!.orderId);
-      await orderReference.update({'status': OrderStatus.returned.name});
+          .doc(orderModel.orderId);
+      final batch = MainScreenController.instance.getLogCustodyTransactionBatch(
+          type: TransactionType.returnSale,
+          amount: orderModel.totalAmount,
+          shiftId: orderModel.shiftId);
+      batch.update(orderReference, {'status': OrderStatus.returned.name});
+      await batch.commit();
       return FunctionStatus.success;
     } on FirebaseException catch (error) {
       if (kDebugMode) {
@@ -565,33 +630,52 @@ class OrdersController extends GetxController {
 
   void completeOrderTap({required bool isPhone, OrderModel? orderModel}) async {
     showLoadingScreen();
-    final completeOrderStatus =
-        await completeOrder(isPhone: isPhone, orderModel: orderModel);
-    hideLoadingScreen();
-    if (completeOrderStatus == FunctionStatus.success) {
-      if (isPhone) Get.back();
-      showSnackBar(
-        text: 'orderCompletedSuccess'.tr,
-        snackBarType: SnackBarType.success,
-      );
-      currentChosenOrder.value = null;
-    } else {
+    final order = isPhone ? orderModel! : currentChosenOrder.value!;
+    final orderShiftIsActive = await checkIfShiftActive(order.shiftId);
+    if (orderShiftIsActive == null) {
+      hideLoadingScreen();
       showSnackBar(
         text: 'errorOccurred'.tr,
         snackBarType: SnackBarType.error,
       );
+    } else if (!orderShiftIsActive) {
+      hideLoadingScreen();
+      showSnackBar(
+        text: 'orderShiftInActive'.tr,
+        snackBarType: SnackBarType.error,
+      );
+    } else {
+      final completeOrderStatus =
+          await completeOrder(isPhone: isPhone, orderModel: order);
+      hideLoadingScreen();
+      if (completeOrderStatus == FunctionStatus.success) {
+        if (isPhone) Get.back();
+        showSnackBar(
+          text: 'orderCompletedSuccess'.tr,
+          snackBarType: SnackBarType.success,
+        );
+        currentChosenOrder.value = null;
+      } else {
+        showSnackBar(
+          text: 'errorOccurred'.tr,
+          snackBarType: SnackBarType.error,
+        );
+      }
     }
   }
 
   Future<FunctionStatus> completeOrder(
-      {required bool isPhone, OrderModel? orderModel}) async {
+      {required bool isPhone, required OrderModel orderModel}) async {
     try {
       final orderReference = FirebaseFirestore.instance
           .collection('orders')
-          .doc(isPhone
-              ? orderModel!.orderId
-              : currentChosenOrder.value!.orderId);
-      await orderReference.update({'status': OrderStatus.complete.name});
+          .doc(orderModel.orderId);
+      final batch = MainScreenController.instance.getLogCustodyTransactionBatch(
+          type: TransactionType.completeSale,
+          amount: orderModel.totalAmount,
+          shiftId: orderModel.shiftId);
+      batch.update(orderReference, {'status': OrderStatus.complete.name});
+      await batch.commit();
       return FunctionStatus.success;
     } on FirebaseException catch (error) {
       if (kDebugMode) {

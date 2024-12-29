@@ -33,6 +33,7 @@ class CategoryModel {
 
 class OrderModel {
   final String orderId;
+  final String shiftId;
   final bool isTakeaway;
   final int orderNumber;
   List<int>? tableNumbers;
@@ -56,6 +57,7 @@ class OrderModel {
     required this.employeeName,
     required this.isTakeaway,
     required this.orderNumber,
+    required this.shiftId,
     this.tableNumbers,
     required this.items,
     required this.status,
@@ -75,6 +77,7 @@ class OrderModel {
       'isTakeaway': isTakeaway,
       'tableNumbers': tableNumbers,
       'orderNumber': orderNumber,
+      'shiftId': shiftId,
       'employeeId': employeeId,
       'employeeName': employeeName,
       'items': items.map((item) => item.toFirestore()).toList(),
@@ -103,6 +106,7 @@ class OrderModel {
       timestamp: map['timestamp'],
       discountType: map['discountType'],
       orderNumber: map['orderNumber'],
+      shiftId: map['shiftId'],
       customerId: map['customerId'],
       employeeId: map['employeeId'],
       employeeName: map['employeeName'],

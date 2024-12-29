@@ -4,6 +4,7 @@ import 'package:bottom_sheet/bottom_sheet.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cortadoeg/src/authentication/authentication_repository.dart';
 import 'package:cortadoeg/src/authentication/models.dart';
+import 'package:cortadoeg/src/features/cashier_side/main_screen/components/models.dart';
 import 'package:cortadoeg/src/features/cashier_side/main_screen/controllers/main_screen_controller.dart';
 import 'package:cortadoeg/src/features/cashier_side/orders/components/choose_customer.dart';
 import 'package:cortadoeg/src/features/cashier_side/orders/components/choose_customer_phone.dart';
@@ -682,7 +683,9 @@ class OrderController extends GetxController {
           chargeOrderPrinter(order: orderModel, openDrawer: true);
           if (isPhone) Get.back();
           Get.back(result: true);
-          if (orderModel.isTakeaway) {
+          if (orderModel.isTakeaway &&
+              orderModel.employeeId !=
+                  AuthenticationRepository.instance.employeeInfo!.id) {
             sendNotification(
               employeeId: orderModel.employeeId,
               orderNumber: orderModel.orderNumber.toString(),
@@ -712,7 +715,10 @@ class OrderController extends GetxController {
   Future<FunctionStatus> chargeOrder({required String orderId}) async {
     try {
       final firestore = FirebaseFirestore.instance;
-      final batch = firestore.batch();
+      final batch = MainScreenController.instance.getLogCustodyTransactionBatch(
+          type: TransactionType.sale,
+          amount: orderTotal.value,
+          shiftId: orderModel.shiftId);
       batch.update(firestore.collection('orders').doc(orderModel.orderId), {
         'status': OrderStatus.complete.name,
         'subtotalAmount': orderSubtotal.value,

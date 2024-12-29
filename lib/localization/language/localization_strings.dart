@@ -841,6 +841,22 @@ class Languages extends Translations {
           'drawerOpenedFailed': 'Cash drawer opening failed',
           'openingDrawer': 'Opening cash drawer',
           'printingReceipt': 'Printing order receipt',
+          'enterOpeningShiftAmount': 'Enter day shift opening amount',
+          'enterClosingShiftAmount': 'Enter day shift closing amount',
+          'openingAmount': 'Opening amount',
+          'closingAmount': 'Closing amount',
+          'enterOpeningAmount': 'Enter opening amount',
+          'dayShiftOpenedSuccessfully': 'Day shift opened successfully',
+          'dayShiftOpenFailed': 'Day shift opening failed, please try again',
+          'dayShiftClosedSuccessfully': 'Day shift closed successfully',
+          'dayShiftClosingFailed': 'Day shift closing failed, please try again',
+          'openShift': 'Open shift',
+          'closeShift': 'Close shift',
+          'errorNoShiftOpened':
+              'There are no active day shifts, open one to create an order',
+          'shiftHasActiveOrders':
+              'Shift has active orders, please resolve them',
+          'orderShiftInActive': 'This order\'s shift isn\'t active',
         },
       };
 }

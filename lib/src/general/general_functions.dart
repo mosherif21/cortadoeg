@@ -815,3 +815,15 @@ String getMinutesString(int minutes) {
                   ? 'minutes'.tr
                   : 'minute'.tr;
 }
+
+bool isNumeric(String str) {
+  if (str.isEmpty) {
+    showSnackBar(text: 'textEmpty'.tr, snackBarType: SnackBarType.error);
+    return false;
+  } else if (double.tryParse(str) == null) {
+    showSnackBar(text: 'enterNumber'.tr, snackBarType: SnackBarType.error);
+    return false;
+  } else {
+    return true;
+  }
+}

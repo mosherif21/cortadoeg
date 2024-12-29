@@ -495,16 +495,23 @@ class TablesPageController extends GetxController {
   }
 
   onNewOrder({required bool isPhone}) async {
-    showLoadingScreen();
-    final newOrderModel =
-        await addTableOrder(orderTables: selectedTables.toList());
-    hideLoadingScreen();
-    if (newOrderModel != null) {
-      selectedTables.value = [];
-      navigateToOrderScreen(isPhone, newOrderModel);
+    if (MainScreenController.instance.currentActiveShiftId.value != null) {
+      showLoadingScreen();
+      final newOrderModel =
+          await addTableOrder(orderTables: selectedTables.toList());
+      hideLoadingScreen();
+      if (newOrderModel != null) {
+        selectedTables.value = [];
+        navigateToOrderScreen(isPhone, newOrderModel);
+      } else {
+        showSnackBar(
+          text: 'errorOccurred'.tr,
+          snackBarType: SnackBarType.error,
+        );
+      }
     } else {
       showSnackBar(
-        text: 'errorOccurred'.tr,
+        text: 'errorNoShiftOpened'.tr,
         snackBarType: SnackBarType.error,
       );
     }
@@ -532,6 +539,7 @@ class TablesPageController extends GetxController {
           isTakeaway: isTakeaway,
           employeeId: employeeInfo.id,
           employeeName: employeeInfo.name,
+          shiftId: MainScreenController.instance.currentActiveShiftId.value!,
         );
         await firestore.runTransaction((transaction) async {
           transaction.set(orderDoc, newOrder.toFirestore());

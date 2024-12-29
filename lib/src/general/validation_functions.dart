@@ -18,6 +18,16 @@ String? textNotEmpty(String? value) {
   return null;
 }
 
+String? isNumeric(String? value) {
+  if (value == null || value.isEmpty) {
+    return 'textEmpty'.tr;
+  } else if (double.tryParse(value) == null) {
+    return 'enterNumber'.tr;
+  } else {
+    return null;
+  }
+}
+
 String? validateNumbersOnly(String? value) {
   if (value == null || value.isEmpty) {
     return 'textEmpty'.tr;

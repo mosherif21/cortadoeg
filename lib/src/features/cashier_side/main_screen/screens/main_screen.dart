@@ -9,7 +9,6 @@ import 'package:hawk_fab_menu/hawk_fab_menu.dart';
 
 import '../../../../authentication/authentication_repository.dart';
 import '../../../../authentication/models.dart';
-import '../../../../constants/enums.dart';
 import '../../account/screens/account_screen.dart';
 import '../../orders/screens/orders_screen.dart';
 import '../../tables/screens/tables_screen.dart';
@@ -49,11 +48,15 @@ class MainScreen extends StatelessWidget {
           iconColor: Colors.white,
           items: [
             HawkFabMenuItem(
-              label: 'closeDayShift'.tr,
-              ontap: () {
-              },
+              label: mainController.currentActiveShiftId.value == null
+                  ? 'openDayShift'.tr
+                  : 'closeDayShift'.tr,
+              ontap: () => mainController.currentActiveShiftId.value == null
+                  ? mainController.openDayShiftTap(isPhone: screenType.isPhone)
+                  : mainController.closeDayShiftTap(
+                      isPhone: screenType.isPhone),
               icon: const Icon(
-                Icons.add_business_rounded,
+                Icons.calendar_month_rounded,
                 color: Colors.white,
                 size: 35,
               ),
