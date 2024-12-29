@@ -22,6 +22,7 @@ import '../../orders/controllers/orders_controller.dart';
 import '../../orders/screens/order_screen.dart';
 import '../../orders/screens/order_screen_phone.dart';
 import '../../tables/screens/tables_screen.dart';
+import '../components/close_day_shift_widget_phone.dart';
 import '../components/open_day_shift_widget.dart';
 import '../components/open_day_shift_widget_phone.dart';
 
@@ -401,7 +402,7 @@ class MainScreenController extends GetxController {
       } else {
         if (isPhone) {
           RegularBottomSheet.showRegularBottomSheet(
-            CloseDayShiftWidget(
+            CloseDayShiftWidgetPhone(
                 closeShiftPressed: (closingAmount) =>
                     closeDayShift(closingAmount),
                 closingAmountTextController: closingAmountTextController),

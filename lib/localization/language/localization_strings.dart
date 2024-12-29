@@ -415,6 +415,22 @@ class Languages extends Translations {
           'drawerOpenedFailed': 'فشل في فتح درج النقود',
           'openingDrawer': 'جاري فتح درج النقود',
           'printingReceipt': 'جاري طباعة إيصال الطلب',
+          "enterOpeningShiftAmount": "أدخل مبلغ بداية نوبة العمل",
+          "enterClosingShiftAmount": "أدخل مبلغ نهاية نوبة العمل",
+          "openingAmount": "مبلغ البداية",
+          "closingAmount": "مبلغ الإغلاق",
+          "enterOpeningAmount": "أدخل مبلغ البداية",
+          "dayShiftOpenedSuccessfully": "تم فتح نوبة العمل بنجاح",
+          "dayShiftOpenFailed": "فشل فتح نوبة العمل، يرجى المحاولة مرة أخرى",
+          "dayShiftClosedSuccessfully": "تم إغلاق نوبة العمل بنجاح",
+          "dayShiftClosingFailed":
+              "فشل إغلاق نوبة العمل، يرجى المحاولة مرة أخرى",
+          "openShift": "فتح النوبة",
+          "closeShift": "إغلاق النوبة",
+          "errorNoShiftOpened":
+              "لا توجد نوبات عمل نشطة، قم بفتح نوبة لإنشاء طلب",
+          "shiftHasActiveOrders": "النوبة تحتوي على طلبات نشطة، يرجى إنهاؤها",
+          "orderShiftInActive": "النوبة الخاصة بهذا الطلب غير نشطة",
         },
         'en_US': {
           'skip': 'Skip',
