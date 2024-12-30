@@ -500,9 +500,8 @@ class AuthenticationRepository extends GetxController {
         return 'missingEmail'.tr;
       } else if (ex.code == 'user-not-found') {
         return 'noRegisteredEmail'.tr;
-      } else if (ex.code == 'wrong-password' ||
-          ex.code == 'invalid-credential') {
-        return 'wrongPassword'.tr;
+      } else if (ex.code == 'invalid-credential') {
+        return 'wrongCredentials'.tr;
       } else if (ex.code == 'requires-recent-login') {
         return 'requireRecentLoginError'.tr;
       }

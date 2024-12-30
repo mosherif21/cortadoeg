@@ -440,6 +440,8 @@ class Languages extends Translations {
           'typeTransactionDisc': 'اكتب وصف معاملة درج النقود',
           'drawerNoShiftOpened':
               'لا توجد نوبات يومية نشطة، افتح واحدة للوصول إلى درج النقود',
+          'wrongCredentials':
+              'البريد الإلكتروني أو كلمة المرور غير صحيحة، يرجى المحاولة مرة أخرى',
         },
         'en_US': {
           'skip': 'Skip',
@@ -891,6 +893,7 @@ class Languages extends Translations {
           'typeTransactionDisc': 'Type cash drawer transaction description',
           'drawerNoShiftOpened':
               'No active day shifts, open one to access cash drawer',
+          'wrongCredentials': 'Wrong email or password, please try again',
         },
       };
 }

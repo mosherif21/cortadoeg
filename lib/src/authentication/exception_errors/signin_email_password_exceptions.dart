@@ -8,8 +8,8 @@ class SignInWithEmailAndPasswordFailure {
     switch (code) {
       case 'user-not-found':
         return SignInWithEmailAndPasswordFailure('noRegisteredEmail'.tr);
-      case 'wrong-password' || 'invalid-credential':
-        return SignInWithEmailAndPasswordFailure('wrongPassword'.tr);
+      case 'invalid-credential':
+        return SignInWithEmailAndPasswordFailure('wrongCredentials'.tr);
       default:
         return SignInWithEmailAndPasswordFailure('unknownError'.tr);
     }

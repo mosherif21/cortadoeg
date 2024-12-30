@@ -55,7 +55,9 @@ class CustomersScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     AnimSearchAppBar(
-                      hintStyle: const TextStyle(fontSize: 14),
+                      hintStyle: TextStyle(
+                          fontSize: screenType.isPhone ? 16 : 14,
+                          fontWeight: FontWeight.w600),
                       keyboardType: TextInputType.text,
                       cancelButtonTextStyle:
                           const TextStyle(color: Colors.black87),
