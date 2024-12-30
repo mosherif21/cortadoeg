@@ -25,6 +25,8 @@ import '../../tables/screens/tables_screen.dart';
 import '../components/close_day_shift_widget_phone.dart';
 import '../components/open_day_shift_widget.dart';
 import '../components/open_day_shift_widget_phone.dart';
+import '../components/transaction_widget.dart';
+import '../components/transaction_widget_phone.dart';
 
 class MainScreenController extends GetxController {
   static MainScreenController get instance => Get.find();
@@ -40,6 +42,7 @@ class MainScreenController extends GetxController {
   String finalizeOrdersPasscodeHash = '';
   String returnOrdersPasscodeHash = '';
   final RxBool navBarExtended = false.obs;
+  final RxInt currentSelectedTransaction = 0.obs;
   late final StreamController<bool> verificationNotifier;
   final firestore = FirebaseFirestore.instance;
   final Rxn<String?> currentActiveShiftId = Rxn<String>(null);
@@ -47,7 +50,15 @@ class MainScreenController extends GetxController {
       TextEditingController();
   final TextEditingController closingAmountTextController =
       TextEditingController();
+  final TextEditingController drawerTransactionTextController =
+      TextEditingController();
+  final TextEditingController drawerTransactionDescTextController =
+      TextEditingController();
   late final StreamSubscription activeShiftListener;
+  final notificationsCount = 0.obs;
+  late final StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>?
+      notificationCountStreamSubscription;
+
   @override
   void onInit() async {
     verificationNotifier = StreamController<bool>.broadcast();
@@ -126,9 +137,40 @@ class MainScreenController extends GetxController {
       }
     });
     handleNotificationsPermission();
+    listenForNotificationCount();
     super.onReady();
   }
 
+  void listenForNotificationCount() {
+    try {
+      final userId = AuthenticationRepository.instance.employeeInfo!.id;
+      notificationCountStreamSubscription = FirebaseFirestore.instance
+          .collection('notifications')
+          .doc(userId)
+          .snapshots()
+          .listen((snapshot) {
+        if (snapshot.exists) {
+          notificationsCount.value = snapshot.data()!['unseenCount'] as int;
+        } else {
+          notificationsCount.value = 0;
+        }
+      });
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+    }
+  }
+
+  void onTransactionTypeChanged(index) {
+    if (index != currentSelectedTransaction.value) {
+      currentSelectedTransaction.value = index;
+    }
+  }
   // Future<FunctionStatus> saveEditOrderPasscode(String passcode) async {
   //   try {
   //     await FirebaseFirestore.instance
@@ -271,6 +313,12 @@ class MainScreenController extends GetxController {
     pageController.dispose();
     barController.dispose();
     activeShiftListener.cancel();
+    notificationCountStreamSubscription?.cancel();
+    openingAmountTextController.dispose();
+    closingAmountTextController.dispose();
+    drawerTransactionTextController.dispose();
+    drawerTransactionDescTextController.dispose();
+
     super.onClose();
   }
 
@@ -279,7 +327,7 @@ class MainScreenController extends GetxController {
     homeScaffoldKey.currentState?.openDrawer();
   }
 
-  onOpenDrawerTap(BuildContext context) async {
+  onOpenDrawerTap(BuildContext context, bool isPhone) async {
     final hasOpenDrawerPermission = hasPermission(
         AuthenticationRepository.instance.employeeInfo!,
         UserPermission.openDrawer);
@@ -292,12 +340,25 @@ class MainScreenController extends GetxController {
           : await MainScreenController.instance.showPassCodeScreen(
               context: context, passcodeType: PasscodeType.openDrawer);
       if (passcodeValid) {
-        showSnackBar(
-          text: 'openingDrawer'.tr,
-          snackBarType: SnackBarType.info,
-        );
-
-        openDrawerTap();
+        if (currentActiveShiftId.value != null) {
+          if (isPhone) {
+            RegularBottomSheet.showRegularBottomSheet(
+              TransactionWidgetPhone(controller: this),
+            );
+          } else {
+            showDialog(
+              context: Get.context!,
+              builder: (BuildContext context) {
+                return TransactionWidget(controller: this);
+              },
+            );
+          }
+        } else {
+          showSnackBar(
+            text: 'drawerNoShiftOpened'.tr,
+            snackBarType: SnackBarType.error,
+          );
+        }
       }
     } else {
       showSnackBar(
@@ -305,6 +366,67 @@ class MainScreenController extends GetxController {
         snackBarType: SnackBarType.error,
       );
     }
+  }
+
+  TransactionType mapIndexToTransactionType(int value) {
+    return value == 0
+        ? TransactionType.payIn
+        : value == 1
+            ? TransactionType.payOut
+            : TransactionType.cashDrop;
+  }
+
+  void openDrawerTransaction(
+      {required double amount,
+      required int transactionTypeIndex,
+      required String description}) async {
+    showLoadingScreen();
+    final openDrawerStatus = await openDrawerDatabase(
+        transactionTypeIndex: transactionTypeIndex,
+        amount: amount,
+        description: description);
+    hideLoadingScreen();
+    if (openDrawerStatus == FunctionStatus.success) {
+      Get.back();
+      openDrawerPrinter();
+      showSnackBar(
+        text: 'openingDrawer'.tr,
+        snackBarType: SnackBarType.info,
+      );
+      drawerTransactionTextController.clear();
+      drawerTransactionDescTextController.clear();
+      currentSelectedTransaction.value = 0;
+    } else {
+      showSnackBar(
+        text: 'errorOccurred'.tr,
+        snackBarType: SnackBarType.error,
+      );
+    }
+  }
+
+  Future<FunctionStatus> openDrawerDatabase(
+      {required double amount,
+      required int transactionTypeIndex,
+      required String description}) async {
+    try {
+      final transactionType = mapIndexToTransactionType(transactionTypeIndex);
+      final batch = MainScreenController.instance.getLogCustodyTransactionBatch(
+          shiftId: currentActiveShiftId.value!,
+          type: transactionType,
+          amount: amount,
+          description: description);
+      await batch.commit();
+      return FunctionStatus.success;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) {
+        AppInit.logger.e(error.toString());
+      }
+    } catch (err) {
+      if (kDebugMode) {
+        AppInit.logger.e(err.toString());
+      }
+    }
+    return FunctionStatus.failure;
   }
 
   onTakeawayOrderTap(bool isPhone) async {
@@ -342,6 +464,7 @@ class MainScreenController extends GetxController {
         AuthenticationRepository.instance.employeeInfo!,
         UserPermission.manageDayShifts);
     if (hasManageDayShiftsPermission) {
+      openDrawerPrinter();
       if (isPhone) {
         RegularBottomSheet.showRegularBottomSheet(
           OpenDayShiftWidgetPhone(
@@ -373,6 +496,8 @@ class MainScreenController extends GetxController {
     final openShiftStatus = await openDayShiftDatabase(openingAmount);
     hideLoadingScreen();
     if (openShiftStatus == FunctionStatus.success) {
+      Get.back();
+      openingAmountTextController.clear();
       showSnackBar(
         text: 'dayShiftOpenedSuccessfully'.tr,
         snackBarType: SnackBarType.success,
@@ -400,6 +525,7 @@ class MainScreenController extends GetxController {
           snackBarType: SnackBarType.error,
         );
       } else {
+        openDrawerPrinter();
         if (isPhone) {
           RegularBottomSheet.showRegularBottomSheet(
             CloseDayShiftWidgetPhone(
@@ -433,10 +559,13 @@ class MainScreenController extends GetxController {
         await closeDayShiftDatabase(currentActiveShiftId.value!, closingAmount);
     hideLoadingScreen();
     if (closeShiftModel != null) {
+      Get.back();
+      closingAmountTextController.clear();
       showSnackBar(
         text: 'dayShiftClosedSuccessfully'.tr,
         snackBarType: SnackBarType.success,
       );
+      printCustodyReceipt(custody: closeShiftModel);
     } else {
       showSnackBar(
         text: 'dayShiftClosingFailed'.tr,
@@ -458,13 +587,13 @@ class MainScreenController extends GetxController {
     }
   }
 
-  // Open Day Shift
   Future<FunctionStatus> openDayShiftDatabase(double openingAmount) async {
     try {
       final custodyRef = firestore.collection('custody_shifts');
       final custodyReport = CustodyReport(
         id: '',
         openingTime: Timestamp.now(),
+        closingTime: Timestamp.now(),
         openingAmount: openingAmount,
         cashPaymentsNet: 0.0,
         totalPayIns: 0.0,
@@ -476,9 +605,7 @@ class MainScreenController extends GetxController {
         drawerOpenCount: 0,
         isActive: true,
       );
-
       await custodyRef.add(custodyReport.toFirestore());
-
       return FunctionStatus.success;
     } on FirebaseException catch (error) {
       if (kDebugMode) {
@@ -508,6 +635,7 @@ class MainScreenController extends GetxController {
         final difference = closingDrawerAmount - expectedAmount;
         await custodyDocRef.update({
           'isActive': false,
+          'closingTime': Timestamp.now(),
           'closing_amount': closingDrawerAmount,
           'expected_drawer_money': expectedAmount,
           'difference': difference,
@@ -670,7 +798,7 @@ class MainScreenController extends GetxController {
   void dineInOrderTap({required BuildContext context}) {
     final hasManageTablesPermission = hasPermission(
         AuthenticationRepository.instance.employeeInfo!,
-        UserPermission.manageOrders);
+        UserPermission.manageTables);
     if (hasManageTablesPermission) {
       Get.to(
         () => const TablesScreen(navBarAccess: false),

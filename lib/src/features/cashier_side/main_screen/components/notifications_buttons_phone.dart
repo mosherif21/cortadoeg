@@ -1,8 +1,10 @@
 import 'package:badges/badges.dart' as badges;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 
 import '../../../../general/general_functions.dart';
+import '../../notifications/screens/notifications_screen.dart';
 
 class NotificationsButtonPhone extends StatelessWidget {
   const NotificationsButtonPhone({super.key, required this.unreadNotification});
@@ -37,9 +39,10 @@ class NotificationsButtonPhone extends StatelessWidget {
                 ),
         ),
         onTap: () {
-          // Get.to(
-          //       () => const NotificationsScreen(),
-          // );
+          Get.to(
+            () => const NotificationsScreen(),
+            transition: getPageTransition(),
+          );
         },
       ),
     );

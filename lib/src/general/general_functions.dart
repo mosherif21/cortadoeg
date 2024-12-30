@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:isolate';
 
 import 'package:animated_snack_bar/animated_snack_bar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cortadoeg/src/general/shared_preferences_functions.dart';
 import 'package:cortadoeg/src/general/validation_functions.dart';
 import 'package:flutter/foundation.dart';
@@ -23,6 +24,7 @@ import '../authentication/authentication_repository.dart';
 import '../constants/assets_strings.dart';
 import '../constants/enums.dart';
 import '../features/authentication/screens/auth_screen.dart';
+import '../features/cashier_side/main_screen/components/models.dart';
 import '../features/cashier_side/orders/components/models.dart';
 import 'app_init.dart';
 import 'common_widgets/language_select.dart';
@@ -224,27 +226,7 @@ void displayAlertDialog({
   }
 }
 
-Future<FunctionStatus> chargeOrderPrinter(
-    {required OrderModel order, required bool openDrawer}) async {
-  final ByteData data = await rootBundle.load(kLogoImage);
-  final capabilitiesContent = await rootBundle
-      .loadString('packages/flutter_esc_pos_utils/resources/capabilities.json');
-  final logoBytes = data.buffer.asUint8List();
-  final ReceivePort receivePort = ReceivePort();
-  await Isolate.spawn(chargeOrderIsolate, {
-    'sendPort': receivePort.sendPort,
-    'orderValue': order,
-    'capabilitiesContent': capabilitiesContent,
-    'logoBytes': logoBytes,
-    'openDrawer': openDrawer,
-  });
-  final resultFromIsolate = await receivePort.first;
-  return (resultFromIsolate as String).compareTo('success') == 0
-      ? FunctionStatus.success
-      : FunctionStatus.failure;
-}
-
-Future<FunctionStatus> openDrawerTap() async {
+Future<FunctionStatus> openDrawerPrinter() async {
   final capabilitiesContent = await rootBundle
       .loadString('packages/flutter_esc_pos_utils/resources/capabilities.json');
   final ReceivePort receivePort = ReceivePort();
@@ -263,21 +245,6 @@ void openDrawerIsolate(Map<String, dynamic> data) async {
   final String capabilitiesContent = data['capabilitiesContent'];
   final resultStatus =
       await openDrawer(capabilitiesContent: capabilitiesContent);
-  sendPort.send(resultStatus == FunctionStatus.success ? 'success' : 'failure');
-}
-
-void chargeOrderIsolate(Map<String, dynamic> data) async {
-  final SendPort sendPort = data['sendPort'];
-  final OrderModel order = data['orderValue'];
-  final String capabilitiesContent = data['capabilitiesContent'];
-  final Uint8List logoBytes = data['logoBytes'];
-  final bool openDrawer = data['openDrawer'];
-  final resultStatus = await printReceipt(
-    order: order,
-    logoBytes: logoBytes,
-    capabilitiesContent: capabilitiesContent,
-    openDrawer: openDrawer,
-  );
   sendPort.send(resultStatus == FunctionStatus.success ? 'success' : 'failure');
 }
 
@@ -312,6 +279,41 @@ Future<FunctionStatus> sendNotification({
     }
   }
   return FunctionStatus.failure;
+}
+
+Future<FunctionStatus> chargeOrderPrinter(
+    {required OrderModel order, required bool openDrawer}) async {
+  final ByteData data = await rootBundle.load(kLogoImage);
+  final capabilitiesContent = await rootBundle
+      .loadString('packages/flutter_esc_pos_utils/resources/capabilities.json');
+  final logoBytes = data.buffer.asUint8List();
+  final ReceivePort receivePort = ReceivePort();
+  await Isolate.spawn(chargeOrderIsolate, {
+    'sendPort': receivePort.sendPort,
+    'orderValue': order,
+    'capabilitiesContent': capabilitiesContent,
+    'logoBytes': logoBytes,
+    'openDrawer': openDrawer,
+  });
+  final resultFromIsolate = await receivePort.first;
+  return (resultFromIsolate as String).compareTo('success') == 0
+      ? FunctionStatus.success
+      : FunctionStatus.failure;
+}
+
+void chargeOrderIsolate(Map<String, dynamic> data) async {
+  final SendPort sendPort = data['sendPort'];
+  final OrderModel order = data['orderValue'];
+  final String capabilitiesContent = data['capabilitiesContent'];
+  final Uint8List logoBytes = data['logoBytes'];
+  final bool openDrawer = data['openDrawer'];
+  final resultStatus = await printReceipt(
+    order: order,
+    logoBytes: logoBytes,
+    capabilitiesContent: capabilitiesContent,
+    openDrawer: openDrawer,
+  );
+  sendPort.send(resultStatus == FunctionStatus.success ? 'success' : 'failure');
 }
 
 Future<FunctionStatus> printReceipt({
@@ -356,36 +358,6 @@ Future<FunctionStatus> printReceipt({
       printer.disconnect();
       if (kDebugMode) {
         AppInit.logger.i('Receipt printed Successfully');
-      }
-      return FunctionStatus.success;
-    } else {
-      if (kDebugMode) {
-        AppInit.logger.e('Failed to connect to printer');
-      }
-      return FunctionStatus.failure;
-    }
-  } catch (e) {
-    if (kDebugMode) {
-      AppInit.logger.e(e.toString());
-    }
-    return FunctionStatus.failure;
-  }
-}
-
-Future<FunctionStatus> openDrawer({required String capabilitiesContent}) async {
-  try {
-    final profile =
-        await CapabilityProfile.load(capabilitiesContent: capabilitiesContent);
-    final generator = Generator(PaperSize.mm80, profile);
-    List<int> openDrawerBytes = [];
-    openDrawerBytes += generator.drawer();
-    final printer = PrinterNetworkManager('192.168.1.8');
-    final PosPrintResult result = await printer.connect();
-    if (result == PosPrintResult.success) {
-      await printer.printTicket(openDrawerBytes);
-      printer.disconnect();
-      if (kDebugMode) {
-        AppInit.logger.i('Cash drawer opened Successfully');
       }
       return FunctionStatus.success;
     } else {
@@ -577,6 +549,234 @@ Future<List<int>> generateReceiptBytes({
   bytes += generator.feed(1);
 
   bytes += generator.cut();
+  return bytes;
+}
+
+Future<FunctionStatus> openDrawer({required String capabilitiesContent}) async {
+  try {
+    final profile =
+        await CapabilityProfile.load(capabilitiesContent: capabilitiesContent);
+    final generator = Generator(PaperSize.mm80, profile);
+    List<int> openDrawerBytes = [];
+    openDrawerBytes += generator.drawer();
+    final printer = PrinterNetworkManager('192.168.1.8');
+    final PosPrintResult result = await printer.connect();
+    if (result == PosPrintResult.success) {
+      await printer.printTicket(openDrawerBytes);
+      printer.disconnect();
+      if (kDebugMode) {
+        AppInit.logger.i('Cash drawer opened Successfully');
+      }
+      return FunctionStatus.success;
+    } else {
+      if (kDebugMode) {
+        AppInit.logger.e('Failed to connect to printer');
+      }
+      return FunctionStatus.failure;
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      AppInit.logger.e(e.toString());
+    }
+    return FunctionStatus.failure;
+  }
+}
+
+Future<FunctionStatus> printCustodyReceipt({
+  required CustodyReport custody,
+}) async {
+  final ByteData data = await rootBundle.load(kLogoImage);
+  final capabilitiesContent = await rootBundle
+      .loadString('packages/flutter_esc_pos_utils/resources/capabilities.json');
+  final logoBytes = data.buffer.asUint8List();
+  final ReceivePort receivePort = ReceivePort();
+
+  await Isolate.spawn(printCustodyIsolate, {
+    'sendPort': receivePort.sendPort,
+    'custody': custody,
+    'capabilitiesContent': capabilitiesContent,
+    'logoBytes': logoBytes,
+  });
+
+  final resultFromIsolate = await receivePort.first;
+  return (resultFromIsolate as String).compareTo('success') == 0
+      ? FunctionStatus.success
+      : FunctionStatus.failure;
+}
+
+void printCustodyIsolate(Map<String, dynamic> data) async {
+  final SendPort sendPort = data['sendPort'];
+  final CustodyReport custody = data['custody'];
+  final String capabilitiesContent = data['capabilitiesContent'];
+  final Uint8List logoBytes = data['logoBytes'];
+
+  final resultStatus = await generateAndPrintCustodyReceipt(
+    custody: custody,
+    logoBytes: logoBytes,
+    capabilitiesContent: capabilitiesContent,
+  );
+  sendPort.send(resultStatus == FunctionStatus.success ? 'success' : 'failure');
+}
+
+Future<FunctionStatus> generateAndPrintCustodyReceipt({
+  required CustodyReport custody,
+  required Uint8List logoBytes,
+  required String capabilitiesContent,
+}) async {
+  try {
+    final receiptBytes = await generateCustodyReceiptBytes(
+      custody: custody,
+      logoBytes: logoBytes,
+      capabilitiesContent: capabilitiesContent,
+    );
+    final printer = PrinterNetworkManager('192.168.1.8');
+    final PosPrintResult result = await printer.connect();
+    if (result == PosPrintResult.success) {
+      await printer.printTicket(receiptBytes);
+      printer.disconnect();
+      return FunctionStatus.success;
+    } else {
+      return FunctionStatus.failure;
+    }
+  } catch (e) {
+    return FunctionStatus.failure;
+  }
+}
+
+Future<List<int>> generateCustodyReceiptBytes({
+  required CustodyReport custody,
+  required Uint8List logoBytes,
+  required String capabilitiesContent,
+}) async {
+  final profile =
+      await CapabilityProfile.load(capabilitiesContent: capabilitiesContent);
+  final generator = Generator(PaperSize.mm80, profile);
+  List<int> bytes = [];
+
+  // Add logo
+  final image = decodeImage(logoBytes);
+  if (image != null) {
+    final resizedImage = copyResize(image, width: 384);
+    bytes += generator.image(resizedImage);
+  }
+  bytes += generator.feed(1);
+
+  // Header
+  bytes += generator.text('Cortado Egypt - Louran Branch',
+      styles: const PosStyles(align: PosAlign.center, bold: true));
+  bytes += generator.text('Fix What Others Have Ruined',
+      styles: const PosStyles(align: PosAlign.center));
+  bytes += generator.hr();
+
+  // Shift Information
+  bytes += generator.text('Custody Shift ID: ${custody.id}',
+      styles: const PosStyles(align: PosAlign.left));
+  bytes += generator.text(
+      'Opening: ${DateFormat('yyyy/MM/dd hh:mm:ss a').format(custody.openingTime.toDate())}',
+      styles: const PosStyles(align: PosAlign.left));
+  bytes += generator.text(
+      'Closing: ${DateFormat('yyyy/MM/dd hh:mm:ss a').format(custody.closingTime.toDate())}',
+      styles: const PosStyles(align: PosAlign.left));
+  bytes += generator.hr();
+
+  // Financial Details
+  bytes += generator.row([
+    PosColumn(
+        text: 'Opening Amount:',
+        width: 8,
+        styles: const PosStyles(align: PosAlign.left)),
+    PosColumn(
+        text: 'EGP ${custody.openingAmount.toStringAsFixed(2)}',
+        width: 4,
+        styles: const PosStyles(align: PosAlign.right)),
+  ]);
+  bytes += generator.row([
+    PosColumn(
+        text: 'Cash Payments:',
+        width: 8,
+        styles: const PosStyles(align: PosAlign.left)),
+    PosColumn(
+        text: 'EGP ${custody.cashPaymentsNet.toStringAsFixed(2)}',
+        width: 4,
+        styles: const PosStyles(align: PosAlign.right)),
+  ]);
+  bytes += generator.row([
+    PosColumn(
+        text: 'Pay-Ins:',
+        width: 8,
+        styles: const PosStyles(align: PosAlign.left)),
+    PosColumn(
+        text: 'EGP ${custody.totalPayIns.toStringAsFixed(2)}',
+        width: 4,
+        styles: const PosStyles(align: PosAlign.right)),
+  ]);
+  bytes += generator.row([
+    PosColumn(
+        text: 'Pay-Outs:',
+        width: 8,
+        styles: const PosStyles(align: PosAlign.left)),
+    PosColumn(
+        text: 'EGP ${custody.totalPayOuts.toStringAsFixed(2)}',
+        width: 4,
+        styles: const PosStyles(align: PosAlign.right)),
+  ]);
+  bytes += generator.row([
+    PosColumn(
+        text: 'Cash Drops:',
+        width: 8,
+        styles: const PosStyles(align: PosAlign.left)),
+    PosColumn(
+        text: 'EGP ${custody.cashDrop.toStringAsFixed(2)}',
+        width: 4,
+        styles: const PosStyles(align: PosAlign.right)),
+  ]);
+
+  bytes += generator.hr();
+
+  // Drawer Summary
+  bytes += generator.row([
+    PosColumn(
+        text: 'Expected Drawer:',
+        width: 8,
+        styles: const PosStyles(align: PosAlign.left)),
+    PosColumn(
+        text: 'EGP ${custody.expectedDrawerMoney.toStringAsFixed(2)}',
+        width: 4,
+        styles: const PosStyles(align: PosAlign.right)),
+  ]);
+  bytes += generator.row([
+    PosColumn(
+        text: 'Actual Drawer:',
+        width: 8,
+        styles: const PosStyles(align: PosAlign.left)),
+    PosColumn(
+        text: 'EGP ${custody.closingAmount.toStringAsFixed(2)}',
+        width: 4,
+        styles: const PosStyles(align: PosAlign.right)),
+  ]);
+  bytes += generator.row([
+    PosColumn(
+        text: 'Difference:',
+        width: 8,
+        styles: const PosStyles(align: PosAlign.left)),
+    PosColumn(
+        text: 'EGP ${custody.difference.toStringAsFixed(2)}',
+        width: 4,
+        styles: const PosStyles(align: PosAlign.right)),
+  ]);
+
+  // Drawer Open Count
+  bytes += generator.text(
+      'Drawer opened ${custody.drawerOpenCount} times manually.',
+      styles: const PosStyles(align: PosAlign.left));
+  bytes += generator.hr();
+
+  // Footer
+  bytes += generator.text('Thank you for using Cortado!',
+      styles: const PosStyles(align: PosAlign.center, bold: true));
+  bytes += generator.feed(1);
+  bytes += generator.cut();
+
   return bytes;
 }
 
@@ -789,12 +989,12 @@ class GetScreenType {
   bool get isDesktop => MediaQuery.of(context).size.width >= 1200;
 }
 
-// String formatDateTime(Timestamp timestamp) {
-//   DateTime dateTime =
-//       DateTime.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch);
-//   DateFormat formatter = DateFormat('MMM d y hh:mm a');
-//   return formatter.format(dateTime);
-// }
+String formatDateTime(Timestamp timestamp) {
+  DateTime dateTime =
+      DateTime.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch);
+  DateFormat formatter = DateFormat('MMM d y hh:mm a');
+  return formatter.format(dateTime);
+}
 
 String getAddedCurrentTime({required int minutesToAdd}) {
   DateTime currentTime = DateTime.now();

@@ -58,7 +58,6 @@ class TablesScreen extends StatelessWidget {
                     title: MainScreenPagesAppbar(
                       isPhone: screenType.isPhone,
                       appBarTitle: 'tablesView'.tr,
-                      unreadNotification: true,
                     ),
                     backgroundColor: Colors.white,
                     foregroundColor: Colors.white,

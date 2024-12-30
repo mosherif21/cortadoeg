@@ -75,8 +75,6 @@ class CloseDayShiftWidget extends StatelessWidget {
                           final amount =
                               closingAmountTextController.text.trim();
                           if (isNumeric(amount)) {
-                            Get.back();
-                            closingAmountTextController.clear();
                             closeShiftPressed(double.parse(amount));
                           }
                         },

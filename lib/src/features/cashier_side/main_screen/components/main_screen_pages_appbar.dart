@@ -1,5 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cortadoeg/src/features/cashier_side/main_screen/controllers/main_screen_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 
 import '../../../../general/common_widgets/today_date_widget.dart';
 import 'notifications_button.dart';
@@ -7,12 +9,8 @@ import 'notifications_buttons_phone.dart';
 
 class MainScreenPagesAppbar extends StatelessWidget {
   const MainScreenPagesAppbar(
-      {super.key,
-      required this.appBarTitle,
-      required this.unreadNotification,
-      required this.isPhone});
+      {super.key, required this.appBarTitle, required this.isPhone});
   final String appBarTitle;
-  final bool unreadNotification;
   final bool isPhone;
   @override
   Widget build(BuildContext context) {
@@ -28,9 +26,17 @@ class MainScreenPagesAppbar extends StatelessWidget {
             maxLines: 1,
           ),
         ),
-        isPhone
-            ? NotificationsButtonPhone(unreadNotification: unreadNotification)
-            : NotificationsButton(unreadNotification: unreadNotification),
+        Obx(
+          () => isPhone
+              ? NotificationsButtonPhone(
+                  unreadNotification:
+                      MainScreenController.instance.notificationsCount.value >
+                          0)
+              : NotificationsButton(
+                  unreadNotification:
+                      MainScreenController.instance.notificationsCount.value >
+                          0),
+        ),
         if (!isPhone) const TodayDateWidget(),
       ],
     );

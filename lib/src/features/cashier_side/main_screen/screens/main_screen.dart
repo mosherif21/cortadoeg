@@ -67,7 +67,8 @@ class MainScreen extends StatelessWidget {
             ),
             HawkFabMenuItem(
               label: 'openDrawer'.tr,
-              ontap: () => mainController.onOpenDrawerTap(context),
+              ontap: () =>
+                  mainController.onOpenDrawerTap(context, screenType.isPhone),
               icon: const Icon(
                 FontAwesomeIcons.cashRegister,
                 color: Colors.white,
@@ -127,7 +128,6 @@ class MainScreen extends StatelessWidget {
                       () => MainScreenPagesAppbar(
                         appBarTitle: mainController
                             .getPageTitle(mainController.navBarIndex.value),
-                        unreadNotification: true,
                         isPhone: screenType.isPhone,
                       ),
                     ),

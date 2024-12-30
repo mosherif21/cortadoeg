@@ -47,7 +47,6 @@ class OrdersScreen extends StatelessWidget {
               title: MainScreenPagesAppbar(
                 isPhone: screenType.isPhone,
                 appBarTitle: 'ordersHistory'.tr,
-                unreadNotification: true,
               ),
               backgroundColor: Colors.white,
               foregroundColor: Colors.white,
@@ -215,6 +214,7 @@ class OrdersScreen extends StatelessWidget {
                     cancelButtonText: 'cancel'.tr,
                     hintText: 'searchOrdersHint'.tr,
                     cSearch: orderSearchTextController,
+                    hintStyle: const TextStyle(fontWeight: FontWeight.w600),
                     backgroundColor: Colors.white,
                     appBar: const SizedBox.shrink(),
                   ),

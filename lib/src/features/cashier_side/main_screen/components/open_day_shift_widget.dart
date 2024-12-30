@@ -75,8 +75,6 @@ class OpenDayShiftWidget extends StatelessWidget {
                           final amount =
                               openingAmountTextController.text.trim();
                           if (isNumeric(amount)) {
-                            Get.back();
-                            openingAmountTextController.clear();
                             openShiftPressed(double.parse(amount));
                           }
                         },

@@ -25,6 +25,7 @@ class NewOrderScreenAppbar extends StatelessWidget {
       cancelButtonTextStyle: const TextStyle(color: Colors.black87),
       cancelButtonText: 'cancel'.tr,
       hintText: 'searchItemsHint'.tr,
+      hintStyle: const TextStyle(fontWeight: FontWeight.w600),
       cSearch: searchBarTextController,
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(

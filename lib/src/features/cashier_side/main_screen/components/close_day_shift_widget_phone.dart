@@ -71,8 +71,6 @@ class CloseDayShiftWidgetPhone extends StatelessWidget {
               onPressed: () {
                 final amount = closingAmountTextController.text.trim();
                 if (isNumeric(amount)) {
-                  Get.back();
-                  closingAmountTextController.clear();
                   closeShiftPressed(double.parse(amount));
                 }
               },
@@ -89,6 +87,7 @@ class CloseDayShiftWidgetPhone extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 10),
         ],
       ),
     );

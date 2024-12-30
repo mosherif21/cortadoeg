@@ -1,4 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cortadoeg/src/general/general_functions.dart';
 import 'package:expansion_tile_group/expansion_tile_group.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -40,6 +41,7 @@ class OrdersScreenItemWidget extends StatelessWidget {
   }
 
   Widget buildItem(BuildContext context) {
+    final isPhone = GetScreenType(context).isPhone;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.start,
@@ -65,8 +67,8 @@ class OrdersScreenItemWidget extends StatelessWidget {
                 AutoSizeText(
                   orderItemModel.name,
                   maxLines: 2,
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: isPhone ? 20 : 16,
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
@@ -84,8 +86,8 @@ class OrdersScreenItemWidget extends StatelessWidget {
                   children: [
                     Text(
                       'itemDetails'.tr,
-                      style: const TextStyle(
-                        fontSize: 12,
+                      style: TextStyle(
+                        fontSize: isPhone ? 16 : 12,
                         fontWeight: FontWeight.w800,
                         color: Colors.grey,
                       ),
@@ -100,8 +102,8 @@ class OrdersScreenItemWidget extends StatelessWidget {
                     ),
                     Text(
                       'EGP ${(orderItemModel.price * orderItemModel.quantity).toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontSize: 12,
+                      style: TextStyle(
+                        fontSize: isPhone ? 16 : 12,
                         fontWeight: FontWeight.w800,
                         color: Colors.green,
                       ),

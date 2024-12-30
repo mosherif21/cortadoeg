@@ -20,7 +20,6 @@ class ReportsScreen extends StatelessWidget {
               title: MainScreenPagesAppbar(
                 isPhone: screenType.isPhone,
                 appBarTitle: 'reports'.tr,
-                unreadNotification: true,
               ),
               backgroundColor: Colors.white,
               foregroundColor: Colors.white,

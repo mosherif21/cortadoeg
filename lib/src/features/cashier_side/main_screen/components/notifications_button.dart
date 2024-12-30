@@ -1,10 +1,11 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:badges/badges.dart' as badges;
+import 'package:cortadoeg/src/general/general_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import '../../../../general/general_functions.dart';
+import '../../notifications/screens/notifications_screen.dart';
 
 class NotificationsButton extends StatelessWidget {
   const NotificationsButton({super.key, required this.unreadNotification});
@@ -52,10 +53,10 @@ class NotificationsButton extends StatelessWidget {
           ),
         ),
         onTap: () {
-          
-          // Get.to(
-          //       () => const NotificationsScreen(),
-          // );
+          Get.to(
+            () => const NotificationsScreen(),
+            transition: getPageTransition(),
+          );
         },
       ),
     );

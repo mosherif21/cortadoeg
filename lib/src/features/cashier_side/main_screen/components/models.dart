@@ -51,6 +51,7 @@ class CustodyTransaction {
 class CustodyReport {
   final String id; // Document ID (optional, for identification)
   final Timestamp openingTime; // Time the drawer was opened
+  final Timestamp closingTime; // Time the drawer was opened
   final double openingAmount; // Amount at opening
   final double cashPaymentsNet; // Cash received net of returns
   final double totalPayIns; // Total pay-ins
@@ -65,6 +66,7 @@ class CustodyReport {
   CustodyReport({
     required this.id,
     required this.openingTime,
+    required this.closingTime,
     required this.openingAmount,
     required this.cashPaymentsNet,
     required this.totalPayIns,
@@ -83,6 +85,7 @@ class CustodyReport {
     return CustodyReport(
       id: doc.id,
       openingTime: data['opening_time'] as Timestamp,
+      closingTime: data['closingTime'] as Timestamp,
       openingAmount: (data['opening_amount'] ?? 0.0).toDouble(),
       cashPaymentsNet: (data['cash_payments_net'] ?? 0.0).toDouble(),
       totalPayIns: (data['total_pay_ins'] ?? 0.0).toDouble(),
@@ -100,6 +103,7 @@ class CustodyReport {
   Map<String, dynamic> toFirestore() {
     return {
       'opening_time': openingTime,
+      'closingTime': closingTime,
       'opening_amount': openingAmount,
       'cash_payments_net': cashPaymentsNet,
       'total_pay_ins': totalPayIns,

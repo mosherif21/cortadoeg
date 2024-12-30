@@ -41,7 +41,6 @@ class CustomersScreen extends StatelessWidget {
               elevation: 0,
               title: MainScreenPagesAppbar(
                 appBarTitle: 'customers'.tr,
-                unreadNotification: true,
                 isPhone: screenType.isPhone,
               ),
               backgroundColor: Colors.white,
