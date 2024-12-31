@@ -4,6 +4,7 @@ import 'package:bcrypt/bcrypt.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cortadoeg/src/authentication/authentication_repository.dart';
 import 'package:cortadoeg/src/authentication/models.dart';
+import 'package:cortadoeg/src/features/cashier_side/customers/controllers/customers_screen_controller.dart';
 import 'package:cortadoeg/src/features/cashier_side/main_screen/components/close_day_shift_widget.dart';
 import 'package:cortadoeg/src/features/cashier_side/main_screen/components/models.dart';
 import 'package:cortadoeg/src/features/cashier_side/orders/components/models.dart';
@@ -274,21 +275,32 @@ class MainScreenController extends GetxController {
   }
 
   void newOrderButtonVisibility() {
+    // Default to showing the button
+    showNewOrderButton.value = true;
+
     if (Get.isRegistered<TablesPageController>()) {
       final selectedTables = TablesPageController.instance.selectedTables;
-      if (navBarIndex.value != 0 && showNewOrderButton.value == false) {
-        showNewOrderButton.value = true;
-      } else if (navBarIndex.value == 0 && selectedTables.isNotEmpty) {
+      if (navBarIndex.value == 0 && selectedTables.isNotEmpty) {
         showNewOrderButton.value = false;
+        return;
       }
     }
+
     if (Get.isRegistered<OrdersController>()) {
       final currentChosenOrder =
           OrdersController.instance.currentChosenOrder.value;
-      if (currentChosenOrder != null) {
+      if (navBarIndex.value == 1 && currentChosenOrder != null) {
         showNewOrderButton.value = false;
-      } else {
-        showNewOrderButton.value = true;
+        return;
+      }
+    }
+
+    if (Get.isRegistered<CustomersScreenController>()) {
+      final currentChosenOrder =
+          CustomersScreenController.instance.currentChosenOrder.value;
+      if (navBarIndex.value == 2 && currentChosenOrder != null) {
+        showNewOrderButton.value = false;
+        return;
       }
     }
   }

@@ -240,6 +240,7 @@ class OrdersController extends GetxController {
 
   void onRefresh() {
     loadingOrders.value = true;
+    MainScreenController.instance.showNewOrderButton.value = true;
     currentChosenOrder.value = null;
     _listenToFilteredOrders();
     ordersRefreshController.refreshToIdle();

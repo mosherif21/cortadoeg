@@ -22,6 +22,7 @@ import '../../tables/components/models.dart';
 import '../screens/customer_orders_screen_phone.dart';
 
 class CustomersScreenController extends GetxController {
+  static CustomersScreenController get instance => Get.find();
   final RxList<CustomerModel> customersList = <CustomerModel>[].obs;
   final RxList<CustomerModel> filteredCustomers = <CustomerModel>[].obs;
   final RxBool percentageChosen = true.obs;
@@ -154,6 +155,7 @@ class CustomersScreenController extends GetxController {
 
   void onCustomersRefresh() {
     loadingCustomers.value = true;
+    MainScreenController.instance.showNewOrderButton.value = true;
     chosenCustomerIndex.value = 0;
     loadCustomers();
     currentChosenOrder.value = null;
@@ -165,6 +167,7 @@ class CustomersScreenController extends GetxController {
     final index = chosenCustomerIndex.value;
     final chosenCustomerId = customersList[index - 1].customerId;
     loadingCustomerOrders.value = true;
+    MainScreenController.instance.showNewOrderButton.value = true;
     currentChosenOrder.value = null;
     customerOrdersRefreshController.refreshToIdle();
     customerOrdersRefreshController.resetNoData();
