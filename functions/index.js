@@ -22,6 +22,33 @@ exports.sendNotification = onRequest(async (request, response) => {
   let notificationTitle;
   let notificationBody;
 
+  const fcmTokenRef = notificationType == "newTakeawayOrder" ? firestore.collection("fcmTokens").doc("cashierFcmToken") : firestore.collection("fcmTokens").doc(employeeId);
+  const fcmTokenDoc = await fcmTokenRef.get();
+
+  if (fcmTokenDoc.exists) {
+    const fcmTokenData = fcmTokenDoc.data();
+    if (fcmTokenData && fcmTokenData.notificationsLang) {
+      notificationsLang = fcmTokenData.notificationsLang;
+    }
+  } else if (!fcmTokenDoc.exists && notificationType == "newTakeawayOrder") {
+    console.log("FCM token doc not found");
+    response.status(200).send("Cashier FCM token doc not found and notification not saved");
+    return;
+  }
+  const batch = firestore.batch();
+  const notificationsRef = firestore.collection("notifications").doc(notificationType == "newTakeawayOrder" ? fcmTokenDoc.data().cashierEmployeeId : employeeId);
+  const notificationsDoc = await notificationsRef.get();
+
+  if (notificationsDoc.exists) {
+    batch.update(notificationsRef, {
+      unseenCount: admin.firestore.FieldValue.increment(1),
+    });
+  } else {
+    batch.set(notificationsRef, {
+      unseenCount: 1,
+    });
+  }
+
 
   switch (notificationType) {
     case "newTakeawayOrder":
@@ -48,33 +75,6 @@ exports.sendNotification = onRequest(async (request, response) => {
       console.error("Invalid notification type");
       response.status(400).send("Invalid notification type");
       return;
-  }
-
-  const fcmTokenRef = notificationType == "newTakeawayOrder" ? firestore.collection("fcmTokens").doc("cashierFcmToken") : firestore.collection("fcmTokens").doc(employeeId);
-  const fcmTokenDoc = await fcmTokenRef.get();
-
-  if (fcmTokenDoc.exists) {
-    const fcmTokenData = fcmTokenDoc.data();
-    if (fcmTokenData && fcmTokenData.notificationsLang) {
-      notificationsLang = fcmTokenData.notificationsLang;
-    }
-  } else if (!fcmTokenDoc.exists && notificationType == "newTakeawayOrder") {
-    console.log("FCM token doc not found");
-    response.status(200).send("Cashier FCM token doc not found and notification not saved");
-    return;
-  }
-  const batch = firestore.batch();
-  const notificationsRef = firestore.collection("notifications").doc(notificationType == "newTakeawayOrder" ? fcmTokenDoc.data().cashierEmployeeId : employeeId);
-  const notificationsDoc = await notificationsRef.get();
-
-  if (notificationsDoc.exists) {
-    batch.update(notificationsRef, {
-      unseenCount: admin.firestore.FieldValue.increment(1),
-    });
-  } else {
-    batch.set(notificationsRef, {
-      unseenCount: 1,
-    });
   }
 
   const messagesRef = notificationsRef.collection("messages").doc();
