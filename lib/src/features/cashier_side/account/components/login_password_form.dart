@@ -403,19 +403,18 @@ class LoginPasswordForm extends StatelessWidget {
                           onPressed: () => controller.authRep.linkWithGoogle(),
                         ),
                       ),
-                      /*  const SizedBox(height: 10),
-                       Obx(
-                    () => authRepo.isFacebookLinked.value
-                        ? const SizedBox.shrink()
-                        : LinkAccountButton(
-                            buttonText: 'linkFacebookAccount'.tr,
-                            imagePath: kFacebookImage,
-                            onPressed: () => authRepo.linkWithFacebook(),
-                            backgroundColor: Colors.blueAccent,
-                            textColor: Colors.white,
-                            enabled: true,
-                          ),
-                  ),*/
+                      const SizedBox(height: 10),
+                      //    Obx(
+                      // () =>
+                      controller.authRep.isFacebookLinked.value
+                          ? const SizedBox.shrink()
+                          : LinkAccountButton(
+                              buttonText: 'linkFacebookAccount'.tr,
+                              imagePath: kFacebookImage,
+                              onPressed:
+                                  () {} //=> controller. authRep.linkWithFacebook(),
+                              ),
+                      //  ),
                     ],
                   )
                 : Row(
@@ -430,19 +429,18 @@ class LoginPasswordForm extends StatelessWidget {
                           onPressed: () => controller.authRep.linkWithGoogle(),
                         ),
                       ),
-                      /*  const SizedBox(width: 10),
-                      Obx(
-                    () => authRepo.isFacebookLinked.value
-                        ? const SizedBox.shrink()
-                        : LinkAccountButton(
-                            buttonText: 'linkFacebookAccount'.tr,
-                            imagePath: kFacebookImage,
-                            onPressed: () => authRepo.linkWithFacebook(),
-                            backgroundColor: Colors.blueAccent,
-                            textColor: Colors.white,
-                            enabled: true,
-                          ),
-                  ),*/
+                      const SizedBox(width: 10),
+                      //    Obx(
+                      // () =>
+                      controller.authRep.isFacebookLinked.value
+                          ? const SizedBox.shrink()
+                          : LinkAccountButton(
+                              buttonText: 'linkFacebookAccount'.tr,
+                              imagePath: kFacebookImage,
+                              onPressed:
+                                  () {} //=> controller. authRep.linkWithFacebook(),
+                              ),
+                      //  ),
                     ],
                   ),
           ],
