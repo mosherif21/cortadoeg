@@ -393,6 +393,7 @@ class LoginPasswordForm extends StatelessWidget {
             const SizedBox(height: 20),
             screenType.isPhone
                 ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Obx(
                         () => LinkAccountButton(
