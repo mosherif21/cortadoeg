@@ -599,6 +599,31 @@ class AuthenticationRepository extends GetxController {
   //   }
   //   return null;
   // }
+  Future<void> resetFcmTokens() async {
+    try {
+      final batch = _firestore.batch();
+      batch.update(
+          FirebaseFirestore.instance
+              .collection('fcmTokens')
+              .doc(employeeInfo!.id),
+          {'fcmToken': null});
+      if (employeeInfo!.role == Role.cashier) {
+        batch.update(
+            FirebaseFirestore.instance
+                .collection('fcmTokens')
+                .doc('cashierFcmToken'),
+            {
+              'fcmToken': null,
+              'cashierEmployeeId': null,
+            });
+      }
+      await batch.commit();
+    } on FirebaseException catch (error) {
+      if (kDebugMode) print(error.toString());
+    } catch (e) {
+      if (kDebugMode) print(e.toString());
+    }
+  }
 
   Future<void> logoutAuth() async {
     await _auth.signOut();
@@ -608,6 +633,7 @@ class AuthenticationRepository extends GetxController {
     try {
       await logoutAuth();
       await signOutGoogle();
+      resetFcmTokens();
       isUserRegistered = false;
       isUserLoggedIn = false;
       isGoogleLinked.value = false;

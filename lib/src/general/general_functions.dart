@@ -992,7 +992,8 @@ class GetScreenType {
 String formatDateTime(Timestamp timestamp) {
   DateTime dateTime =
       DateTime.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch);
-  DateFormat formatter = DateFormat('MMM d y hh:mm a');
+  DateFormat formatter =
+      DateFormat('MMM d y hh:mm a', isLangEnglish() ? 'en_US' : 'ar_SA');
   return formatter.format(dateTime);
 }
 
