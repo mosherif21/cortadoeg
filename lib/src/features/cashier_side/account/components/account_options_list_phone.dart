@@ -41,17 +41,15 @@ class AccountOptionsListPhone extends StatelessWidget {
                         CircleAvatar(
                           radius: 85,
                           backgroundColor: Colors.grey.shade300,
-                          backgroundImage: controller
-                                  .isProfileImageChanged.value
-                              ? XFileImage(controller.profileImage.value!)
-                              : controller.profileMemoryImage.value ??
-                                  AssetImage(
-                                    controller.userInfo.gender != null
-                                        ? controller.userInfo.gender == 'male'
+                          backgroundImage:
+                              controller.isProfileImageChanged.value
+                                  ? XFileImage(controller.profileImage.value!)
+                                  : controller.profileMemoryImage.value ??
+                                      AssetImage(
+                                        controller.userInfo.gender == 'male'
                                             ? kMaleProfileImage
-                                            : kFemaleProfileImage
-                                        : kMaleProfileImage,
-                                  ),
+                                            : kFemaleProfileImage,
+                                      ),
                         ),
                         Positioned(
                           bottom: 5,

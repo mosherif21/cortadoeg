@@ -159,7 +159,7 @@ class MainScreen extends StatelessWidget {
                         screenType.isPhone ? Axis.horizontal : Axis.vertical,
                     physics: const NeverScrollableScrollPhysics(),
                     controller: mainController.pageController,
-                    itemCount: 5,
+                    itemCount: 4,
                     itemBuilder: (BuildContext context, int index) {
                       switch (index) {
                         case 0:

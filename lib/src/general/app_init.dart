@@ -17,6 +17,7 @@ import 'package:sweetsheet/sweetsheet.dart';
 import '../../localization/language/language_functions.dart';
 import '../authentication/authentication_repository.dart';
 import '../constants/enums.dart';
+import '../features/admin_side/admin_main_screen/screens/admin_main_screen.dart';
 import '../features/cashier_side/main_screen/screens/main_screen.dart';
 import '../firebase_files/firebase_intializatons.dart';
 import 'error_widgets/no_internet_error_widget.dart';
@@ -154,13 +155,18 @@ class AppInit {
       removeSplashScreen();
       if (functionStatus == FunctionStatus.success) {
         if (authRepo.userRole == Role.admin) {
-          //
+          Get.offAll(
+            () => const AdminMainScreen(),
+            transition:
+                isWeb ? Transition.noTransition : Transition.circularReveal,
+          );
         } else if (authRepo.userRole == Role.cashier ||
             authRepo.userRole == Role.waiter ||
             authRepo.userRole == Role.takeaway) {
           Get.offAll(
             () => const MainScreen(),
-            transition: Transition.circularReveal,
+            transition:
+                isWeb ? Transition.noTransition : Transition.circularReveal,
           );
         }
       } else {

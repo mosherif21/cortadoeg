@@ -33,22 +33,18 @@ class AuthenticationRepository extends GetxController {
   final userEmail = ''.obs;
 
   @override
-  void onInit() {
+  void onInit() async {
     fireUser = Rx<User?>(_auth.currentUser);
     if (fireUser.value != null) {
       isUserLoggedIn = true;
     }
     fireUser.bindStream(_auth.userChanges());
-    fireUser.listen((user) {
+    fireUser.listen((user) async {
       if (user != null) {
         isEmailVerified.value = user.emailVerified;
         checkAuthenticationProviders();
         if (user.email != null) {
           userEmail.value = user.email!;
-          // if (employeeInfo != null) {
-          //  employeeInfo!.email = user.email!;
-          //  updateUserEmailFirestore(email: user.email!);
-          // }
         }
       }
     });
@@ -144,13 +140,13 @@ class AuthenticationRepository extends GetxController {
         if (employeeInfo != null) {
           userRole = employeeInfo!.role;
           if (kDebugMode) {
-            AppInit.logger.i(userRole);
+            AppInit.logger.i('Employee role: ${userRole.name}');
           }
           setNotificationsLanguage();
           if (fireUser.value!.email != null) {
             final authenticationEmail = fireUser.value!.email!;
             userEmail.value = authenticationEmail;
-            if (employeeInfo!.email != authenticationEmail) {
+            if (employeeInfo!.email.compareTo(authenticationEmail) != 0) {
               updateUserEmailFirestore(email: authenticationEmail);
               if (kDebugMode) {
                 AppInit.logger.i(

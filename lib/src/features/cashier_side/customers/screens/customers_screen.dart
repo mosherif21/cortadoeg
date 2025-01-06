@@ -1157,7 +1157,7 @@ class CustomersScreen extends StatelessWidget {
             height: 50,
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => controller.addCustomerPress(isPhone: true),
+              onPressed: () => controller.addCustomerPress(),
               style: ElevatedButton.styleFrom(
                 overlayColor: Colors.grey,
                 shape: RoundedRectangleBorder(
@@ -1171,6 +1171,7 @@ class CustomersScreen extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 15)
         ],
       ),
     );

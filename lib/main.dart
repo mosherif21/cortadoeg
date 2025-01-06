@@ -7,7 +7,9 @@ import 'package:get/get.dart';
 import 'localization/language/localization_strings.dart';
 
 void main() async {
-  await AppInit.initialize().whenComplete(() => runApp(const MyApp()));
+  await AppInit.initialize().whenComplete(
+    () => runApp(const MyApp()),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -17,14 +19,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     Get.put(ConnectivityController());
     return GetMaterialApp(
-      title: 'Cortado Business',
-      debugShowCheckedModeBanner: false,
+      useInheritedMediaQuery: true,
       builder: (context, child) {
         return ScrollConfiguration(
           behavior: NonScrollPhysics(),
           child: child!,
         );
       },
+      title: 'Cortado Business',
+      debugShowCheckedModeBanner: false,
       translations: Languages(),
       theme: ThemeData(
         textSelectionTheme: TextSelectionThemeData(

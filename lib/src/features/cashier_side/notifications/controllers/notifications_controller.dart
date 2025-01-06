@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cortadoeg/src/authentication/authentication_repository.dart';
+import 'package:cortadoeg/src/features/admin_side/admin_main_screen/controllers/admin_main_screen_controller.dart';
 import 'package:cortadoeg/src/features/cashier_side/main_screen/controllers/main_screen_controller.dart';
 import 'package:cortadoeg/src/general/app_init.dart';
 import 'package:flutter/foundation.dart';
@@ -83,6 +84,10 @@ class NotificationController extends GetxController {
       notificationLoaded.value = true;
       if (Get.isRegistered<MainScreenController>()) {
         if (MainScreenController.instance.notificationsCount.value != 0) {
+          await resetNotificationCount();
+        }
+      } else if (Get.isRegistered<AdminMainScreenController>()) {
+        if (AdminMainScreenController.instance.notificationsCount.value != 0) {
           await resetNotificationCount();
         }
       }

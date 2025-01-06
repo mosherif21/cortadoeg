@@ -55,6 +55,7 @@ class AuthenticationScreen extends StatelessWidget {
                         SizedBox(height: screenHeight * 0.05),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Image(
                               image: const AssetImage(kLogoImage),

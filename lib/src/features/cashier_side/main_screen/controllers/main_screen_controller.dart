@@ -712,12 +712,10 @@ class MainScreenController extends GetxController {
       case TransactionType.sale:
       case TransactionType.completeSale:
         updates['cash_payments_net'] = FieldValue.increment(amount);
-        updates['drawer_open_count'] = FieldValue.increment(1);
         break;
       case TransactionType.reopenSale:
       case TransactionType.returnSale:
         updates['cash_payments_net'] = FieldValue.increment(-amount.abs());
-        updates['drawer_open_count'] = FieldValue.increment(1);
         break;
       case TransactionType.payIn:
         updates['total_pay_ins'] = FieldValue.increment(amount);

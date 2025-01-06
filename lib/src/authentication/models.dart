@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
 
 import '../constants/enums.dart';
 
@@ -6,15 +7,17 @@ class EmployeeModel {
   final String id;
   String name;
   String email;
-  String? gender;
-  Timestamp? birthDate;
+  String gender;
+  Timestamp birthDate;
   String phone;
+  String profileImageUrl;
   Role role;
   List<UserPermission> permissions;
 
   EmployeeModel({
     required this.id,
     required this.name,
+    required this.profileImageUrl,
     required this.email,
     required this.phone,
     required this.gender,
@@ -30,6 +33,7 @@ class EmployeeModel {
       'gender': gender,
       'birthDate': birthDate,
       'phone': phone,
+      'profileImageUrl': profileImageUrl,
       'role': role.name, // Save enum as string
       'permissions': permissions.map((p) => p.name).toList(),
     };
@@ -41,6 +45,7 @@ class EmployeeModel {
       name: map['name'],
       email: map['email'],
       phone: map['phone'],
+      profileImageUrl: map['profileImageUrl'],
       gender: map['gender'],
       birthDate: map['birthDate'],
       role: Role.values.firstWhere((r) => r.name == map['role']),
@@ -59,7 +64,7 @@ bool hasPermission(EmployeeModel employee, UserPermission requiredPermission) {
 final Map<Role, List<UserPermission>> rolePermissions = {
   Role.admin: [
     UserPermission.manageEmployees,
-    UserPermission.manageProducts,
+    UserPermission.manageItems,
     UserPermission.manageInventory,
     UserPermission.viewSalesReports,
     UserPermission.viewCustodyReports,
@@ -106,7 +111,7 @@ enum UserPermission {
   returnOrdersWithPass,
   manageTables,
   manageEmployees,
-  manageProducts,
+  manageItems,
   manageInventory,
   manageOrders,
   manageCustomers,
@@ -120,4 +125,49 @@ enum UserPermission {
   manageDayShifts,
   openDrawer,
   openDrawerWithPass,
+}
+
+String getPermissionName(UserPermission permission) {
+  switch (permission) {
+    case UserPermission.editOrderItems:
+      return 'editOrderItems'.tr;
+    case UserPermission.editOrderItemsWithPass:
+      return 'editOrderItemsWithPass'.tr;
+    case UserPermission.returnOrders:
+      return 'returnOrders'.tr;
+    case UserPermission.returnOrdersWithPass:
+      return 'returnOrdersWithPass'.tr;
+    case UserPermission.manageTables:
+      return 'manageTables'.tr;
+    case UserPermission.manageEmployees:
+      return 'manageEmployees'.tr;
+    case UserPermission.manageItems:
+      return 'manageItems'.tr;
+    case UserPermission.manageInventory:
+      return 'manageInventory'.tr;
+    case UserPermission.manageOrders:
+      return 'manageOrders'.tr;
+    case UserPermission.manageCustomers:
+      return 'manageCustomers'.tr;
+    case UserPermission.viewSalesReports:
+      return 'viewSalesReports'.tr;
+    case UserPermission.viewCustodyReports:
+      return 'viewCustodyReports'.tr;
+    case UserPermission.cancelOrders:
+      return 'cancelOrders'.tr;
+    case UserPermission.cancelOrdersWithPass:
+      return 'cancelOrdersWithPass'.tr;
+    case UserPermission.finalizeOrders:
+      return 'finalizeOrders'.tr;
+    case UserPermission.finalizeOrdersWithPass:
+      return 'finalizeOrdersWithPass'.tr;
+    case UserPermission.manageTakeawayOrders:
+      return 'manageTakeawayOrders'.tr;
+    case UserPermission.manageDayShifts:
+      return 'manageDayShifts'.tr;
+    case UserPermission.openDrawer:
+      return 'openDrawer'.tr;
+    case UserPermission.openDrawerWithPass:
+      return 'openDrawerWithPass'.tr;
+  }
 }

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cortadoeg/src/authentication/models.dart';
 import 'package:cortadoeg/src/constants/enums.dart';
 import 'package:cortadoeg/src/features/cashier_side/account/components/login_password_screen.dart';
@@ -13,6 +14,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../authentication/authentication_repository.dart';
@@ -54,10 +56,18 @@ class AccountScreenController extends GetxController {
 
   void loadProfileImage() async {
     try {
-      final userStorageRef = fireStorage.ref().child('users/$userId');
-      final imageData = await userStorageRef.child('profilePic').getData();
-      if (imageData != null) {
-        profileMemoryImage.value = MemoryImage(imageData);
+      final profileImageUrl = authRep.employeeInfo!.profileImageUrl;
+      if (profileImageUrl.trim().isNotEmpty) {
+        final response = await http.get(Uri.parse(profileImageUrl));
+        if (response.statusCode == 200) {
+          final imageBytes = response.bodyBytes;
+          profileMemoryImage.value = MemoryImage(imageBytes);
+          if (kDebugMode) AppInit.logger.i('Profile image loaded successfully');
+        } else {
+          if (kDebugMode) AppInit.logger.e('Failed to load profile image');
+        }
+      } else {
+        if (kDebugMode) AppInit.logger.e('User doesn\'t have a profile image');
       }
       isProfileImageLoaded.value = true;
     } on FirebaseException catch (error) {
@@ -109,7 +119,11 @@ class AccountScreenController extends GetxController {
           FirebaseStorage.instance.ref().child(fileName);
       final UploadTask uploadTask = storageRef.putFile(file);
       await uploadTask;
-      //final String downloadUrl = await storageRef.getDownloadURL();
+      final String downloadUrl = await storageRef.getDownloadURL();
+      await FirebaseFirestore.instance
+          .collection('employees')
+          .doc(userId)
+          .update({'profileImageUrl': downloadUrl});
       isProfileImageChanged.value = false;
       return FunctionStatus.success;
     } on FirebaseException catch (e) {

@@ -11,6 +11,7 @@ import '../../../../authentication/authentication_repository.dart';
 import '../../../../authentication/models.dart';
 import '../../../../constants/enums.dart';
 import '../../../../general/app_init.dart';
+import '../../../../general/common_widgets/regular_bottom_sheet.dart';
 import '../../../../general/general_functions.dart';
 import '../../main_screen/components/models.dart';
 import '../../main_screen/controllers/main_screen_controller.dart';
@@ -19,6 +20,7 @@ import '../../orders/screens/order_details_screen_phone.dart';
 import '../../orders/screens/order_screen.dart';
 import '../../orders/screens/order_screen_phone.dart';
 import '../../tables/components/models.dart';
+import '../components/add_customer_widget_phone.dart';
 import '../screens/customer_orders_screen_phone.dart';
 
 class CustomersScreenController extends GetxController {
@@ -46,6 +48,7 @@ class CustomersScreenController extends GetxController {
     discountTextController = TextEditingController();
     formKey = GlobalKey<FormState>();
     key0 = GlobalKey<ExpansionTileCoreState>();
+
     super.onInit();
   }
 
@@ -155,6 +158,7 @@ class CustomersScreenController extends GetxController {
 
   void onCustomersRefresh() {
     loadingCustomers.value = true;
+    extended.value = false;
     MainScreenController.instance.showNewOrderButton.value = true;
     chosenCustomerIndex.value = 0;
     loadCustomers();
@@ -186,7 +190,7 @@ class CustomersScreenController extends GetxController {
     }
   }
 
-  void addCustomerPress({required bool isPhone}) async {
+  void addCustomerPress() async {
     final discountText = discountTextController.text.trim();
     final name = nameTextController.text.trim();
 
@@ -206,11 +210,8 @@ class CustomersScreenController extends GetxController {
       hideLoadingScreen();
       if (newCustomer != null) {
         customersList.add(newCustomer);
-        if (isPhone) {
-          extended.value = false;
-        } else {
-          Get.back();
-        }
+        extended.value = false;
+        key0.currentState?.collapse();
         nameTextController.clear();
         discountTextController.clear();
         percentageChosen.value = true;
@@ -224,6 +225,11 @@ class CustomersScreenController extends GetxController {
           snackBarType: SnackBarType.error,
         );
       }
+    } else if (validateNumbersOnly(number.value) != null) {
+      showSnackBar(
+        text: 'invalidPhoneNumber'.tr,
+        snackBarType: SnackBarType.error,
+      );
     }
   }
 
@@ -286,16 +292,14 @@ class CustomersScreenController extends GetxController {
     required int index,
     required CustomerModel customerModel,
     required bool isPhone,
-  }) async {
+  }) {
     nameTextController.text = customerModel.name;
     percentageChosen.value = customerModel.discountType == 'percentage';
     discountTextController.text = customerModel.discountValue.toString();
     final initialNumber = customerModel.number;
-    await showDialog(
-      useSafeArea: true,
-      context: context,
-      builder: (context) {
-        return AddCustomerWidget(
+    if (isPhone) {
+      RegularBottomSheet.showRegularBottomSheet(
+        AddCustomerWidgetPhone(
           controller: this,
           edit: true,
           initialNumber: initialNumber,
@@ -304,9 +308,26 @@ class CustomersScreenController extends GetxController {
             customerModel: customerModel,
             index: index,
           ),
-        );
-      },
-    );
+        ),
+      );
+    } else {
+      showDialog(
+        useSafeArea: true,
+        context: context,
+        builder: (context) {
+          return AddCustomerWidget(
+            controller: this,
+            edit: true,
+            initialNumber: initialNumber,
+            onPress: () => onEdit(
+              customerId: customerModel.customerId,
+              customerModel: customerModel,
+              index: index,
+            ),
+          );
+        },
+      );
+    }
   }
 
   void onEdit(
@@ -436,20 +457,6 @@ class CustomersScreenController extends GetxController {
       return null;
     }
     return null;
-  }
-
-  void onAddCustomerTap(BuildContext context) async {
-    await showDialog(
-      useSafeArea: true,
-      context: context,
-      builder: (context) {
-        return AddCustomerWidget(
-          controller: this,
-          edit: false,
-          onPress: () => addCustomerPress(isPhone: false),
-        );
-      },
-    );
   }
 
   bool isNumeric(String str) {

@@ -36,11 +36,11 @@ class PersonalInfoFormController extends GetxController {
     lastNameController.text = lastName;
     gender.value = userInfo.gender ?? '';
     phoneController.text = userInfo.phone;
-    if (userInfo.birthDate != null) {
-      dobController.text = DateFormat(
-        'dd/MM/yyyy',
-      ).format(userInfo.birthDate!.toDate());
-    }
+
+    dobController.text = DateFormat(
+      'dd/MM/yyyy',
+    ).format(userInfo.birthDate.toDate());
+
     super.onInit();
   }
 
@@ -72,14 +72,14 @@ class PersonalInfoFormController extends GetxController {
       final saveStatus = await authRep.updateEmployeePersonalInfo(
         name: name,
         phone: phoneController.text.trim(),
-        birthDate: userInfo.birthDate!,
+        birthDate: userInfo.birthDate,
         gender: gender.value,
       );
       hideLoadingScreen();
       if (saveStatus == FunctionStatus.success) {
         authRep.employeeInfo!.name = name;
         authRep.employeeInfo!.phone = phoneController.text.trim();
-        authRep.employeeInfo!.birthDate = userInfo.birthDate!;
+        authRep.employeeInfo!.birthDate = userInfo.birthDate;
         authRep.employeeInfo!.gender = gender.value;
         if (isPhone) Get.back();
         showSnackBar(
@@ -97,7 +97,7 @@ class PersonalInfoFormController extends GetxController {
     final results = await showCalendarDatePicker2Dialog(
       dialogBackgroundColor: Colors.white,
       context: context,
-      value: [userInfo.birthDate?.toDate()],
+      value: [userInfo.birthDate.toDate()],
       config: CalendarDatePicker2WithActionButtonsConfig(
         selectedDayHighlightColor: Colors.black,
         selectedRangeHighlightColor: Colors.grey.shade200,

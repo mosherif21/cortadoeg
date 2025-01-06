@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../general/general_functions.dart';
-import '../../../cashier_side/main_screen/components/main_screen_pages_appbar.dart';
+import '../../admin_main_screen/components/main_appbar.dart';
 
 class ReportsScreen extends StatelessWidget {
   const ReportsScreen({super.key});
@@ -17,7 +17,7 @@ class ReportsScreen extends StatelessWidget {
           ? null
           : AppBar(
               elevation: 0,
-              title: MainScreenPagesAppbar(
+              title: MainScreenAppbar(
                 isPhone: screenType.isPhone,
                 appBarTitle: 'reports'.tr,
               ),
