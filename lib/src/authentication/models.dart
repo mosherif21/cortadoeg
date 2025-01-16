@@ -77,6 +77,7 @@ final Map<Role, List<UserPermission>> rolePermissions = {
     UserPermission.manageTables,
     UserPermission.editOrderItemsWithPass,
     UserPermission.returnOrdersWithPass,
+    UserPermission.reopenOrdersWithPass,
     UserPermission.cancelOrders,
     UserPermission.manageOrders,
     UserPermission.manageDayShifts,
@@ -98,10 +99,11 @@ final Map<Role, List<UserPermission>> rolePermissions = {
 enum PasscodeType {
   editOrderItems,
   cancelOrders,
-  openDrawer,
-  manageDayShift,
   finalizeOrders,
   returnOrders,
+  reopenOrders,
+  manageDayShift,
+  openDrawer,
 }
 
 enum UserPermission {
@@ -109,6 +111,8 @@ enum UserPermission {
   editOrderItemsWithPass,
   returnOrders,
   returnOrdersWithPass,
+  reopenOrders,
+  reopenOrdersWithPass,
   manageTables,
   manageEmployees,
   manageItems,
@@ -137,6 +141,10 @@ String getPermissionName(UserPermission permission) {
       return 'returnOrders'.tr;
     case UserPermission.returnOrdersWithPass:
       return 'returnOrdersWithPass'.tr;
+    case UserPermission.reopenOrders:
+      return 'reopenOrders'.tr;
+    case UserPermission.reopenOrdersWithPass:
+      return 'reopenOrdersWithPass'.tr;
     case UserPermission.manageTables:
       return 'manageTables'.tr;
     case UserPermission.manageEmployees:

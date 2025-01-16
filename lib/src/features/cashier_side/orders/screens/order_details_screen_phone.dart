@@ -235,7 +235,9 @@ class OrderDetailsScreenPhone extends StatelessWidget {
                               iconColor: Colors.white,
                               text: 'reopen'.tr,
                               onClick: () => controller.onReopenOrderTap(
-                                  isPhone: true, aOrderModel: orderModel),
+                                  isPhone: true,
+                                  context: context,
+                                  aOrderModel: orderModel),
                             ),
                           ),
                         ],
@@ -286,7 +288,9 @@ class OrderDetailsScreenPhone extends StatelessWidget {
                                   iconColor: Colors.white,
                                   text: 'reopen'.tr,
                                   onClick: () => controller.onReopenOrderTap(
-                                      isPhone: true, aOrderModel: orderModel),
+                                      isPhone: true,
+                                      context: context,
+                                      aOrderModel: orderModel),
                                 ),
                               ),
                             ],
@@ -305,7 +309,9 @@ class OrderDetailsScreenPhone extends StatelessWidget {
                           iconColor: Colors.white,
                           text: 'reopen'.tr,
                           onClick: () => controller.onReopenOrderTap(
-                              isPhone: true, aOrderModel: orderModel),
+                              isPhone: true,
+                              context: context,
+                              aOrderModel: orderModel),
                         ),
                       ),
             const SizedBox(height: 20),

@@ -611,7 +611,8 @@ class OrdersScreen extends StatelessWidget {
                                               onClick: () =>
                                                   controller.onReopenOrderTap(
                                                       isPhone:
-                                                          screenType.isPhone),
+                                                          screenType.isPhone,
+                                                      context: context),
                                             ),
                                           ),
                                         ],
@@ -666,7 +667,8 @@ class OrdersScreen extends StatelessWidget {
                                                   onClick: () => controller
                                                       .onReopenOrderTap(
                                                           isPhone: screenType
-                                                              .isPhone),
+                                                              .isPhone,
+                                                          context: context),
                                                 ),
                                               ),
                                             ],
@@ -685,7 +687,8 @@ class OrdersScreen extends StatelessWidget {
                                           text: 'reopen'.tr,
                                           onClick: () =>
                                               controller.onReopenOrderTap(
-                                                  isPhone: screenType.isPhone),
+                                                  isPhone: screenType.isPhone,
+                                                  context: context),
                                         ),
                                       ),
                           ],

@@ -1158,6 +1158,19 @@ class Languages extends Translations {
           'itemImageChangeSuccess': 'Item picture changed successfully',
           'itemImageChangeFail':
               'Item picture changing failed, please try again',
+          'passcodeOption1': 'Edit order items',
+          'passcodeOption2': 'Cancel order items',
+          'passcodeOption3': 'Finalize orders',
+          'passcodeOption4': 'Return orders',
+          'passcodeOption5': 'Reopen orders',
+          'passcodeOption6': 'Manage day shifts',
+          'passcodeOption7': 'Open cash drawer',
+          'savePasscode': 'Save Passcode',
+          'passcode': 'Passcode',
+          'confirmPasscode': 'Confirm Passcode',
+          'enterPasscodeConfirm': 'Enter passcode confirm',
+          'reopenOrders': 'Reopen Orders',
+          'reopenOrdersWithPass': 'Reopen Orders With Pass',
         },
       };
 }

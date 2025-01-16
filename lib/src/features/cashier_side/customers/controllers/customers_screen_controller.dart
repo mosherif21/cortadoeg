@@ -495,94 +495,105 @@ class CustomersScreenController extends GetxController {
   }
 
   void onReopenOrderTap(
-      {required bool isPhone, OrderModel? aOrderModel}) async {
-    final hasManageOrdersPermission = hasPermission(
+      {required bool isPhone,
+      required BuildContext context,
+      OrderModel? aOrderModel}) async {
+    final hasReopenOrdersPermission = hasPermission(
         AuthenticationRepository.instance.employeeInfo!,
-        UserPermission.manageOrders);
-    if (hasManageOrdersPermission) {
-      showLoadingScreen();
-      final orderModel = isPhone ? aOrderModel! : currentChosenOrder.value!;
-      final orderShiftIsActive = await checkIfShiftActive(orderModel.shiftId);
-      if (orderShiftIsActive == null) {
-        hideLoadingScreen();
-        showSnackBar(
-          text: 'errorOccurred'.tr,
-          snackBarType: SnackBarType.error,
-        );
-      } else if (!orderShiftIsActive) {
-        hideLoadingScreen();
-        showSnackBar(
-          text: 'orderShiftInActive'.tr,
-          snackBarType: SnackBarType.error,
-        );
-      } else {
-        late List<TableModel> tablesList;
-        final tablesListGet = await getTables();
-        if (tablesListGet != null) {
-          tablesList = tablesListGet;
-        } else {
+        UserPermission.reopenOrders);
+    final hasReopenOrdersPassPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.reopenOrdersWithPass);
+    if (hasReopenOrdersPermission || hasReopenOrdersPassPermission) {
+      final passcodeValid = hasReopenOrdersPermission
+          ? true
+          : await MainScreenController.instance.showPassCodeScreen(
+              context: context, passcodeType: PasscodeType.reopenOrders);
+      if (passcodeValid) {
+        showLoadingScreen();
+        final orderModel = isPhone ? aOrderModel! : currentChosenOrder.value!;
+        final orderShiftIsActive = await checkIfShiftActive(orderModel.shiftId);
+        if (orderShiftIsActive == null) {
           hideLoadingScreen();
           showSnackBar(
             text: 'errorOccurred'.tr,
             snackBarType: SnackBarType.error,
           );
-          return;
-        }
-
-        tablesList = tablesList.where((table) {
-          return orderModel.tableNumbers!.contains(table.number);
-        }).toList();
-
-        for (var table in tablesList) {
-          if (table.currentOrderId != null &&
-              table.status == TableStatus.occupied) {
+        } else if (!orderShiftIsActive) {
+          hideLoadingScreen();
+          showSnackBar(
+            text: 'orderShiftInActive'.tr,
+            snackBarType: SnackBarType.error,
+          );
+        } else {
+          late List<TableModel> tablesList;
+          final tablesListGet = await getTables();
+          if (tablesListGet != null) {
+            tablesList = tablesListGet;
+          } else {
             hideLoadingScreen();
             showSnackBar(
-              text: 'conflictingTablesError'.tr,
+              text: 'errorOccurred'.tr,
               snackBarType: SnackBarType.error,
             );
             return;
           }
-        }
-        final reopenOrderStatus =
-            await reopenOrder(orderModel: orderModel, tablesList: tablesList);
-        hideLoadingScreen();
-        if (reopenOrderStatus == FunctionStatus.success) {
-          currentChosenOrder.value = null;
-          await Get.to(
-            () => isPhone
-                ? OrderScreenPhone(
-                    orderModel: orderModel,
-                    tablesIds: orderModel.tableNumbers != null
-                        ? tablesList
-                            .where((table) =>
-                                orderModel.tableNumbers!.contains(table.number))
-                            .map((table) => table.tableId)
-                            .toList()
-                        : [],
-                  )
-                : OrderScreen(
-                    orderModel: orderModel,
-                    tablesIds: orderModel.tableNumbers != null
-                        ? tablesList
-                            .where((table) =>
-                                orderModel.tableNumbers!.contains(table.number))
-                            .map((table) => table.tableId)
-                            .toList()
-                        : [],
-                  ),
-            transition: Transition.noTransition,
-          );
-          if (isPhone) {
-            Get.back(result: true);
-          } else {
-            onCustomerOrdersRefresh();
+
+          tablesList = tablesList.where((table) {
+            return orderModel.tableNumbers!.contains(table.number);
+          }).toList();
+
+          for (var table in tablesList) {
+            if (table.currentOrderId != null &&
+                table.status == TableStatus.occupied) {
+              hideLoadingScreen();
+              showSnackBar(
+                text: 'conflictingTablesError'.tr,
+                snackBarType: SnackBarType.error,
+              );
+              return;
+            }
           }
-        } else {
-          showSnackBar(
-            text: 'errorOccurred'.tr,
-            snackBarType: SnackBarType.error,
-          );
+          final reopenOrderStatus =
+              await reopenOrder(orderModel: orderModel, tablesList: tablesList);
+          hideLoadingScreen();
+          if (reopenOrderStatus == FunctionStatus.success) {
+            currentChosenOrder.value = null;
+            await Get.to(
+              () => isPhone
+                  ? OrderScreenPhone(
+                      orderModel: orderModel,
+                      tablesIds: orderModel.tableNumbers != null
+                          ? tablesList
+                              .where((table) => orderModel.tableNumbers!
+                                  .contains(table.number))
+                              .map((table) => table.tableId)
+                              .toList()
+                          : [],
+                    )
+                  : OrderScreen(
+                      orderModel: orderModel,
+                      tablesIds: orderModel.tableNumbers != null
+                          ? tablesList
+                              .where((table) => orderModel.tableNumbers!
+                                  .contains(table.number))
+                              .map((table) => table.tableId)
+                              .toList()
+                          : [],
+                    ),
+              transition: Transition.noTransition,
+            );
+            if (isPhone) {
+              Get.back(result: true);
+            } else {
+              onCustomerOrdersRefresh();
+            }
+          } else {
+            showSnackBar(
+              text: 'errorOccurred'.tr,
+              snackBarType: SnackBarType.error,
+            );
+          }
         }
       }
     } else {

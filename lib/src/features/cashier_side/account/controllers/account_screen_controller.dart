@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cortadoeg/src/authentication/models.dart';
 import 'package:cortadoeg/src/constants/enums.dart';
 import 'package:cortadoeg/src/features/cashier_side/account/components/login_password_screen.dart';
-import 'package:cortadoeg/src/features/cashier_side/account/components/personal_info_screen.dart';
 import 'package:cortadoeg/src/features/cashier_side/account/components/photo_select.dart';
 import 'package:cortadoeg/src/features/cashier_side/account/controllers/login_password_form_controller.dart';
 import 'package:cortadoeg/src/features/cashier_side/account/controllers/personal_info_form_controller.dart';
@@ -20,6 +19,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../authentication/authentication_repository.dart';
 import '../../../../general/common_widgets/regular_bottom_sheet.dart';
 import '../../../../general/general_functions.dart';
+import '../../../admin_side/account/components/personal_info_screen.dart';
 import '../components/photo_select_phone.dart';
 
 class AccountScreenController extends GetxController {

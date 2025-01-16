@@ -354,10 +354,55 @@ class InventoryScreenController extends GetxController {
             main: Colors.black, accent: Colors.black, icon: Colors.white),
       );
 
-  Future<FunctionStatus> deleteProductDatabase(String id) async {
+  Future<FunctionStatus> deleteProductDatabase(String productId) async {
     try {
-      final docRef = FirebaseFirestore.instance.collection('products').doc(id);
-      await docRef.delete();
+      final firestore = FirebaseFirestore.instance;
+      final batch = firestore.batch();
+      final productDocRef = firestore.collection('products').doc(productId);
+      batch.delete(productDocRef);
+      final itemsSnapshot = await firestore.collection('items').get();
+      for (final itemDoc in itemsSnapshot.docs) {
+        final itemData = itemDoc.data();
+        final sizes = (itemData['sizes'] as List<dynamic>).map((size) {
+          final sizeMap = size as Map<String, dynamic>;
+          final recipe =
+              (sizeMap['recipe'] as List<dynamic>).cast<Map<String, dynamic>>();
+          final updatedRecipe =
+              recipe.where((r) => r['productId'] != productId).toList();
+          final updatedCostPrice = updatedRecipe.fold<double>(
+            0.0,
+            (total, r) =>
+                total +
+                (r['cost'] as double) *
+                    (r['quantity'] as int) /
+                    (r['costQuantity'] as int),
+          );
+          sizeMap['recipe'] = updatedRecipe;
+          sizeMap['costPrice'] = updatedCostPrice;
+          return sizeMap;
+        }).toList();
+        batch.update(itemDoc.reference, {'sizes': sizes});
+      }
+      for (final itemDoc in itemsSnapshot.docs) {
+        final itemData = itemDoc.data();
+        final options = itemData['options'] as Map<String, dynamic>? ?? {};
+        final updatedOptions = options.map((key, value) {
+          final optionList = value as List<dynamic>;
+          final updatedOptionList = optionList.map((option) {
+            final optionMap = option as Map<String, dynamic>;
+            final recipe = (optionMap['recipe'] as List<dynamic>)
+                .cast<Map<String, dynamic>>();
+            optionMap['recipe'] =
+                recipe.where((r) => r['productId'] != productId).toList();
+            return optionMap;
+          }).toList();
+
+          return MapEntry(key, updatedOptionList);
+        });
+        batch.update(itemDoc.reference, {'options': updatedOptions});
+      }
+      await batch.commit();
+
       return FunctionStatus.success;
     } on FirebaseException catch (error) {
       if (kDebugMode) {
@@ -368,6 +413,7 @@ class InventoryScreenController extends GetxController {
         AppInit.logger.e(e.toString());
       }
     }
+
     return FunctionStatus.failure;
   }
 

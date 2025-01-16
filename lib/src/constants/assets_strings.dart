@@ -25,6 +25,7 @@ const kEmptyCoffeeCupAnim = "assets/lottie_animations/empty_coffee_cup.json";
 const kNoCustomersAnim = "assets/lottie_animations/noCustomersAnim.json";
 const kChooseCustomerAnim = "assets/lottie_animations/chooseCustomerAnim.json";
 const kEmptyCartAnim = "assets/lottie_animations/empty_cart.json";
+const kPasscodeAnim = "assets/lottie_animations/passcode.json";
 const String kEmailVerificationAnim =
     "assets/lottie_animations/email_verification.json";
 const String kPasswordResetAnim =

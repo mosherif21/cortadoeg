@@ -42,6 +42,7 @@ class MainScreenController extends GetxController {
   String openDrawerPasscodeHash = '';
   String finalizeOrdersPasscodeHash = '';
   String returnOrdersPasscodeHash = '';
+  String reopenOrdersPasscodeHash = '';
   final RxBool navBarExtended = false.obs;
   final RxInt currentSelectedTransaction = 0.obs;
   late final StreamController<bool> verificationNotifier;
@@ -135,6 +136,7 @@ class MainScreenController extends GetxController {
         finalizeOrdersPasscodeHash =
             hashSnapshot['finalizeOrdersHash']!.toString();
         returnOrdersPasscodeHash = hashSnapshot['returnOrdersHash']!.toString();
+        reopenOrdersPasscodeHash = hashSnapshot['reopenOrdersHash']!.toString();
       }
     });
     handleNotificationsPermission();
@@ -172,28 +174,6 @@ class MainScreenController extends GetxController {
       currentSelectedTransaction.value = index;
     }
   }
-  // Future<FunctionStatus> saveEditOrderPasscode(String passcode) async {
-  //   try {
-  //     await FirebaseFirestore.instance
-  //         .collection('passcodes')
-  //         .doc('passcodes')
-  //         .set({
-  //       'editOrderItemsHash': BCrypt.hashpw(
-  //           isLangEnglish() ? passcode : translateArabicToEnglish(passcode),
-  //           BCrypt.gensalt()),
-  //     }, SetOptions(merge: true));
-  //     return FunctionStatus.success;
-  //   } on FirebaseException catch (error) {
-  //     if (kDebugMode) {
-  //       AppInit.logger.e(error.toString());
-  //     }
-  //   } catch (err) {
-  //     if (kDebugMode) {
-  //       AppInit.logger.e(err.toString());
-  //     }
-  //   }
-  //   return FunctionStatus.failure;
-  // }
 
   Future<bool> showPassCodeScreen(
       {required BuildContext context,
@@ -254,6 +234,8 @@ class MainScreenController extends GetxController {
         return finalizeOrdersPasscodeHash;
       case PasscodeType.returnOrders:
         return returnOrdersPasscodeHash;
+      case PasscodeType.reopenOrders:
+        return reopenOrdersPasscodeHash;
     }
   }
 

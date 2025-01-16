@@ -753,7 +753,7 @@ class ItemsScreenController extends GetxController {
           );
         },
       );
-      Timer(const Duration(milliseconds: 100), () {
+      Timer(const Duration(milliseconds: 200), () {
         recipeQuantityControllers.clear();
       });
     } else {
@@ -820,7 +820,7 @@ class ItemsScreenController extends GetxController {
           );
         },
       );
-      Timer(const Duration(milliseconds: 100), () {
+      Timer(const Duration(milliseconds: 200), () {
         recipeQuantityControllers.clear();
       });
     }
@@ -916,7 +916,7 @@ class ItemsScreenController extends GetxController {
           );
         },
       );
-      Timer(const Duration(milliseconds: 100), () {
+      Timer(const Duration(milliseconds: 200), () {
         recipeQuantityControllers.clear();
       });
     } else {
@@ -976,7 +976,7 @@ class ItemsScreenController extends GetxController {
           );
         },
       );
-      Timer(const Duration(milliseconds: 100), () {
+      Timer(const Duration(milliseconds: 200), () {
         recipeQuantityControllers.clear();
       });
     }
