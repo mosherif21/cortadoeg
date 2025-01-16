@@ -94,13 +94,6 @@ class AdminSideNavigationBar extends StatelessWidget {
       },
       items: [
         SidebarXItem(
-            icon: Icons.dashboard_rounded,
-            label: 'dashboard'.tr,
-            onLongPress:
-                (!_isPhone) ? () => _controller.toggleExtended() : null,
-            onTap: (_isPhone) ? () => Get.back() : null,
-            iconSize: 25),
-        SidebarXItem(
             icon: Icons.area_chart_rounded,
             label: 'reports'.tr,
             onLongPress:
@@ -110,6 +103,13 @@ class AdminSideNavigationBar extends StatelessWidget {
         SidebarXItem(
             icon: FontAwesomeIcons.cashRegister,
             label: 'custodyShifts'.tr,
+            onLongPress:
+                (!_isPhone) ? () => _controller.toggleExtended() : null,
+            onTap: (_isPhone) ? () => Get.back() : null,
+            iconSize: 25),
+        SidebarXItem(
+            icon: Icons.table_bar,
+            label: 'tables'.tr,
             onLongPress:
                 (!_isPhone) ? () => _controller.toggleExtended() : null,
             onTap: (_isPhone) ? () => Get.back() : null,
@@ -129,8 +129,15 @@ class AdminSideNavigationBar extends StatelessWidget {
             onTap: (_isPhone) ? () => Get.back() : null,
             iconSize: 25),
         SidebarXItem(
-            icon: Icons.emoji_food_beverage_rounded,
-            label: 'products'.tr,
+            icon: Icons.inventory_2_outlined,
+            label: 'inventory'.tr,
+            onLongPress:
+                (!_isPhone) ? () => _controller.toggleExtended() : null,
+            onTap: (_isPhone) ? () => Get.back() : null,
+            iconSize: 25),
+        SidebarXItem(
+            icon: Icons.people_rounded,
+            label: 'customers'.tr,
             onLongPress:
                 (!_isPhone) ? () => _controller.toggleExtended() : null,
             onTap: (_isPhone) ? () => Get.back() : null,
@@ -143,19 +150,12 @@ class AdminSideNavigationBar extends StatelessWidget {
             onTap: (_isPhone) ? () => Get.back() : null,
             iconSize: 25),
         SidebarXItem(
-            icon: Icons.people_rounded,
-            label: 'customers',
+            icon: Icons.password_rounded,
+            label: 'passcodes'.tr,
             onLongPress:
                 (!_isPhone) ? () => _controller.toggleExtended() : null,
             onTap: (_isPhone) ? () => Get.back() : null,
             iconSize: 25),
-        // SidebarXItem(
-        //     icon: Icons.person,
-        //     label: 'inventory'.tr,
-        //     onLongPress:
-        //         (!_isPhone) ? () => _controller.toggleExtended() : null,
-        //     onTap: (_isPhone) ? () => Get.back() : null,
-        //     iconSize: 25),
         SidebarXItem(
             icon: Icons.person,
             label: 'account'.tr,

@@ -327,51 +327,6 @@ class TablesPageController extends GetxController {
     }
   }
 
-  void onTableEmptyTap({required String orderId}) async {
-    showLoadingScreen();
-    final assignTableEmptyStatus = await assignTableEmpty(orderId: orderId);
-    hideLoadingScreen();
-    if (assignTableEmptyStatus == FunctionStatus.success) {
-      Get.back();
-      showSnackBar(
-        text: 'tableEmptySuccess'.tr,
-        snackBarType: SnackBarType.success,
-      );
-    } else {
-      showSnackBar(
-        text: 'errorOccurred'.tr,
-        snackBarType: SnackBarType.error,
-      );
-    }
-  }
-
-  Future<FunctionStatus> assignTableEmpty({required String orderId}) async {
-    try {
-      final firestore = FirebaseFirestore.instance;
-      final batch = firestore.batch();
-      for (var table in tablesList.where((table) {
-        return table.currentOrderId == orderId;
-      })) {
-        batch.update(firestore.collection('tables').doc(table.tableId), {
-          'status': TableStatus.available.name,
-          'currentOrderId': null,
-        });
-      }
-      await batch.commit();
-      return FunctionStatus.success;
-    } on FirebaseException catch (error) {
-      if (kDebugMode) {
-        AppInit.logger.e(error.toString());
-      }
-      return FunctionStatus.failure;
-    } catch (err) {
-      if (kDebugMode) {
-        AppInit.logger.e(err.toString());
-      }
-      return FunctionStatus.failure;
-    }
-  }
-
   void onReopenOrderTap(
       {required String orderId, required bool isPhone}) async {
     showLoadingScreen();

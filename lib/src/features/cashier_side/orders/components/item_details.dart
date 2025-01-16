@@ -67,12 +67,19 @@ class ItemDetails extends StatelessWidget {
                                   child: ClipRRect(
                                     borderRadius: const BorderRadius.all(
                                         Radius.circular(15)),
-                                    child: Image.asset(
-                                      item.imageUrl ?? kLogoImage,
-                                      height: screenHeight * 0.35,
-                                      width: double.infinity,
-                                      fit: BoxFit.contain,
-                                    ),
+                                    child: item.imageUrl != null
+                                        ? Image.network(
+                                            item.imageUrl!,
+                                            height: screenHeight * 0.35,
+                                            width: double.infinity,
+                                            fit: BoxFit.contain,
+                                          )
+                                        : Image.asset(
+                                            kLogoImage,
+                                            height: screenHeight * 0.35,
+                                            width: double.infinity,
+                                            fit: BoxFit.contain,
+                                          ),
                                   ),
                                 ),
                                 const SizedBox(height: 20),
@@ -173,7 +180,10 @@ class ItemDetails extends StatelessWidget {
                                                     ? orderItem!
                                                         .options[option.key]
                                                     : null,
-                                                items: option.value,
+                                                items: option.value
+                                                    .map((optionVal) =>
+                                                        optionVal.name)
+                                                    .toList(),
                                                 onChanged: (value) {
                                                   controller.selectedOptions[
                                                       option.key] = value!;

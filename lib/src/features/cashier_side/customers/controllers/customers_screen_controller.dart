@@ -611,6 +611,32 @@ class CustomersScreenController extends GetxController {
           'currentOrderId': orderModel.orderId,
         });
       }
+      for (var orderItem in orderModel.items) {
+        for (var recipeItem in orderItem.selectedSize.recipe) {
+          batch.update(
+            firestore.collection('products').doc(recipeItem.productId),
+            {
+              'availableQuantity': FieldValue.increment(
+                  recipeItem.quantity * orderItem.quantity),
+            },
+          );
+        }
+
+        for (var option in orderItem.options.entries) {
+          final optionValue = orderItem.selectedOptions.where((optionItem) {
+            return optionItem.name == option.value;
+          }).first;
+          for (var recipeItem in optionValue.recipe) {
+            batch.update(
+              firestore.collection('products').doc(recipeItem.productId),
+              {
+                'availableQuantity': FieldValue.increment(
+                    recipeItem.quantity * orderItem.quantity),
+              },
+            );
+          }
+        }
+      }
       await batch.commit();
       return FunctionStatus.success;
     } on FirebaseException catch (error) {

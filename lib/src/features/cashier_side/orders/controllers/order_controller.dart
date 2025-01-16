@@ -4,7 +4,6 @@ import 'package:bottom_sheet/bottom_sheet.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cortadoeg/src/authentication/authentication_repository.dart';
 import 'package:cortadoeg/src/authentication/models.dart';
-import 'package:cortadoeg/src/features/cashier_side/main_screen/components/models.dart';
 import 'package:cortadoeg/src/features/cashier_side/main_screen/controllers/main_screen_controller.dart';
 import 'package:cortadoeg/src/features/cashier_side/orders/components/choose_customer.dart';
 import 'package:cortadoeg/src/features/cashier_side/orders/components/choose_customer_phone.dart';
@@ -145,7 +144,10 @@ class OrderController extends GetxController {
   Future<List<CategoryModel>?> fetchCategories() async {
     try {
       final firestore = FirebaseFirestore.instance;
-      final querySnapshot = await firestore.collection('categories').get();
+      final querySnapshot = await firestore
+          .collection('categories')
+          .orderBy('name_lowercase')
+          .get();
       return querySnapshot.docs.map((doc) {
         return CategoryModel.fromFirestore(doc.data(), doc.id);
       }).toList();
@@ -193,6 +195,7 @@ class OrderController extends GetxController {
           )
         : await showFlexibleBottomSheet(
             bottomSheetColor: Colors.transparent,
+            duration: const Duration(milliseconds: 500),
             minHeight: 0,
             initHeight: 0.75,
             maxHeight: 1,
@@ -497,6 +500,7 @@ class OrderController extends GetxController {
           )
         : await showFlexibleBottomSheet(
             bottomSheetColor: Colors.transparent,
+            duration: const Duration(milliseconds: 500),
             minHeight: 0,
             initHeight: 0.75,
             maxHeight: 1,
@@ -670,16 +674,17 @@ class OrderController extends GetxController {
           : await MainScreenController.instance.showPassCodeScreen(
               context: context, passcodeType: PasscodeType.finalizeOrders);
       if (passcodeValid) {
+        orderModel.subtotalAmount = orderSubtotal.value;
+        orderModel.taxTotalAmount = orderTax.value;
+        orderModel.discountAmount = discountAmount.value;
+        orderModel.totalAmount = orderTotal.value;
+        orderModel.items = orderItems.value;
         showLoadingScreen();
         final chargeOrderStatus =
             await chargeOrder(orderId: orderModel.orderId);
         hideLoadingScreen();
         if (chargeOrderStatus == FunctionStatus.success) {
           orderModel.status = OrderStatus.complete;
-          orderModel.subtotalAmount = orderSubtotal.value;
-          orderModel.taxTotalAmount = orderTax.value;
-          orderModel.discountAmount = discountAmount.value;
-          orderModel.totalAmount = orderTotal.value;
           chargeOrderPrinter(order: orderModel, openDrawer: true);
           if (isPhone) Get.back();
           Get.back(result: true);
@@ -715,17 +720,16 @@ class OrderController extends GetxController {
   Future<FunctionStatus> chargeOrder({required String orderId}) async {
     try {
       final firestore = FirebaseFirestore.instance;
-      final batch = MainScreenController.instance.getLogCustodyTransactionBatch(
-          type: TransactionType.sale,
-          amount: orderTotal.value,
-          shiftId: orderModel.shiftId);
-      batch.update(firestore.collection('orders').doc(orderModel.orderId), {
+      final batch = firestore.batch();
+
+      batch.update(firestore.collection('orders').doc(orderId), {
         'status': OrderStatus.complete.name,
         'subtotalAmount': orderSubtotal.value,
         'taxTotalAmount': orderTax.value,
         'discountAmount': discountAmount.value,
         'totalAmount': orderTotal.value,
       });
+
       if (tablesIds != null) {
         for (var tableId in tablesIds!) {
           batch.update(firestore.collection('tables').doc(tableId), {
@@ -744,11 +748,40 @@ class OrderController extends GetxController {
             tablesIdsList.add(tableIdSnapshot.docs.first.id);
           }
           for (var tableId in tablesIdsList) {
-            batch.update(firestore.collection('tables').doc(tableId),
-                {'status': TableStatus.available.name});
+            batch.update(firestore.collection('tables').doc(tableId), {
+              'status': TableStatus.available.name,
+            });
           }
         }
       }
+
+      for (var orderItem in orderModel.items) {
+        for (var recipeItem in orderItem.selectedSize.recipe) {
+          batch.update(
+            firestore.collection('products').doc(recipeItem.productId),
+            {
+              'availableQuantity': FieldValue.increment(
+                  -recipeItem.quantity * orderItem.quantity),
+            },
+          );
+        }
+
+        for (var option in orderItem.options.entries) {
+          final optionValue = orderItem.selectedOptions.where((optionItem) {
+            return optionItem.name == option.value;
+          }).first;
+          for (var recipeItem in optionValue.recipe) {
+            batch.update(
+              firestore.collection('products').doc(recipeItem.productId),
+              {
+                'availableQuantity': FieldValue.increment(
+                    -recipeItem.quantity * orderItem.quantity),
+              },
+            );
+          }
+        }
+      }
+
       await batch.commit();
 
       return FunctionStatus.success;
@@ -768,6 +801,7 @@ class OrderController extends GetxController {
   addDiscountPhone(BuildContext context) {
     showFlexibleBottomSheet(
       bottomSheetColor: Colors.transparent,
+      duration: const Duration(milliseconds: 500),
       minHeight: 0,
       initHeight: 1,
       maxHeight: 1,

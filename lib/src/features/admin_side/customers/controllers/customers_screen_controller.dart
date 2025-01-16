@@ -275,18 +275,24 @@ class AdminCustomersScreenController extends GetxController {
     }
   }
 
+  void clearCustomerValues() {
+    nameTextController.clear();
+    discountTextController.clear();
+    percentageChosen.value = true;
+  }
+
   void onEditPress({
     required BuildContext context,
     required int index,
     required CustomerModel customerModel,
     required bool isPhone,
-  }) {
+  }) async {
     nameTextController.text = customerModel.name;
     percentageChosen.value = customerModel.discountType == 'percentage';
     discountTextController.text = customerModel.discountValue.toString();
     final initialNumber = customerModel.number;
     if (isPhone) {
-      RegularBottomSheet.showRegularBottomSheet(
+      await RegularBottomSheet.showRegularBottomSheet(
         AdminAddCustomerWidgetPhone(
           controller: this,
           edit: true,
@@ -298,8 +304,9 @@ class AdminCustomersScreenController extends GetxController {
           ),
         ),
       );
+      clearCustomerValues();
     } else {
-      showDialog(
+      await showDialog(
         useSafeArea: true,
         context: context,
         builder: (context) {
@@ -315,6 +322,7 @@ class AdminCustomersScreenController extends GetxController {
           );
         },
       );
+      clearCustomerValues();
     }
   }
 

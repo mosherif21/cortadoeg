@@ -4,8 +4,8 @@ import 'package:get/get.dart';
 import '../../../../general/general_functions.dart';
 import '../../admin_main_screen/components/main_appbar.dart';
 
-class ProductsScreen extends StatelessWidget {
-  const ProductsScreen({super.key});
+class PasscodesScreen extends StatelessWidget {
+  const PasscodesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,7 @@ class ProductsScreen extends StatelessWidget {
               elevation: 0,
               title: MainScreenAppbar(
                 isPhone: screenType.isPhone,
-                appBarTitle: 'products'.tr,
+                appBarTitle: 'passcodes'.tr,
               ),
               backgroundColor: Colors.white,
               foregroundColor: Colors.white,

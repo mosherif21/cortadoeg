@@ -9,6 +9,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../../../general/common_widgets/icon_text_elevated_button.dart';
 import '../../../../general/general_functions.dart';
+import '../../../admin_side/menu_items/screens/meni_items_screen.dart';
 import '../components/cart_item_widget_phone.dart';
 import '../components/item_widget_phone.dart';
 import '../components/models.dart';
@@ -110,12 +111,12 @@ class OrderScreenPhone extends StatelessWidget {
                                 buttonColor: Colors.black,
                                 textColor: Colors.white,
                                 borderRadius: 25,
-                                fontSize: 18,
+                                fontSize: 16,
                                 elevation: 0,
                                 icon: Icons.shopping_cart,
                                 iconColor: Colors.white,
                                 text: 'checkOut'.tr,
-                                enabled: controller.orderTotal.value > 0,
+                                enabled: controller.orderItems.isNotEmpty,
                                 onClick: () => Get.to(
                                   () =>
                                       ChargeScreenPhone(controller: controller),
@@ -256,7 +257,7 @@ class OrderScreenPhone extends StatelessWidget {
                               elevation: 0,
                               icon: Icons.shopping_cart,
                               iconColor: Colors.white,
-                              enabled: controller.orderTotal.value > 0,
+                              enabled: controller.orderItems.isNotEmpty,
                               text: 'checkOut'.tr,
                               onClick: () => Get.to(
                                 () => ChargeScreenPhone(controller: controller),
@@ -298,7 +299,7 @@ class OrderScreenPhone extends StatelessWidget {
                     ),
                     Obx(
                       () => controller.loadingCategories.value
-                          ? const LoadingCategories()
+                          ? const LoadingCategoriesPhone()
                           : CategoryMenuPhone(
                               categories: controller.categories,
                               selectedCategory:
@@ -308,53 +309,61 @@ class OrderScreenPhone extends StatelessWidget {
                     ),
                     const SizedBox(height: 5),
                     Obx(
-                      () => Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: AnimationLimiter(
-                          child: GridView.count(
-                            mainAxisSpacing: 20,
-                            crossAxisSpacing: 20,
-                            physics: const ScrollPhysics(),
-                            crossAxisCount: 2,
-                            shrinkWrap: true,
-                            children: List.generate(
-                              controller.loadingItems.value
-                                  ? 10
-                                  : controller.filteredItems.length,
-                              (int index) {
-                                return AnimationConfiguration.staggeredGrid(
-                                  position: index,
-                                  duration: const Duration(milliseconds: 300),
-                                  columnCount: 2,
-                                  child: ScaleAnimation(
-                                    child: FadeInAnimation(
-                                      child: controller.loadingItems.value
-                                          ? const LoadingItem()
-                                          : ItemCardPhone(
-                                              imageUrl: controller
-                                                      .filteredItems[index]
-                                                      .imageUrl ??
-                                                  kLogoImage,
-                                              title: controller
-                                                  .filteredItems[index].name,
-                                              price: controller
-                                                  .filteredItems[index]
-                                                  .sizes[0]
-                                                  .price,
-                                              onSelected: () =>
-                                                  controller.onItemSelected(
-                                                      context,
-                                                      index,
-                                                      screenType.isPhone),
-                                            ),
-                                    ),
+                      () => !controller.loadingItems.value &&
+                              controller.filteredItems.isEmpty
+                          ? const Center(
+                              child:
+                                  SingleChildScrollView(child: NoItemsFound()))
+                          : Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              child: AnimationLimiter(
+                                child: GridView.count(
+                                  mainAxisSpacing: 20,
+                                  crossAxisSpacing: 20,
+                                  physics: const ScrollPhysics(),
+                                  crossAxisCount: 2,
+                                  shrinkWrap: true,
+                                  children: List.generate(
+                                    controller.loadingItems.value
+                                        ? 10
+                                        : controller.filteredItems.length,
+                                    (int index) {
+                                      return AnimationConfiguration
+                                          .staggeredGrid(
+                                        position: index,
+                                        duration:
+                                            const Duration(milliseconds: 300),
+                                        columnCount: 2,
+                                        child: ScaleAnimation(
+                                          child: FadeInAnimation(
+                                            child: controller.loadingItems.value
+                                                ? const LoadingItemPhone()
+                                                : ItemCardPhone(
+                                                    imageUrl: controller
+                                                        .filteredItems[index]
+                                                        .imageUrl,
+                                                    title: controller
+                                                        .filteredItems[index]
+                                                        .name,
+                                                    price: controller
+                                                        .filteredItems[index]
+                                                        .sizes[0]
+                                                        .price,
+                                                    onSelected: () => controller
+                                                        .onItemSelected(
+                                                            context,
+                                                            index,
+                                                            screenType.isPhone),
+                                                  ),
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
-                                );
-                              },
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
                     ),
                     const SizedBox(height: 125),
                   ],
@@ -368,8 +377,8 @@ class OrderScreenPhone extends StatelessWidget {
   }
 }
 
-class LoadingItem extends StatelessWidget {
-  const LoadingItem({
+class LoadingItemPhone extends StatelessWidget {
+  const LoadingItemPhone({
     super.key,
   });
 
@@ -390,8 +399,8 @@ class LoadingItem extends StatelessWidget {
   }
 }
 
-class LoadingCategories extends StatelessWidget {
-  const LoadingCategories({
+class LoadingCategoriesPhone extends StatelessWidget {
+  const LoadingCategoriesPhone({
     super.key,
   });
 

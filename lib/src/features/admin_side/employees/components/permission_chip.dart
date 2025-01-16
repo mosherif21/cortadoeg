@@ -7,6 +7,7 @@ import '../../../../authentication/models.dart';
 class PermissionChip extends StatelessWidget {
   final UserPermission permission;
   final bool isSelected;
+  final bool isPhone;
   final ValueChanged<bool> onChanged;
 
   const PermissionChip({
@@ -14,6 +15,7 @@ class PermissionChip extends StatelessWidget {
     required this.permission,
     required this.isSelected,
     required this.onChanged,
+    this.isPhone = false,
   });
 
   @override
@@ -26,15 +28,17 @@ class PermissionChip extends StatelessWidget {
             onTap: (_) => onChanged(!isSelected),
             checkedColor: Colors.black,
             uncheckedColor: Colors.white,
-            size: 26,
+            size: isPhone ? 30 : 26,
             isChecked: isSelected,
           ),
           const SizedBox(width: 10),
           AutoSizeText(
             getPermissionName(permission),
             maxLines: 1,
-            style: const TextStyle(
-                fontWeight: FontWeight.w600, color: Colors.black, fontSize: 14),
+            style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
+                fontSize: isPhone ? 18 : 14),
           ),
         ],
       ),

@@ -33,7 +33,7 @@ class EmployeeEditDetails extends StatelessWidget {
         elevation: 0,
         child: Center(
           child: Container(
-            height: screenHeight * 0.7,
+            height: screenHeight * 0.75,
             width: screenWidth * 0.7,
             constraints: const BoxConstraints(maxWidth: 900, maxHeight: 540),
             decoration: BoxDecoration(

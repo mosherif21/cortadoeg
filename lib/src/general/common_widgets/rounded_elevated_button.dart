@@ -9,12 +9,14 @@ class RoundedElevatedButton extends StatelessWidget {
     required this.enabled,
     required this.color,
     this.borderRadius = 25,
+    this.fontSize = 18,
   });
   final String buttonText;
   final Function onPressed;
   final bool enabled;
   final Color color;
   final double borderRadius;
+  final double fontSize;
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -34,8 +36,10 @@ class RoundedElevatedButton extends StatelessWidget {
           onPressed: enabled ? () => onPressed() : null,
           child: AutoSizeText(
             buttonText,
-            style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.w500),
+            style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: fontSize),
             maxLines: 1,
           ),
         ),

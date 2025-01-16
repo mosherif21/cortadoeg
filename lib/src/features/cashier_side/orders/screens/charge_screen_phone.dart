@@ -409,7 +409,7 @@ class ChargeScreenPhone extends StatelessWidget {
                             buttonColor: Colors.black,
                             textColor: Colors.white,
                             borderRadius: 15,
-                            fontSize: 16,
+                            fontSize: 15,
                             elevation: 0,
                             icon: Icons.payments_outlined,
                             iconColor: Colors.white,

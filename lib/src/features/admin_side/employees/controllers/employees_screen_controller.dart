@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:bottom_sheet/bottom_sheet.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cortadoeg/src/authentication/authentication_repository.dart';
 import 'package:cortadoeg/src/authentication/models.dart';
@@ -12,13 +13,14 @@ import 'package:sweetsheet/sweetsheet.dart';
 
 import '../../../../constants/enums.dart';
 import '../../../../general/app_init.dart';
-import '../../../../general/common_widgets/regular_bottom_sheet.dart';
 import '../../../../general/general_functions.dart';
-import '../../../cashier_side/account/components/photo_select_phone.dart';
 import '../components/add_employee.dart';
+import '../components/add_employee_phone.dart';
 import '../components/employee_details.dart';
+import '../components/employee_details_phone.dart';
 
 class EmployeesScreenController extends GetxController {
+  static EmployeesScreenController get instance => Get.find();
   late List<EmployeeModel> employeesList;
   late List<EmployeeModel> roleFilteredEmployees;
   final RxList<EmployeeModel> filteredEmployeesList = <EmployeeModel>[].obs;
@@ -106,12 +108,22 @@ class EmployeesScreenController extends GetxController {
 
   void addEmployeeTap({required bool isPhone}) {
     if (isPhone) {
-      RegularBottomSheet.showRegularBottomSheet(
-        PhotoSelectPhone(
-          headerText: 'choosePicMethod'.tr,
-          onCapturePhotoPress: () {},
-          onChoosePhotoPress: () {},
-        ),
+      showFlexibleBottomSheet(
+        bottomSheetColor: Colors.transparent,
+        duration: const Duration(milliseconds: 500),
+        minHeight: 0,
+        initHeight: 1,
+        maxHeight: 1,
+        anchors: [0, 1],
+        isSafeArea: true,
+        context: Get.context!,
+        builder: (
+          BuildContext context,
+          ScrollController scrollController,
+          double bottomSheetOffset,
+        ) {
+          return AddEmployeeWidgetPhone(scrollController: scrollController);
+        },
       );
     } else {
       showDialog(
@@ -125,12 +137,24 @@ class EmployeesScreenController extends GetxController {
 
   void onEmployeeTap({required int index, required bool isPhone}) {
     if (isPhone) {
-      RegularBottomSheet.showRegularBottomSheet(
-        PhotoSelectPhone(
-          headerText: 'choosePicMethod'.tr,
-          onCapturePhotoPress: () {},
-          onChoosePhotoPress: () {},
-        ),
+      showFlexibleBottomSheet(
+        bottomSheetColor: Colors.transparent,
+        duration: const Duration(milliseconds: 500),
+        minHeight: 0,
+        initHeight: 0.95,
+        maxHeight: 1,
+        anchors: [0, 0.95, 1],
+        isSafeArea: true,
+        context: Get.context!,
+        builder: (
+          BuildContext context,
+          ScrollController scrollController,
+          double bottomSheetOffset,
+        ) {
+          return EmployeeEditDetailsPhone(
+            employeeModel: filteredEmployeesList[index],
+          );
+        },
       );
     } else {
       showDialog(

@@ -8,106 +8,200 @@ const serviceAccount = require('./serviceAccountKey.json');
 initializeApp({
   credential: cert(serviceAccount),
 });
-
+const { onSchedule } = require("firebase-functions/v2/scheduler");
+const messaging = admin.messaging();
 const firestore = admin.firestore();
 const getAuth = admin.auth();
 const getStorage = admin.storage();
 
-//async function setAdminClaim(userId) {
-//  try {
-//    await getAuth.setCustomUserClaims(userId, { admin: true });
-//    console.log(`Admin claim set for user with UID: ${userId}`);
-//  } catch (error) {
-//    console.error('Error setting admin claim:', error);
-//  }
-//}
-//
-//// Replace 'USER_UID' with the actual UID of the user you want to make an admin
-//setAdminClaim('BAdvXjCLP0cfa5BdItRkbx6sL4b2');
-
-//// Callable function to set admin claim
-//exports.setAdminClaim = onRequest(async (data, context) => {
-//  // Check if the function was called by an authenticated user
-//  if (!context.auth) {
-//    throw new Error('Authentication required.');
-//  }
-//
-//  // Check if the caller is an admin
-//  const callerUid = context.auth.uid;
-//  const callerUserRecord = await getAuth().getUser(callerUid);
-//
-//  if (!callerUserRecord.customClaims || !callerUserRecord.customClaims.admin) {
-//    throw new Error('Permission denied. Only admins can perform this action.');
-//  }
-//
-//  // Validate the input
-//   const userId = data.body.employeeId;
-//  if (!userId || typeof userId !== 'string') {
-//    throw new Error('Invalid input. "userId" is required and must be a string.');
-//  }
-//
-//  try {
-//    // Set the admin claim
-//    await getAuth.setCustomUserClaims(userId, { admin: true });
-//    console.log(`Admin claim set for user with UID: ${userId}`);
-//    return { success: true, message: `Admin claim set for user with UID: ${userId}` };
-//  } catch (error) {
-//    console.error('Error setting admin claim:', error);
-//    throw new Error('Failed to set admin claim.');
-//  }
-//});
-
-exports.addEmployee = onRequest(async (data, context) => {
+exports.checkProductInventory = onSchedule("every 1 minutes", async (event) => {
   try {
-    const email = data.body.email;
-    const password = data.body.password;
-    const name = data.body.name;
-    const phone = data.body.phone;
-    const birthDate = data.body.birthDate;
-    const gender = data.body.gender;
-    const role = data.body.role;
-    const permissions = data.body.permissions;
+    const productsSnapshot = await firestore.collection("products").get();
+    const lowInventoryProducts = [];
+    const emptyInventoryProducts = [];
 
-    // Ensure all required fields are present
-    if (!email || !password || !name || !phone || !birthDate || !gender || !role || !permissions) {
-      throw new functions.https.HttpsError("invalid-argument", "Missing required fields");
+    productsSnapshot.forEach((doc) => {
+      const product = doc.data();
+      const measuringUnit = product.measuringUnit;
+      const availableQuantity = product.availableQuantity || 0;
+
+      if (measuringUnit === "piece" && availableQuantity < 2) {
+        if (availableQuantity <= 0) {
+          emptyInventoryProducts.push({ id: doc.id, ...product });
+        } else {
+          lowInventoryProducts.push({ id: doc.id, ...product });
+        }
+      } else if ((measuringUnit === "ml" || measuringUnit === "gm") && availableQuantity < 100) {
+        if (availableQuantity <= 0) {
+          emptyInventoryProducts.push({ id: doc.id, ...product });
+        } else {
+          lowInventoryProducts.push({ id: doc.id, ...product });
+        }
+      }
+    });
+
+    if (lowInventoryProducts.length === 0 && emptyInventoryProducts.length === 0) {
+      console.log("No low or empty inventory products found");
+      return null;
     }
 
-    // Create the user in Firebase Authentication
-    const user = await admin.auth().createUser({
-      email,
-      password,
+    const adminsTokensDoc = await firestore.collection("fcmTokens").doc("adminsFcmTokens").get();
+    if (!adminsTokensDoc.exists) {
+      console.error("Admin FCM tokens not found");
+      return null;
+    }
+
+    const adminsTokensData = adminsTokensDoc.data();
+    const tokens = adminsTokensData.tokens;
+
+    if (!tokens || tokens.length === 0) {
+      console.error("No admin FCM tokens available");
+      return null;
+    }
+
+    const messages = [];
+
+    tokens.forEach((admin) => {
+      const notificationsLang = admin.notificationsLang || "en";
+      const adminFcmToken = admin.fcmToken;
+
+      lowInventoryProducts.forEach((product) => {
+        const title = notificationsLang === "en" ? "Low Inventory Alert" : "تنبيه جرد منخفض";
+        const body =
+          notificationsLang === "en"
+            ? `Product ${product.name} inventory is low. Only ${product.availableQuantity} ${product.measuringUnit} left.`
+            : `المنتج ${product.name} جرده منخفض. فقط ${product.availableQuantity} ${product.measuringUnit} متبقية.`;
+
+        messages.push({
+          token: adminFcmToken,
+          notification: {
+            title,
+            body,
+          },
+        });
+      });
+
+      emptyInventoryProducts.forEach((product) => {
+        const title = notificationsLang === "en" ? "Out of Stock Alert" : "تنبيه نفاد المخزون";
+        const body =
+          notificationsLang === "en"
+            ? `Product ${product.name} is out of stock.`
+            : `المنتج ${product.name} نفد من المخزون.`;
+
+        messages.push({
+          token: adminFcmToken,
+          notification: {
+            title,
+            body,
+          },
+        });
+      });
     });
 
-    // Save employee data in Firestore
-    await admin.firestore().collection("employees").doc(user.uid).set({
-      name,
-      email,
-      phone,
-      birthDate: admin.firestore.Timestamp.fromDate(new Date(birthDate)),
-      gender,
-      role,
-      permissions,
-      profileImageUrl: '',
-    });
+    const messagingPromises = messages.map((message) => messaging.send(message));
+    await Promise.all(messagingPromises);
 
-    console.log("Employee added successfully");
-    context.status(200).send("Employee added successfully.");
+    console.log("Notifications sent successfully");
+    return null;
   } catch (error) {
-    console.error("Error adding employee:", error);
-    throw new functions.https.HttpsError("internal", error.message || "Failed to add employee");
+    console.error("Error checking product inventory:", error);
+    return null;
+  }
+});
+
+
+exports.checkProductInventory = onSchedule("every 1 minutes", async (event) => {
+  try {
+    const productsSnapshot = await firestore.collection("products").get();
+    const lowInventoryProducts = [];
+    const emptyInventoryProducts = [];
+
+    productsSnapshot.forEach((doc) => {
+      const product = doc.data();
+      const measuringUnit = product.measuringUnit;
+      const availableQuantity = product.availableQuantity || 0;
+
+      if (measuringUnit === "piece" && availableQuantity < 2) {
+        if (availableQuantity <= 0) {
+          emptyInventoryProducts.push({ id: doc.id, ...product });
+        } else {
+          lowInventoryProducts.push({ id: doc.id, ...product });
+        }
+      } else if ((measuringUnit === "ml" || measuringUnit === "gm") && availableQuantity < 100) {
+        if (availableQuantity <= 0) {
+          emptyInventoryProducts.push({ id: doc.id, ...product });
+        } else {
+          lowInventoryProducts.push({ id: doc.id, ...product });
+        }
+      }
+    });
+
+    if (lowInventoryProducts.length === 0 && emptyInventoryProducts.length === 0) {
+      console.log("No low or empty inventory products found");
+      return;
+    }
+    const adminsTokensDoc = await firestore.collection("fcmTokens").doc("adminsFcmTokens").get();
+    if (!adminsTokensDoc.exists) {
+      console.error("Admin FCM tokens not found");
+      return;
+    }
+
+    const adminsTokensData = adminsTokensDoc.data();
+    const tokens = adminsTokensData.tokens;
+
+    if (!tokens || tokens.length === 0) {
+      console.error("No admin FCM tokens available");
+      return;
+    }
+    const messages = [];
+
+    tokens.forEach((admin) => {
+      const notificationsLang = admin.notificationsLang || "en";
+      const adminFcmToken = admin.fcmToken;
+
+      lowInventoryProducts.forEach((product) => {
+        const title = notificationsLang === "en" ? "Low Inventory Alert" : "تنبيه جرد منخفض";
+        const body =
+          notificationsLang === "en"
+            ? `Product ${product.name} inventory is low. Only ${product.availableQuantity} ${product.measuringUnit} left.`
+            : `المنتج ${product.name} جرده منخفض. فقط ${product.availableQuantity} ${product.measuringUnit} متبقية.`;
+
+        messages.push({
+          token: adminFcmToken,
+          notification: {
+            title,
+            body,
+          },
+        });
+      });
+
+      emptyInventoryProducts.forEach((product) => {
+        const title = notificationsLang === "en" ? "Out of Stock Alert" : "تنبيه نفاد المخزون";
+        const body =
+          notificationsLang === "en"
+            ? `Product ${product.name} is out of stock.`
+            : `المنتج ${product.name} نفد من المخزون.`;
+
+        messages.push({
+          token: adminFcmToken,
+          notification: {
+            title,
+            body,
+          },
+        });
+      });
+    });
+    const messagingPromises = messages.map((message) => messaging.send(message));
+    await Promise.all(messagingPromises);
+
+    console.log("Notifications sent successfully");
+  } catch (error) {
+    console.error("Error checking product inventory:", error);
   }
 });
 
 exports.deleteUserWithResources = onRequest(async (data, context) => {
   const userId = data.body.employeeId;
-//  // Check for admin privileges
-//  if (!context.auth || !context.auth.token.admin) {
-//    throw new functions.https.HttpsError(
-//      'permission-denied',
-//      'Only authorized admins can perform this action.'
-//    );
-//  }
 
   if (!userId) {
     throw new functions.https.HttpsError(
@@ -121,16 +215,13 @@ exports.deleteUserWithResources = onRequest(async (data, context) => {
   const storageFolder = `users/${userId}`;
 
   try {
-    // Step 1: Delete the user from Firebase Authentication
     await getAuth.deleteUser(userId);
     console.log(`Successfully deleted user with UID: ${userId}`);
 
-    // Step 2: Delete the corresponding Firestore document
     const docRef = firestore.collection(employeesCollection).doc(userId);
     await docRef.delete();
     console.log(`Firestore document deleted from collection '${employeesCollection}' for userId: ${userId}`);
 
-    // Step 3: Delete the Storage folder
     try {
       const [files] = await storage.getFiles({ prefix: storageFolder });
 
@@ -266,3 +357,55 @@ exports.sendNotification = onRequest(async (request, response) => {
 
   response.status(200).send("Notifications sent and saved successfully");
 });
+
+
+//  // Check for admin privileges
+//  if (!context.auth || !context.auth.token.admin) {
+//    throw new functions.https.HttpsError(
+//      'permission-denied',
+//      'Only authorized admins can perform this action.'
+//    );
+//  }
+//async function setAdminClaim(userId) {
+//  try {
+//    await getAuth.setCustomUserClaims(userId, { admin: true });
+//    console.log(`Admin claim set for user with UID: ${userId}`);
+//  } catch (error) {
+//    console.error('Error setting admin claim:', error);
+//  }
+//}
+//
+//// Replace 'USER_UID' with the actual UID of the user you want to make an admin
+//setAdminClaim('BAdvXjCLP0cfa5BdItRkbx6sL4b2');
+
+//// Callable function to set admin claim
+//exports.setAdminClaim = onRequest(async (data, context) => {
+//  // Check if the function was called by an authenticated user
+//  if (!context.auth) {
+//    throw new Error('Authentication required.');
+//  }
+//
+//  // Check if the caller is an admin
+//  const callerUid = context.auth.uid;
+//  const callerUserRecord = await getAuth().getUser(callerUid);
+//
+//  if (!callerUserRecord.customClaims || !callerUserRecord.customClaims.admin) {
+//    throw new Error('Permission denied. Only admins can perform this action.');
+//  }
+//
+//  // Validate the input
+//   const userId = data.body.employeeId;
+//  if (!userId || typeof userId !== 'string') {
+//    throw new Error('Invalid input. "userId" is required and must be a string.');
+//  }
+//
+//  try {
+//    // Set the admin claim
+//    await getAuth.setCustomUserClaims(userId, { admin: true });
+//    console.log(`Admin claim set for user with UID: ${userId}`);
+//    return { success: true, message: `Admin claim set for user with UID: ${userId}` };
+//  } catch (error) {
+//    console.error('Error setting admin claim:', error);
+//    throw new Error('Failed to set admin claim.');
+//  }
+//});

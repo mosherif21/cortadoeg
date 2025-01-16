@@ -106,7 +106,19 @@ class AccountScreenController extends GetxController {
       final addedImage = await picker.pickImage(source: ImageSource.camera);
       if (addedImage != null) {
         profileImage.value = addedImage;
-        isProfileImageChanged.value = true;
+        showLoadingScreen();
+        final saveStatus = await saveProfileImage();
+        hideLoadingScreen();
+        if (saveStatus == FunctionStatus.success) {
+          isProfileImageChanged.value = true;
+          showSnackBar(
+              text: 'profileImageChangeSuccess'.tr,
+              snackBarType: SnackBarType.success);
+        } else {
+          showSnackBar(
+              text: 'profileImageChangeFail'.tr,
+              snackBarType: SnackBarType.error);
+        }
       }
     }
   }

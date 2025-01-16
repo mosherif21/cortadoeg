@@ -1,4 +1,3 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../constants/assets_strings.dart';
@@ -22,6 +21,7 @@ class ItemCard extends StatelessWidget {
     return Material(
       borderRadius: BorderRadius.circular(15),
       color: Colors.white,
+      elevation: 5,
       child: InkWell(
         borderRadius: BorderRadius.circular(15),
         splashFactory: InkSparkle.splashFactory,
@@ -33,12 +33,14 @@ class ItemCard extends StatelessWidget {
             const SizedBox(height: 10),
             ClipRRect(
               borderRadius: const BorderRadius.all(Radius.circular(15)),
-              child: Image.asset(
-                imageUrl ?? kLogoImage,
-                height: 130,
-                width: double.infinity,
-                fit: BoxFit.contain,
-              ),
+              child: imageUrl != null
+                  ? Image.network(imageUrl!)
+                  : Image.asset(
+                      kLogoImage,
+                      height: 130,
+                      width: double.infinity,
+                      fit: BoxFit.contain,
+                    ),
             ),
             const SizedBox(height: 10),
             Padding(

@@ -193,6 +193,35 @@ class AuthenticationRepository extends GetxController {
               'notificationsLang': isLangEnglish() ? 'en' : 'ar',
               'cashierEmployeeId': employeeInfo!.id,
             });
+          } else if (userRole == Role.admin) {
+            batch.update(
+              _firestore.collection('fcmTokens').doc('adminsFcmTokens'),
+              {
+                'tokens': FieldValue.arrayRemove(
+                  [
+                    {
+                      'fcmToken': AppInit.notificationToken,
+                      'notificationsLang': isLangEnglish() ? 'ar' : 'en',
+                      'adminId': employeeInfo!.id,
+                    }
+                  ],
+                ),
+              },
+            );
+            batch.update(
+              _firestore.collection('fcmTokens').doc('adminsFcmTokens'),
+              {
+                'tokens': FieldValue.arrayUnion(
+                  [
+                    {
+                      'fcmToken': AppInit.notificationToken,
+                      'notificationsLang': isLangEnglish() ? 'en' : 'ar',
+                      'adminId': employeeInfo!.id,
+                    }
+                  ],
+                ),
+              },
+            );
           }
           await batch.commit();
         }
@@ -612,6 +641,21 @@ class AuthenticationRepository extends GetxController {
               'fcmToken': null,
               'cashierEmployeeId': null,
             });
+      } else if (userRole == Role.admin) {
+        batch.update(
+          _firestore.collection('fcmTokens').doc('adminsFcmTokens'),
+          {
+            'tokens': FieldValue.arrayRemove(
+              [
+                {
+                  'fcmToken': AppInit.notificationToken,
+                  'notificationsLang': isLangEnglish() ? 'en' : 'ar',
+                  'adminId': employeeInfo!.id,
+                }
+              ],
+            ),
+          },
+        );
       }
       await batch.commit();
     } on FirebaseException catch (error) {

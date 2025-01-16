@@ -1,15 +1,16 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cortadoeg/src/constants/assets_strings.dart';
 import 'package:flutter/material.dart';
 
 class ItemCardPhone extends StatelessWidget {
-  final String imageUrl;
+  final String? imageUrl;
   final String title;
   final double price;
   final Function onSelected;
 
   const ItemCardPhone({
     super.key,
-    required this.imageUrl,
+    this.imageUrl,
     required this.title,
     required this.price,
     required this.onSelected,
@@ -23,9 +24,11 @@ class ItemCardPhone extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
         image: DecorationImage(
-          image: AssetImage(
-            imageUrl,
-          ),
+          image: imageUrl != null
+              ? NetworkImage(imageUrl!)
+              : const AssetImage(
+                  kLogoImage,
+                ),
           fit: BoxFit.contain,
         ),
       ),

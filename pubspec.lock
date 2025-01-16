@@ -302,6 +302,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
+  data_table_2:
+    dependency: "direct main"
+    description:
+      name: data_table_2
+      sha256: "5a540a7b64809eb46b3809c67fc6faa29ca217864341294df66b1f0eb040c20e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.5.18"
   dbus:
     dependency: transitive
     description:
@@ -619,14 +627,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.1"
-  flutter_expandable_table:
-    dependency: "direct main"
-    description:
-      name: flutter_expandable_table
-      sha256: "844548b14b8d189ee38f67e24a3d2dc9e6c2054305c035a5d94d89030b6c4d41"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.0"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -688,14 +688,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.23"
-  flutter_scroll_shadow:
-    dependency: transitive
-    description:
-      name: flutter_scroll_shadow
-      sha256: c0509c642c5077654301fab1fb2260adc94c82a407c60e64162974b4366e7874
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.2.4"
   flutter_slidable:
     dependency: "direct main"
     description:
@@ -1050,14 +1042,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.3"
-  linked_scroll_controller:
-    dependency: transitive
-    description:
-      name: linked_scroll_controller
-      sha256: e6020062bcf4ffc907ee7fd090fa971e65d8dfaac3c62baf601a3ced0b37986a
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.0"
   lints:
     dependency: transitive
     description:

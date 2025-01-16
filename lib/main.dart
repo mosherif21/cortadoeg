@@ -19,15 +19,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     Get.put(ConnectivityController());
     return GetMaterialApp(
-      useInheritedMediaQuery: true,
+      title: 'Cortado Business',
+      debugShowCheckedModeBanner: false,
       builder: (context, child) {
         return ScrollConfiguration(
           behavior: NonScrollPhysics(),
           child: child!,
         );
       },
-      title: 'Cortado Business',
-      debugShowCheckedModeBanner: false,
       translations: Languages(),
       theme: ThemeData(
         textSelectionTheme: TextSelectionThemeData(

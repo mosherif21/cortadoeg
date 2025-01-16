@@ -7,6 +7,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../../../general/common_widgets/icon_text_elevated_button.dart';
 import '../../../../general/common_widgets/section_divider.dart';
 import '../../../../general/general_functions.dart';
+import '../../../admin_side/menu_items/screens/meni_items_screen.dart';
 import '../components/cart_item_widget.dart';
 import '../components/discount_widget.dart';
 import '../components/item_widget.dart';
@@ -71,66 +72,75 @@ class OrderScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 5),
                               Obx(
-                                () => Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 20),
-                                  child: AnimationLimiter(
-                                    child: GridView.count(
-                                      mainAxisSpacing: 20,
-                                      crossAxisSpacing: 20,
-                                      physics: const ScrollPhysics(),
-                                      crossAxisCount:
-                                          controller.orderItems.isEmpty ? 5 : 4,
-                                      shrinkWrap: true,
-                                      children: List.generate(
-                                        controller.loadingItems.value
-                                            ? 10
-                                            : controller.filteredItems.length,
-                                        (int index) {
-                                          return AnimationConfiguration
-                                              .staggeredGrid(
-                                            position: index,
-                                            duration: const Duration(
-                                                milliseconds: 300),
-                                            columnCount:
+                                () => !controller.loadingItems.value &&
+                                        controller.filteredItems.isEmpty
+                                    ? const Center(
+                                        child: SingleChildScrollView(
+                                            child: NoItemsFound()),
+                                      )
+                                    : Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20),
+                                        child: AnimationLimiter(
+                                          child: GridView.count(
+                                            mainAxisSpacing: 20,
+                                            crossAxisSpacing: 20,
+                                            physics: const ScrollPhysics(),
+                                            crossAxisCount:
                                                 controller.orderItems.isEmpty
                                                     ? 5
                                                     : 4,
-                                            child: ScaleAnimation(
-                                              child: FadeInAnimation(
-                                                child: controller
-                                                        .loadingItems.value
-                                                    ? const LoadingItem()
-                                                    : ItemCard(
-                                                        imageUrl: controller
-                                                            .filteredItems[
-                                                                index]
-                                                            .imageUrl,
-                                                        title: controller
-                                                            .filteredItems[
-                                                                index]
-                                                            .name,
-                                                        price: controller
-                                                            .filteredItems[
-                                                                index]
-                                                            .sizes[0]
-                                                            .price,
-                                                        onSelected: () =>
-                                                            controller
-                                                                .onItemSelected(
-                                                                    context,
-                                                                    index,
-                                                                    screenType
-                                                                        .isPhone),
-                                                      ),
-                                              ),
+                                            shrinkWrap: true,
+                                            children: List.generate(
+                                              controller.loadingItems.value
+                                                  ? 10
+                                                  : controller
+                                                      .filteredItems.length,
+                                              (int index) {
+                                                return AnimationConfiguration
+                                                    .staggeredGrid(
+                                                  position: index,
+                                                  duration: const Duration(
+                                                      milliseconds: 300),
+                                                  columnCount: controller
+                                                          .orderItems.isEmpty
+                                                      ? 5
+                                                      : 4,
+                                                  child: ScaleAnimation(
+                                                    child: FadeInAnimation(
+                                                      child: controller
+                                                              .loadingItems
+                                                              .value
+                                                          ? const LoadingItem()
+                                                          : ItemCard(
+                                                              imageUrl: controller
+                                                                  .filteredItems[
+                                                                      index]
+                                                                  .imageUrl,
+                                                              title: controller
+                                                                  .filteredItems[
+                                                                      index]
+                                                                  .name,
+                                                              price: controller
+                                                                  .filteredItems[
+                                                                      index]
+                                                                  .sizes[0]
+                                                                  .price,
+                                                              onSelected: () =>
+                                                                  controller.onItemSelected(
+                                                                      context,
+                                                                      index,
+                                                                      screenType
+                                                                          .isPhone),
+                                                            ),
+                                                    ),
+                                                  ),
+                                                );
+                                              },
                                             ),
-                                          );
-                                        },
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ),
-                                ),
                               ),
                               const SizedBox(height: 20),
                             ],

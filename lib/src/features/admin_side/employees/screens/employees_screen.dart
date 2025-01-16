@@ -35,16 +35,26 @@ class EmployeesScreen extends StatelessWidget {
               surfaceTintColor: Colors.white,
             ),
       backgroundColor: Colors.white,
+      floatingActionButton: screenType.isPhone
+          ? FloatingActionButton(
+              backgroundColor: Colors.black,
+              tooltip: 'addEmployee'.tr,
+              child: const Icon(
+                Icons.add_rounded,
+                color: Colors.white,
+                size: 32,
+              ),
+              onPressed: () =>
+                  controller.addEmployeeTap(isPhone: screenType.isPhone),
+            )
+          : null,
       body: StretchingOverscrollIndicator(
         axisDirection: AxisDirection.down,
         child: SingleChildScrollView(
           child: Column(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Flexible(
-                    child: AnimSearchAppBar(
+              screenType.isPhone
+                  ? AnimSearchAppBar(
                       keyboardType: TextInputType.text,
                       cancelButtonTextStyle:
                           const TextStyle(color: Colors.black87),
@@ -54,27 +64,43 @@ class EmployeesScreen extends StatelessWidget {
                       onChanged: controller.onEmployeesSearch,
                       backgroundColor: Colors.white,
                       appBar: const SizedBox.shrink(),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: AnimSearchAppBar(
+                            keyboardType: TextInputType.text,
+                            cancelButtonTextStyle:
+                                const TextStyle(color: Colors.black87),
+                            cancelButtonText: 'cancel'.tr,
+                            hintText: 'searchEmployeesHint'.tr,
+                            hintStyle:
+                                const TextStyle(fontWeight: FontWeight.w600),
+                            onChanged: controller.onEmployeesSearch,
+                            backgroundColor: Colors.white,
+                            appBar: const SizedBox.shrink(),
+                          ),
+                        ),
+                        const Spacer(),
+                        Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: IconTextElevatedButton(
+                            buttonColor: Colors.black,
+                            textColor: Colors.white,
+                            borderRadius: 25,
+                            fontSize: 16,
+                            elevation: 0,
+                            icon: Icons.add_rounded,
+                            iconColor: Colors.white,
+                            text: 'addEmployee'.tr,
+                            onClick: () => controller.addEmployeeTap(
+                                isPhone: screenType.isPhone),
+                          ),
+                        ),
+                        const SizedBox(width: 20),
+                      ],
                     ),
-                  ),
-                  const Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: IconTextElevatedButton(
-                      buttonColor: Colors.black,
-                      textColor: Colors.white,
-                      borderRadius: 25,
-                      fontSize: 16,
-                      elevation: 0,
-                      icon: Icons.add_rounded,
-                      iconColor: Colors.white,
-                      text: 'addEmployee'.tr,
-                      onClick: () => controller.addEmployeeTap(
-                          isPhone: screenType.isPhone),
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                ],
-              ),
               Obx(
                 () => EmployeeRoleWidget(
                   selectedRole: controller.selectedRole.value,
@@ -87,13 +113,15 @@ class EmployeesScreen extends StatelessWidget {
                   child: AnimationLimiter(
                     child: GridView.builder(
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 4,
+                        crossAxisCount: screenType.isPhone ? 2 : 4,
                         mainAxisSpacing: 20,
                         crossAxisSpacing: 20,
-                        childAspectRatio: AdminMainScreenController
-                                .instance.navBarExtended.value
-                            ? 0.95
-                            : 1.05,
+                        childAspectRatio: screenType.isPhone
+                            ? 0.8
+                            : AdminMainScreenController
+                                    .instance.navBarExtended.value
+                                ? 0.95
+                                : 1.05,
                       ),
                       itemCount: controller.loadingEmployees.value
                           ? 10
@@ -104,7 +132,7 @@ class EmployeesScreen extends StatelessWidget {
                         return AnimationConfiguration.staggeredGrid(
                           position: index,
                           duration: const Duration(milliseconds: 300),
-                          columnCount: 4,
+                          columnCount: screenType.isPhone ? 2 : 4,
                           child: ScaleAnimation(
                             child: FadeInAnimation(
                               child: SizedBox(
@@ -139,6 +167,7 @@ class EmployeesScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              if (screenType.isPhone) const SizedBox(height: 150),
             ],
           ),
         ),

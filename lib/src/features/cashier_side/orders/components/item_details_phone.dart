@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cortadoeg/src/features/cashier_side/orders/components/models.dart';
@@ -25,7 +27,8 @@ class ItemDetailsPhone extends StatelessWidget {
     return PopScope(
       canPop: true,
       onPopInvoked: (didPop) {
-        Get.delete<OrderItemController>();
+        Timer(const Duration(milliseconds: 500),
+            () => Get.delete<OrderItemController>());
       },
       child: Container(
         decoration: const BoxDecoration(
@@ -130,7 +133,9 @@ class ItemDetailsPhone extends StatelessWidget {
                                         initialItem: orderItem != null
                                             ? orderItem!.options[option.key]
                                             : null,
-                                        items: option.value,
+                                        items: option.value
+                                            .map((optionVal) => optionVal.name)
+                                            .toList(),
                                         onChanged: (value) {
                                           controller
                                                   .selectedOptions[option.key] =

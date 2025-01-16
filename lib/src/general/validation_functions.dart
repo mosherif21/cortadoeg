@@ -39,6 +39,31 @@ String? validateNumbersOnly(String? value) {
   return null;
 }
 
+String? validateNumberIsDouble(String? value) {
+  if (value == null || value.isEmpty) {
+    return 'textEmpty'.tr;
+  }
+
+  final doubleValue = double.tryParse(value);
+  if (doubleValue == null) {
+    return 'invalidDouble'.tr;
+  }
+
+  return null;
+}
+
+String? validateNumberIsInt(String? value) {
+  if (value == null || value.isEmpty) {
+    return 'textEmpty'.tr;
+  }
+
+  final intValue = int.tryParse(value);
+  if (intValue == null) {
+    return 'invalidInt'.tr;
+  }
+  return null;
+}
+
 String? numberNotEmpty(String? value) {
   if (value == null || value.isEmpty) {
     return 'textEmpty'.tr;

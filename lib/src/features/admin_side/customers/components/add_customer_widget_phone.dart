@@ -196,6 +196,7 @@ class AdminAddCustomerWidgetPhone extends StatelessWidget {
           const SizedBox(height: 10),
           SizedBox(
             height: 50,
+            width: double.maxFinite,
             child: ElevatedButton(
               onPressed: () => onPress(),
               style: ElevatedButton.styleFrom(

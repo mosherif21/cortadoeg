@@ -288,12 +288,27 @@ Future<FunctionStatus> chargeOrderPrinter(
       .loadString('packages/flutter_esc_pos_utils/resources/capabilities.json');
   final logoBytes = data.buffer.asUint8List();
   final ReceivePort receivePort = ReceivePort();
+  final receiptOrderItems = order.items
+      .map((item) => {
+            'name': item.name,
+            'qty': item.quantity,
+            'price': item.price,
+          })
+      .toList();
   await Isolate.spawn(chargeOrderIsolate, {
     'sendPort': receivePort.sendPort,
     'orderValue': order,
     'capabilitiesContent': capabilitiesContent,
     'logoBytes': logoBytes,
     'openDrawer': openDrawer,
+    'receiptOrderItems': receiptOrderItems,
+    'orderNumber': order.orderNumber,
+    'employeeName': order.employeeName,
+    'orderId': order.orderId,
+    'discountAmount': order.discountAmount,
+    'subtotalAmount': order.subtotalAmount,
+    'totalAmount': order.totalAmount,
+    'orderTime': order.timestamp.toDate(),
   });
   final resultFromIsolate = await receivePort.first;
   return (resultFromIsolate as String).compareTo('success') == 0
@@ -303,52 +318,67 @@ Future<FunctionStatus> chargeOrderPrinter(
 
 void chargeOrderIsolate(Map<String, dynamic> data) async {
   final SendPort sendPort = data['sendPort'];
-  final OrderModel order = data['orderValue'];
   final String capabilitiesContent = data['capabilitiesContent'];
   final Uint8List logoBytes = data['logoBytes'];
   final bool openDrawer = data['openDrawer'];
+  final List<Map<String, dynamic>> receiptOrderItems =
+      data['receiptOrderItems'];
+  final int orderNumber = data['orderNumber'];
+  final String employeeName = data['employeeName'];
+  final String orderId = data['orderId'];
+  final double discountAmount = data['discountAmount'];
+  final double subtotalAmount = data['subtotalAmount'];
+  final double totalAmount = data['totalAmount'];
+  final DateTime orderTime = data['orderTime'];
   final resultStatus = await printReceipt(
-    order: order,
     logoBytes: logoBytes,
     capabilitiesContent: capabilitiesContent,
     openDrawer: openDrawer,
+    receiptOrderItems: receiptOrderItems,
+    orderNumber: orderNumber.toString(),
+    employeeName: employeeName,
+    orderId: orderId,
+    discountAmount: discountAmount,
+    subtotalAmount: subtotalAmount,
+    totalAmount: totalAmount,
+    orderTime: orderTime,
   );
   sendPort.send(resultStatus == FunctionStatus.success ? 'success' : 'failure');
 }
 
 Future<FunctionStatus> printReceipt({
-  required OrderModel order,
+  required List<Map<String, dynamic>> receiptOrderItems,
+  required String orderNumber,
+  required String employeeName,
+  required String orderId,
+  required double discountAmount,
+  required double subtotalAmount,
+  required double totalAmount,
+  required DateTime orderTime,
   required String capabilitiesContent,
   required Uint8List logoBytes,
   required bool openDrawer,
 }) async {
   try {
-    final receiptOrderItems = order.items
-        .map((item) => {
-              'name': item.name,
-              'qty': item.quantity,
-              'price': item.price,
-            })
-        .toList();
     final receiptBytes = await generateReceiptBytes(
       cafeName: 'Cortado Egypt - Louran Branch',
       slogan: 'Fix What Others Have Ruined',
       address: '50 Al Akbal Street, Louran, Alexandria EG',
       phone: '01111241552',
       website: 'www.cortadoeg.com',
-      orderNumber: order.orderNumber.toString(),
+      orderNumber: orderNumber,
       printedAt: DateTime.now(),
-      orderTime: order.timestamp.toDate(),
-      creator: order.employeeName,
+      orderTime: orderTime,
+      creator: employeeName,
       orderItems: receiptOrderItems,
-      discount: order.discountAmount,
-      subtotal: order.subtotalAmount,
-      total: order.totalAmount,
+      discount: discountAmount,
+      subtotal: subtotalAmount,
+      total: totalAmount,
       qrData: 'https://www.cortadoeg.com',
       logoBytes: logoBytes,
       capabilitiesContent: capabilitiesContent,
       openDrawer: openDrawer,
-      orderId: order.orderId,
+      orderId: orderId,
       taxId: '648-394-425',
     );
     final printer = PrinterNetworkManager('192.168.1.8');

@@ -54,6 +54,24 @@ class OrderItemController extends GetxController {
   void onAddTap() {
     final selectedSizeIndex = itemSizesStringList.indexOf(selectedSizeString!);
     final selectedSize = itemModel.sizes[selectedSizeIndex];
+    final List<OptionValue> selectedOptionsRecipes = <OptionValue>[];
+
+    for (var entry in selectedOptions.entries) {
+      String selectedOptionKey = entry.key;
+      String selectedOptionValue = entry.value;
+
+      if (itemModel.options.containsKey(selectedOptionKey)) {
+        List<OptionValue> optionValues = itemModel.options[selectedOptionKey]!;
+
+        OptionValue? selectedOptionValueObject = optionValues.firstWhere(
+          (option) => option.name == selectedOptionValue,
+          orElse: () => OptionValue(name: '', recipe: <RecipeItem>[].obs),
+        );
+
+        selectedOptionsRecipes.add(selectedOptionValueObject);
+      }
+    }
+
     final orderItem = OrderItemModel(
       note: notesTextController.text.trim(),
       itemImageUrl: itemModel.imageUrl,
@@ -65,8 +83,27 @@ class OrderItemController extends GetxController {
       price: selectedSize.price,
       orderItemId: Timestamp.now().seconds.toString(),
       itemId: itemModel.itemId,
+      selectedSize: selectedSize,
+      selectedOptions: selectedOptionsRecipes,
+      costPrice: calculateOrderItemCostPrice(
+          selectedSize.costPrice, selectedOptionsRecipes),
     );
     Get.back(result: orderItem);
+  }
+
+  double calculateOrderItemCostPrice(
+    double sizePrice,
+    List<OptionValue> selectedOptions,
+  ) {
+    double totalCost = sizePrice;
+    for (var option in selectedOptions) {
+      for (var recipeItem in option.recipe) {
+        totalCost +=
+            (recipeItem.cost / recipeItem.costQuantity) * recipeItem.quantity;
+      }
+    }
+
+    return totalCost;
   }
 
   @override

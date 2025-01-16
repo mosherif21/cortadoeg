@@ -203,22 +203,24 @@ class AdminMainScreenController extends GetxController {
   String getPageTitle(int navBarIndex) {
     switch (navBarIndex) {
       case 0:
-        return 'dashboard'.tr;
-      case 1:
         return 'reports'.tr;
-      case 2:
+      case 1:
         return 'custodyShifts'.tr;
+      case 2:
+        return 'tables'.tr;
       case 3:
         return 'menuItems'.tr;
       case 4:
         return 'categories'.tr;
       case 5:
-        return 'products'.tr;
+        return 'inventory'.tr;
       case 6:
-        return 'employees'.tr;
-      case 7:
         return 'customers'.tr;
+      case 7:
+        return 'employees'.tr;
       case 8:
+        return 'passcodes'.tr;
+      case 9:
         return 'account'.tr;
       default:
         return 'reports'.tr;

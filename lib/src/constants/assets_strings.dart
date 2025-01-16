@@ -21,6 +21,7 @@ const String kFemaleProfileImage =
 //--Lottie assets
 const kNoInternetSwitchAnim = "assets/lottie_animations/noInternetAnim.json";
 const kNoOrdersAnim = "assets/lottie_animations/noOrdersAnim.json";
+const kEmptyCoffeeCupAnim = "assets/lottie_animations/empty_coffee_cup.json";
 const kNoCustomersAnim = "assets/lottie_animations/noCustomersAnim.json";
 const kChooseCustomerAnim = "assets/lottie_animations/chooseCustomerAnim.json";
 const kEmptyCartAnim = "assets/lottie_animations/empty_cart.json";

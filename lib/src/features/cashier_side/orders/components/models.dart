@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cortadoeg/src/features/admin_side/inventory/components/models.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get_rx/src/rx_types/rx_types.dart';
 
 import '../../../../constants/enums.dart';
 
@@ -131,6 +133,10 @@ class OrderItemModel {
   final String sugarLevel;
   final String note;
   final double price;
+  double costPrice;
+
+  final ItemSizeModel selectedSize;
+  final List<OptionValue> selectedOptions;
 
   OrderItemModel({
     required this.orderItemId,
@@ -143,6 +149,9 @@ class OrderItemModel {
     required this.note,
     this.itemImageUrl,
     required this.price,
+    required this.costPrice,
+    required this.selectedSize,
+    this.selectedOptions = const [],
   });
 
   Map<String, dynamic> toFirestore() {
@@ -157,10 +166,23 @@ class OrderItemModel {
       'sugarLevel': sugarLevel,
       'note': note,
       'price': price,
+      'costPrice': costPrice,
+      'selectedSize': selectedSize.toFirestore(),
+      'selectedOptions':
+          selectedOptions.map((option) => option.toFirestore()).toList(),
     };
   }
 
   factory OrderItemModel.fromFirestore(Map<String, dynamic> map) {
+    ItemSizeModel selectedSize =
+        ItemSizeModel.fromFirestore(map['selectedSize']);
+    List<OptionValue> selectedOptions = map['selectedOptions'] != null
+        ? (map['selectedOptions'] as List<dynamic>)
+            .map((option) =>
+                OptionValue.fromFirestore(option as Map<String, dynamic>))
+            .toList()
+        : [];
+
     return OrderItemModel(
       orderItemId: map['orderItemId'],
       itemId: map['itemId'],
@@ -168,10 +190,13 @@ class OrderItemModel {
       name: map['name'],
       size: map['size'],
       quantity: map['quantity'],
-      options: Map<String, String>.from(map['options']),
+      options: Map<String, String>.from(map['options'] ?? {}),
       sugarLevel: map['sugarLevel'],
       note: map['note'],
       price: map['price'].toDouble(),
+      costPrice: map['costPrice'].toDouble(),
+      selectedSize: selectedSize,
+      selectedOptions: selectedOptions,
     );
   }
 }
@@ -212,14 +237,13 @@ class CustomerModel {
 }
 
 class ItemModel {
-  final String itemId;
+  String itemId;
   final String name;
   final String description;
   final String? imageUrl;
   final String categoryId;
   final List<ItemSizeModel> sizes;
-  final List<String> ingredientIds;
-  final Map<String, List<String>> options;
+  final Map<String, List<OptionValue>> options;
   final List<String> sugarLevels;
 
   ItemModel({
@@ -229,7 +253,6 @@ class ItemModel {
     required this.description,
     this.imageUrl,
     this.sizes = const [],
-    this.ingredientIds = const [],
     this.options = const {},
     this.sugarLevels = const [],
   });
@@ -241,16 +264,18 @@ class ItemModel {
       categoryId: data['categoryId'] ?? '',
       imageUrl: data['imageUrl'],
       description: data['description'] ?? '',
-      sizes: (data['sizes'] as List<dynamic>?)
-              ?.map((size) => ItemSizeModel.fromFirestore(size))
-              .toList() ??
-          [],
-      ingredientIds: List<String>.from(data['ingredientIds'] ?? []),
+      sizes: (data['sizes'] as List<dynamic>? ?? [])
+          .map((size) =>
+              ItemSizeModel.fromFirestore(size as Map<String, dynamic>))
+          .toList(),
       options: data['options'] != null
           ? (data['options'] as Map<String, dynamic>).map(
               (key, value) => MapEntry(
                 key,
-                List<String>.from(value as List),
+                (value as List<dynamic>)
+                    .map((option) => OptionValue.fromFirestore(
+                        option as Map<String, dynamic>))
+                    .toList(),
               ),
             )
           : {},
@@ -261,33 +286,110 @@ class ItemModel {
   Map<String, dynamic> toFirestore() {
     return {
       'name': name,
+      'name_lowercase': name.toLowerCase(),
       'imageUrl': imageUrl,
       'categoryId': categoryId,
       'sizes': sizes.map((size) => size.toFirestore()).toList(),
-      'ingredientIds': ingredientIds,
-      'options': options,
+      'options': options.map((key, value) =>
+          MapEntry(key, value.map((option) => option.toFirestore()).toList())),
       'sugarLevels': sugarLevels,
       'description': description,
     };
   }
 }
 
+class OptionValue {
+  String name;
+  RxList<RecipeItem> recipe;
+
+  OptionValue({
+    required this.name,
+    required this.recipe,
+  });
+
+  factory OptionValue.fromFirestore(Map<String, dynamic> data) {
+    return OptionValue(
+      name: data['value'] ?? '',
+      recipe: (data['recipe'] as List<dynamic>? ?? [])
+          .map((item) => RecipeItem.fromFirestore(item as Map<String, dynamic>))
+          .toList()
+          .obs,
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'value': name,
+      'recipe': recipe.map((item) => item.toFirestore()).toList(),
+    };
+  }
+}
+
+class RecipeItem {
+  final String productId;
+  final String productName;
+  int quantity;
+  final double cost;
+  final int costQuantity;
+  final MeasuringUnit measuringUnit;
+
+  RecipeItem({
+    required this.productId,
+    required this.productName,
+    required this.quantity,
+    required this.measuringUnit,
+    required this.cost,
+    required this.costQuantity,
+  });
+
+  factory RecipeItem.fromFirestore(Map<String, dynamic> data) {
+    return RecipeItem(
+      productId: data['productId'] ?? '',
+      productName: data['productName'] ?? '',
+      quantity: (data['quantity'] ?? 0.0).toInt(),
+      cost: (data['cost'] ?? 0.0).toDouble(),
+      costQuantity: (data['costQuantity'] ?? 0.0).toInt(),
+      measuringUnit: MeasuringUnit.values.firstWhere(
+        (unit) => unit.name == (data['measuringUnit'] ?? 'gm'),
+        orElse: () => MeasuringUnit.gm,
+      ),
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'productId': productId,
+      'productName': productName,
+      'quantity': quantity,
+      'cost': cost,
+      'costQuantity': costQuantity,
+      'measuringUnit': measuringUnit.name,
+    };
+  }
+}
+
 class ItemSizeModel {
-  final String name;
-  final double price;
-  final double costPrice;
+  String name;
+  double price;
+  double costPrice;
+  final RxList<RecipeItem> recipe;
 
   ItemSizeModel({
     required this.name,
     required this.price,
     required this.costPrice,
+    required this.recipe,
   });
 
   factory ItemSizeModel.fromFirestore(Map<String, dynamic> data) {
     return ItemSizeModel(
       name: data['name'] ?? '',
-      price: data['price'] ?? 0.0,
-      costPrice: data['costPrice'] ?? 0.0,
+      price: (data['price'] ?? 0.0).toDouble(),
+      costPrice: (data['costPrice'] ?? 0.0).toDouble(),
+      recipe: (data['recipe'] as List<dynamic>? ?? [])
+          .map((item) => RecipeItem.fromFirestore(item as Map<String, dynamic>))
+          .toList()
+          .obs,
     );
   }
 
@@ -296,6 +398,7 @@ class ItemSizeModel {
       'name': name,
       'price': price,
       'costPrice': costPrice,
+      'recipe': recipe.map((item) => item.toFirestore()).toList(),
     };
   }
 }

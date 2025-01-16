@@ -35,7 +35,7 @@ showRegularBottomSheet(Widget child) {
 }
 
 class RegularBottomSheet {
-  static void showRegularBottomSheet(Widget child) async {
+  static Future<void> showRegularBottomSheet(Widget child) async {
     await Get.bottomSheet(
       Wrap(
         children: [
