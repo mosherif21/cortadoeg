@@ -48,7 +48,7 @@ void showLoadingScreen() {
       content: PopScope(
         canPop: false,
         child: Lottie.asset(
-          kLoadingWalkingCoffeeAnim,
+          kLoadingCoffeeAnim,
           height: height * 0.3,
         ),
       ),

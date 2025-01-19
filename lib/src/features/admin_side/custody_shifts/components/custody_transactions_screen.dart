@@ -86,7 +86,7 @@ class CustodyShiftTransactionsScreen extends StatelessWidget {
                       sortAscending: controller.sortAscending.value,
                       onSelectAll: (_) {},
                       wrapInCard: true,
-                      minWidth: 1460,
+                      minWidth: screenType.isPhone ? 1160 : 1460,
                       headingRowColor:
                           const WidgetStatePropertyAll(Colors.white),
                       empty: Padding(
