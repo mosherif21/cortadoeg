@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -12,90 +13,67 @@ import '../../../cashier_side/main_screen/components/models.dart';
 class CustodyTransactionsController extends GetxController {
   CustodyTransactionsController({required this.custodyReportId});
   final String custodyReportId;
-  final RxBool isLoading = false.obs;
   final int rowsPerPage = PaginatedDataTable.defaultRowsPerPage;
-  final RxInt sortColumnIndex = 0.obs;
-  final RxBool sortAscending = true.obs;
-  final RxList<CustodyTransaction> data = <CustodyTransaction>[].obs;
-  final RxInt totalItems = 0.obs;
-  final RxInt initialRow = 0.obs;
+  final List<CustodyTransaction> transactions = <CustodyTransaction>[];
+  int totalTransactionsCount = 0;
   final RxInt currentSelectedStatus = 0.obs;
-
+  DocumentSnapshot? lastDocument;
+  late final GlobalKey<AsyncPaginatedDataTable2State> tableKey;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  int currentStartIndex = 0;
   final RefreshController transactionsRefreshController =
       RefreshController(initialRefresh: false);
   @override
   void onInit() {
+    tableKey = GlobalKey<AsyncPaginatedDataTable2State>();
     super.onInit();
-    fetchData(start: currentStartIndex);
   }
 
-  void resetTableValues() {
-    data.clear();
-    currentStartIndex = 0;
-  }
-
-  Future<void> fetchData({
-    int start = 0,
-    int limit = 10,
-    bool ascending = false,
-  }) async {
-    if (isLoading.value) return;
-
-    if (start == currentStartIndex && data.isNotEmpty) return;
-
+  Future<void> fetchData({int start = 0, int limit = 10}) async {
     try {
-      isLoading.value = true;
-      currentStartIndex = start;
-
+      if (kDebugMode) {
+        AppInit.logger.i('Fetching custody transactions');
+      }
       Query query = _firestore
           .collection('custody_shifts')
           .doc(custodyReportId)
-          .collection('transactions');
+          .collection('transactions')
+          .orderBy('timestamp', descending: true);
 
-      if (start != 0) {
-        query = query.startAfter([data[start].timestamp]);
+      if (start == 0) {
+        final countSnapshot = await query.count().get();
+        totalTransactionsCount = countSnapshot.count ?? 0;
+        lastDocument = null;
+      }
+      if (start != 0 && lastDocument != null) {
+        query = query.startAfterDocument(lastDocument!);
       }
       final querySnapshot = await query.limit(limit).get();
-
-      data.value = querySnapshot.docs
-          .map((doc) => CustodyTransaction.fromFirestore(doc))
-          .toList();
-
-      totalItems.value = querySnapshot.size;
+      if (querySnapshot.docs.isNotEmpty) {
+        lastDocument = querySnapshot.docs.last;
+        if (start == 0) {
+          transactions.assignAll(querySnapshot.docs
+              .map((doc) => CustodyTransaction.fromFirestore(doc))
+              .toList());
+        } else {
+          transactions.addAll(querySnapshot.docs
+              .map((doc) => CustodyTransaction.fromFirestore(doc))
+              .toList());
+        }
+      } else if (start == 0) {
+        transactions.clear();
+      }
     } catch (e) {
       if (kDebugMode) {
         AppInit.logger.e(e.toString());
       }
-    } finally {
-      isLoading.value = false;
     }
   }
 
-  void onTransactionsRefresh() {
-    resetTableValues();
-    fetchData(start: currentStartIndex);
+  void onTransactionsRefresh() async {
+    transactions.clear();
+    lastDocument = null;
+    totalTransactionsCount = 0;
+    tableKey.currentState!.pageTo(0);
     transactionsRefreshController.refreshCompleted();
   }
 }
-
-//   Future<List<CustodyTransaction>?> fetchTransactions(String reportId) async {
-//     try {
-//       final querySnapshot = await _firestore
-//           .collection('custody_reports')
-//           .doc(reportId)
-//           .collection('transactions')
-//           .get();
-//
-//       return querySnapshot.docs
-//           .map((doc) => CustodyTransaction.fromFirestore(doc))
-//           .toList();
-//     } catch (e) {
-//       Get.snackbar('Error', 'Failed to fetch transactions: $e');
-//  if (kDebugMode) {
-//         AppInit.logger.e(e.toString());
-//       }
-//     }
-//     return null;
-//   }

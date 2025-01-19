@@ -40,147 +40,131 @@ class CustodyShiftTransactionsScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(10),
-        child: Obx(
-          () => controller.isLoading.value
-              ? Center(
-                  child: Lottie.asset(
-                    kLoadingWalkingCoffeeAnim,
-                    height: screenHeight * 0.5,
-                  ),
-                )
-              : RefreshConfiguration(
-                  headerTriggerDistance: 60,
-                  maxOverScrollExtent: 20,
-                  enableLoadingWhenFailed: true,
-                  hideFooterWhenNotFull: true,
-                  child: SmartRefresher(
-                    enablePullDown: true,
-                    header: ClassicHeader(
-                      completeDuration: const Duration(milliseconds: 0),
-                      releaseText: 'releaseToRefresh'.tr,
-                      refreshingText: 'refreshing'.tr,
-                      idleText: 'pullToRefresh'.tr,
-                      completeText: 'refreshCompleted'.tr,
-                      iconPos: isLangEnglish()
-                          ? IconPosition.left
-                          : IconPosition.right,
-                      textStyle: const TextStyle(color: Colors.grey),
-                      failedIcon: const Icon(Icons.error, color: Colors.grey),
-                      completeIcon: const Icon(Icons.done, color: Colors.grey),
-                      idleIcon:
-                          const Icon(Icons.arrow_downward, color: Colors.grey),
-                      releaseIcon:
-                          const Icon(Icons.refresh, color: Colors.grey),
+        child: RefreshConfiguration(
+          headerTriggerDistance: 60,
+          maxOverScrollExtent: 20,
+          enableLoadingWhenFailed: true,
+          hideFooterWhenNotFull: true,
+          child: SmartRefresher(
+            enablePullDown: true,
+            header: ClassicHeader(
+              completeDuration: const Duration(milliseconds: 0),
+              releaseText: 'releaseToRefresh'.tr,
+              refreshingText: 'refreshing'.tr,
+              idleText: 'pullToRefresh'.tr,
+              completeText: 'refreshCompleted'.tr,
+              iconPos: isLangEnglish() ? IconPosition.left : IconPosition.right,
+              textStyle: const TextStyle(color: Colors.grey),
+              failedIcon: const Icon(Icons.error, color: Colors.grey),
+              completeIcon: const Icon(Icons.done, color: Colors.grey),
+              idleIcon: const Icon(Icons.arrow_downward, color: Colors.grey),
+              releaseIcon: const Icon(Icons.refresh, color: Colors.grey),
+            ),
+            controller: controller.transactionsRefreshController,
+            onRefresh: () => controller.onTransactionsRefresh(),
+            child: AsyncPaginatedDataTable2(
+              key: controller.tableKey,
+              rowsPerPage: controller.rowsPerPage,
+              showCheckboxColumn: false,
+              isVerticalScrollBarVisible: true,
+              isHorizontalScrollBarVisible: true,
+              initialFirstRowIndex: 0,
+              onSelectAll: (_) {},
+              wrapInCard: true,
+              minWidth: screenType.isPhone ? 1160 : 1460,
+              headingRowColor: const WidgetStatePropertyAll(Colors.white),
+              empty: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Lottie.asset(
+                      kEmptyCoffeeCupAnim,
+                      fit: BoxFit.contain,
+                      height: screenHeight * 0.25,
                     ),
-                    controller: controller.transactionsRefreshController,
-                    onRefresh: () => controller.onTransactionsRefresh(),
-                    child: AsyncPaginatedDataTable2(
-                      rowsPerPage: controller.rowsPerPage,
-                      onPageChanged: (startRowIndex) {
-                        controller.fetchData(start: startRowIndex);
-                      },
-                      showCheckboxColumn: false,
-                      isVerticalScrollBarVisible: true,
-                      isHorizontalScrollBarVisible: true,
-                      sortColumnIndex: controller.sortColumnIndex.value,
-                      sortAscending: controller.sortAscending.value,
-                      onSelectAll: (_) {},
-                      wrapInCard: true,
-                      minWidth: screenType.isPhone ? 1160 : 1460,
-                      headingRowColor:
-                          const WidgetStatePropertyAll(Colors.white),
-                      empty: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Lottie.asset(
-                              kEmptyCoffeeCupAnim,
-                              fit: BoxFit.contain,
-                              height: screenHeight * 0.3,
-                            ),
-                            AutoSizeText(
-                              'noCustodyTransactionsFoundTitle'.tr,
-                              style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 30,
-                                  fontWeight: FontWeight.w600),
-                              maxLines: 1,
-                            ),
-                            const SizedBox(height: 5.0),
-                          ],
-                        ),
-                      ),
-                      columns: [
-                        DataColumn2(
-                          label: alignHorizontalWidget(
-                            child: Text(
-                              'time'.tr,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                          tooltip: 'time'.tr,
-                          fixedWidth: 200,
-                          size: ColumnSize.L,
-                        ),
-                        DataColumn2(
-                          label: alignHorizontalWidget(
-                            child: Text(
-                              'transactionType'.tr,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                          tooltip: 'transactionType'.tr,
-                          fixedWidth: 200,
-                          size: ColumnSize.L,
-                        ),
-                        DataColumn2(
-                          label: Align(
-                            alignment: isLangEnglish()
-                                ? Alignment.centerLeft
-                                : Alignment.centerRight,
-                            child: Text(
-                              'amount'.tr,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                          tooltip: 'amount'.tr,
-                          numeric: true,
-                          fixedWidth: 200,
-                          size: ColumnSize.L,
-                        ),
-                        DataColumn2(
-                          label: Align(
-                            alignment: isLangEnglish()
-                                ? Alignment.centerLeft
-                                : Alignment.centerRight,
-                            child: Text(
-                              'description'.tr,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                          tooltip: 'description'.tr,
-                          numeric: true,
-                          fixedWidth: 800,
-                          size: ColumnSize.L,
-                        ),
-                      ],
-                      source: _CustodyDataSource(controller),
+                    AutoSizeText(
+                      'noCustodyTransactionsFoundTitle'.tr,
+                      style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 26,
+                          fontWeight: FontWeight.w600),
+                      maxLines: 1,
                     ),
-                  ),
+                    const SizedBox(height: 5.0),
+                  ],
                 ),
+              ),
+              loading: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Lottie.asset(
+                  kLoadingWalkingCoffeeAnim,
+                  height: screenHeight * 0.5,
+                ),
+              ),
+              columns: [
+                DataColumn2(
+                  label: alignHorizontalWidget(
+                    child: Text(
+                      'time'.tr,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  tooltip: 'time'.tr,
+                  fixedWidth: 200,
+                  size: ColumnSize.L,
+                ),
+                DataColumn2(
+                  label: alignHorizontalWidget(
+                    child: Text(
+                      'transactionType'.tr,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  tooltip: 'transactionType'.tr,
+                  fixedWidth: 200,
+                  size: ColumnSize.L,
+                ),
+                DataColumn2(
+                  label: alignHorizontalWidget(
+                    child: Text(
+                      'amount'.tr,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  tooltip: 'amount'.tr,
+                  numeric: true,
+                  fixedWidth: 200,
+                  size: ColumnSize.L,
+                ),
+                DataColumn2(
+                  label: alignHorizontalWidget(
+                    child: Text(
+                      'description'.tr,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  tooltip: 'description'.tr,
+                  numeric: true,
+                  fixedWidth: 500,
+                  size: ColumnSize.L,
+                ),
+              ],
+              source: _CustodyDataSource(controller),
+            ),
+          ),
         ),
       ),
     );
@@ -193,17 +177,15 @@ class _CustodyDataSource extends AsyncDataTableSource {
   _CustodyDataSource(this.controller);
   @override
   Future<AsyncRowsResponse> getRows(int startIndex, int count) async {
-    if (startIndex >= controller.data.length) {
-      return AsyncRowsResponse(0, []);
+    if (startIndex + count > controller.transactions.length) {
+      await controller.fetchData(start: startIndex, limit: count);
     }
 
     final rows = <DataRow>[];
-
     for (int i = startIndex; i < startIndex + count; i++) {
-      if (i >= controller.data.length) break;
+      if (i >= controller.transactions.length) break;
 
-      final transaction = controller.data[i];
-
+      final transaction = controller.transactions[i];
       rows.add(
         DataRow(
           cells: [
@@ -240,19 +222,18 @@ class _CustodyDataSource extends AsyncDataTableSource {
               ),
             )),
           ],
-          color: const WidgetStatePropertyAll(Colors.white),
         ),
       );
     }
 
-    return AsyncRowsResponse(controller.totalItems.value, rows);
+    return AsyncRowsResponse(controller.totalTransactionsCount, rows);
   }
 
   @override
   bool get isRowCountApproximate => false;
 
   @override
-  int get rowCount => controller.data.length;
+  int get rowCount => controller.totalTransactionsCount;
 
   @override
   int get selectedRowCount => 0;

@@ -629,7 +629,7 @@ class MainScreenController extends GetxController {
         final difference = closingDrawerAmount - expectedAmount;
         await custodyDocRef.update({
           'isActive': false,
-          'closingTime': Timestamp.now(),
+          'closingTime': FieldValue.serverTimestamp(),
           'closing_amount': closingDrawerAmount,
           'expected_drawer_money': expectedAmount,
           'difference': difference,

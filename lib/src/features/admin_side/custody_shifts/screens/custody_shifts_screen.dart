@@ -1,5 +1,4 @@
 import 'package:anim_search_app_bar/anim_search_app_bar.dart';
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
@@ -198,208 +197,177 @@ class CustodyShiftsScreen extends StatelessWidget {
               appBar: const SizedBox.shrink(),
             ),
             const SizedBox(height: 10),
-            Obx(
-              () => controller.isLoading.value
-                  ? Lottie.asset(
-                      kLoadingWalkingCoffeeAnim,
-                      height: screenHeight * 0.3,
-                    )
-                  : Expanded(
-                      child: RefreshConfiguration(
-                        headerTriggerDistance: 60,
-                        maxOverScrollExtent: 20,
-                        enableLoadingWhenFailed: true,
-                        hideFooterWhenNotFull: true,
-                        child: SmartRefresher(
-                          enablePullDown: true,
-                          header: ClassicHeader(
-                            completeDuration: const Duration(milliseconds: 0),
-                            releaseText: 'releaseToRefresh'.tr,
-                            refreshingText: 'refreshing'.tr,
-                            idleText: 'pullToRefresh'.tr,
-                            completeText: 'refreshCompleted'.tr,
-                            iconPos: isLangEnglish()
-                                ? IconPosition.left
-                                : IconPosition.right,
-                            textStyle: const TextStyle(color: Colors.grey),
-                            failedIcon:
-                                const Icon(Icons.error, color: Colors.grey),
-                            completeIcon:
-                                const Icon(Icons.done, color: Colors.grey),
-                            idleIcon: const Icon(Icons.arrow_downward,
-                                color: Colors.grey),
-                            releaseIcon:
-                                const Icon(Icons.refresh, color: Colors.grey),
-                          ),
-                          controller: controller.shiftsRefreshController,
-                          onRefresh: () => controller.onShiftsRefresh(),
-                          child: AsyncPaginatedDataTable2(
-                            rowsPerPage: controller.rowsPerPage,
-                            onPageChanged: (startRowIndex) {
-                              controller.fetchData(start: startRowIndex);
-                            },
-                            showCheckboxColumn: false,
-                            isVerticalScrollBarVisible: true,
-                            isHorizontalScrollBarVisible: true,
-                            sortColumnIndex: controller.sortColumnIndex.value,
-                            sortAscending: controller.sortAscending.value,
-                            onSelectAll: (_) {},
-                            wrapInCard: true,
-                            minWidth: 2500,
-                            headingRowColor:
-                                const WidgetStatePropertyAll(Colors.white),
-                            empty: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Lottie.asset(
-                                    kEmptyCoffeeCupAnim,
-                                    fit: BoxFit.contain,
-                                    height: screenHeight * 0.3,
-                                  ),
-                                  AutoSizeText(
-                                    'noCustodyShiftsFoundTitle'.tr,
-                                    style: const TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 30,
-                                        fontWeight: FontWeight.w600),
-                                    maxLines: 1,
-                                  ),
-                                  const SizedBox(height: 5.0),
-                                ],
-                              ),
-                            ),
-                            columns: [
-                              DataColumn2(
-                                label: alignHorizontalWidget(
-                                    child: Text('openingTime'.tr,
-                                        style: textStyle)),
-                                tooltip: 'openingTime'.tr,
-                                fixedWidth: 200,
-                                size: ColumnSize.L,
-                                onSort: (index, ascending) =>
-                                    controller.sortData(index, ascending),
-                              ),
-                              DataColumn2(
-                                label: alignHorizontalWidget(
-                                    child: Text('closingTime'.tr,
-                                        style: textStyle)),
-                                tooltip: 'closingTime'.tr,
-                                fixedWidth: 200,
-                                size: ColumnSize.L,
-                                onSort: (index, ascending) =>
-                                    controller.sortData(index, ascending),
-                              ),
-                              DataColumn2(
-                                label: alignHorizontalWidget(
-                                    child: Text('openingAmount'.tr,
-                                        style: textStyle)),
-                                tooltip: 'openingAmount'.tr,
-                                numeric: true,
-                                fixedWidth: 200,
-                                size: ColumnSize.L,
-                                onSort: (index, ascending) =>
-                                    controller.sortData(index, ascending),
-                              ),
-                              DataColumn2(
-                                label: alignHorizontalWidget(
-                                  child: Text('cashPaymentsNet'.tr,
-                                      style: textStyle),
-                                ),
-                                tooltip: 'cashPaymentsNet'.tr,
-                                numeric: true,
-                                fixedWidth: 220,
-                                size: ColumnSize.L,
-                                onSort: (index, ascending) =>
-                                    controller.sortData(index, ascending),
-                              ),
-                              DataColumn2(
-                                label: alignHorizontalWidget(
-                                    child: Text('totalPayIns'.tr,
-                                        style: textStyle)),
-                                tooltip: 'totalPayIns'.tr,
-                                numeric: true,
-                                fixedWidth: 180,
-                                size: ColumnSize.L,
-                                onSort: (index, ascending) =>
-                                    controller.sortData(index, ascending),
-                              ),
-                              DataColumn2(
-                                label: alignHorizontalWidget(
-                                    child: Text('totalPayOuts'.tr,
-                                        style: textStyle)),
-                                tooltip: 'totalPayOuts'.tr,
-                                numeric: true,
-                                fixedWidth: 180,
-                                size: ColumnSize.L,
-                                onSort: (index, ascending) =>
-                                    controller.sortData(index, ascending),
-                              ),
-                              DataColumn2(
-                                label: alignHorizontalWidget(
-                                    child:
-                                        Text('cashDrop'.tr, style: textStyle)),
-                                tooltip: 'cashDrop'.tr,
-                                fixedWidth: 160,
-                                size: ColumnSize.L,
-                                numeric: true,
-                                onSort: (index, ascending) =>
-                                    controller.sortData(index, ascending),
-                              ),
-                              DataColumn2(
-                                label: alignHorizontalWidget(
-                                    child: Text('closingAmount'.tr,
-                                        style: textStyle)),
-                                tooltip: 'closingAmount'.tr,
-                                numeric: true,
-                                fixedWidth: 200,
-                                size: ColumnSize.L,
-                                onSort: (index, ascending) =>
-                                    controller.sortData(index, ascending),
-                              ),
-                              DataColumn2(
-                                label: alignHorizontalWidget(
-                                  child: Text('expectedDrawerMoney'.tr,
-                                      style: textStyle),
-                                ),
-                                tooltip: 'expectedDrawerMoney'.tr,
-                                numeric: true,
-                                fixedWidth: 260,
-                                size: ColumnSize.L,
-                                onSort: (index, ascending) =>
-                                    controller.sortData(index, ascending),
-                              ),
-                              DataColumn2(
-                                label: alignHorizontalWidget(
-                                    child: Text('difference'.tr,
-                                        style: textStyle)),
-                                tooltip: 'difference'.tr,
-                                numeric: true,
-                                fixedWidth: 160,
-                                size: ColumnSize.L,
-                                onSort: (index, ascending) =>
-                                    controller.sortData(index, ascending),
-                              ),
-                              DataColumn2(
-                                label: alignHorizontalWidget(
-                                  child: Text('drawerOpenCount'.tr,
-                                      style: textStyle),
-                                ),
-                                tooltip: 'drawerOpenCount'.tr,
-                                numeric: true,
-                                fixedWidth: 200,
-                                size: ColumnSize.L,
-                                onSort: (index, ascending) =>
-                                    controller.sortData(index, ascending),
-                              ),
-                            ],
-                            source: _CustodyDataSource(
-                                controller, screenType.isPhone),
-                          ),
+            Expanded(
+              child: RefreshConfiguration(
+                headerTriggerDistance: 60,
+                maxOverScrollExtent: 20,
+                enableLoadingWhenFailed: true,
+                hideFooterWhenNotFull: true,
+                child: SmartRefresher(
+                  enablePullDown: true,
+                  header: ClassicHeader(
+                    completeDuration: const Duration(milliseconds: 0),
+                    releaseText: 'releaseToRefresh'.tr,
+                    refreshingText: 'refreshing'.tr,
+                    idleText: 'pullToRefresh'.tr,
+                    completeText: 'refreshCompleted'.tr,
+                    iconPos: isLangEnglish()
+                        ? IconPosition.left
+                        : IconPosition.right,
+                    textStyle: const TextStyle(color: Colors.grey),
+                    failedIcon: const Icon(Icons.error, color: Colors.grey),
+                    completeIcon: const Icon(Icons.done, color: Colors.grey),
+                    idleIcon:
+                        const Icon(Icons.arrow_downward, color: Colors.grey),
+                    releaseIcon: const Icon(Icons.refresh, color: Colors.grey),
+                  ),
+                  controller: controller.shiftsRefreshController,
+                  onRefresh: () => controller.onShiftsRefresh(),
+                  child: Obx(
+                    () => AsyncPaginatedDataTable2(
+                      key: controller.tableKey,
+                      rowsPerPage: controller.rowsPerPage,
+                      showCheckboxColumn: false,
+                      isVerticalScrollBarVisible: true,
+                      initialFirstRowIndex: 0,
+                      isHorizontalScrollBarVisible: true,
+                      sortColumnIndex: controller.sortColumnIndex.value,
+                      sortAscending: controller.sortAscending.value,
+                      onSelectAll: (_) {},
+                      wrapInCard: true,
+                      minWidth: 2500,
+                      headingRowColor:
+                          const WidgetStatePropertyAll(Colors.white),
+                      empty: const SizedBox.shrink(),
+                      loading: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Lottie.asset(
+                          kLoadingWalkingCoffeeAnim,
+                          height: screenHeight * 0.5,
                         ),
                       ),
+                      columns: [
+                        DataColumn2(
+                          label: alignHorizontalWidget(
+                              child: Text('openingTime'.tr, style: textStyle)),
+                          tooltip: 'openingTime'.tr,
+                          fixedWidth: 200,
+                          size: ColumnSize.L,
+                          onSort: (index, ascending) =>
+                              controller.sortData(index, ascending),
+                        ),
+                        DataColumn2(
+                          label: alignHorizontalWidget(
+                              child: Text('closingTime'.tr, style: textStyle)),
+                          tooltip: 'closingTime'.tr,
+                          fixedWidth: 220,
+                          size: ColumnSize.L,
+                          onSort: (index, ascending) =>
+                              controller.sortData(index, ascending),
+                        ),
+                        DataColumn2(
+                          label: alignHorizontalWidget(
+                              child:
+                                  Text('openingAmount'.tr, style: textStyle)),
+                          tooltip: 'openingAmount'.tr,
+                          numeric: true,
+                          fixedWidth: 200,
+                          size: ColumnSize.L,
+                          onSort: (index, ascending) =>
+                              controller.sortData(index, ascending),
+                        ),
+                        DataColumn2(
+                          label: alignHorizontalWidget(
+                            child: Text('cashPaymentsNet'.tr, style: textStyle),
+                          ),
+                          tooltip: 'cashPaymentsNet'.tr,
+                          numeric: true,
+                          fixedWidth: 220,
+                          size: ColumnSize.L,
+                          onSort: (index, ascending) =>
+                              controller.sortData(index, ascending),
+                        ),
+                        DataColumn2(
+                          label: alignHorizontalWidget(
+                              child: Text('totalPayIns'.tr, style: textStyle)),
+                          tooltip: 'totalPayIns'.tr,
+                          numeric: true,
+                          fixedWidth: 180,
+                          size: ColumnSize.L,
+                          onSort: (index, ascending) =>
+                              controller.sortData(index, ascending),
+                        ),
+                        DataColumn2(
+                          label: alignHorizontalWidget(
+                              child: Text('totalPayOuts'.tr, style: textStyle)),
+                          tooltip: 'totalPayOuts'.tr,
+                          numeric: true,
+                          fixedWidth: 180,
+                          size: ColumnSize.L,
+                          onSort: (index, ascending) =>
+                              controller.sortData(index, ascending),
+                        ),
+                        DataColumn2(
+                          label: alignHorizontalWidget(
+                              child: Text('cashDrop'.tr, style: textStyle)),
+                          tooltip: 'cashDrop'.tr,
+                          fixedWidth: 160,
+                          size: ColumnSize.L,
+                          numeric: true,
+                          onSort: (index, ascending) =>
+                              controller.sortData(index, ascending),
+                        ),
+                        DataColumn2(
+                          label: alignHorizontalWidget(
+                              child:
+                                  Text('closingAmount'.tr, style: textStyle)),
+                          tooltip: 'closingAmount'.tr,
+                          numeric: true,
+                          fixedWidth: 200,
+                          size: ColumnSize.L,
+                          onSort: (index, ascending) =>
+                              controller.sortData(index, ascending),
+                        ),
+                        DataColumn2(
+                          label: alignHorizontalWidget(
+                            child: Text('expectedDrawerMoney'.tr,
+                                style: textStyle),
+                          ),
+                          tooltip: 'expectedDrawerMoney'.tr,
+                          numeric: true,
+                          fixedWidth: 260,
+                          size: ColumnSize.L,
+                          onSort: (index, ascending) =>
+                              controller.sortData(index, ascending),
+                        ),
+                        DataColumn2(
+                          label: alignHorizontalWidget(
+                              child: Text('difference'.tr, style: textStyle)),
+                          tooltip: 'difference'.tr,
+                          numeric: true,
+                          fixedWidth: 160,
+                          size: ColumnSize.L,
+                          onSort: (index, ascending) =>
+                              controller.sortData(index, ascending),
+                        ),
+                        DataColumn2(
+                          label: alignHorizontalWidget(
+                            child: Text('drawerOpenCount'.tr, style: textStyle),
+                          ),
+                          tooltip: 'drawerOpenCount'.tr,
+                          numeric: true,
+                          fixedWidth: 200,
+                          size: ColumnSize.L,
+                          onSort: (index, ascending) =>
+                              controller.sortData(index, ascending),
+                        ),
+                      ],
+                      source:
+                          _CustodyDataSource(controller, screenType.isPhone),
                     ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -415,16 +383,15 @@ class _CustodyDataSource extends AsyncDataTableSource {
   @override
   Future<AsyncRowsResponse> getRows(int startIndex, int count) async {
     const textStyle = TextStyle(fontWeight: FontWeight.w500, fontSize: 14);
-    if (startIndex >= controller.data.length) {
-      return AsyncRowsResponse(0, []);
+    if (startIndex + count > controller.reports.length) {
+      await controller.fetchData(start: startIndex, limit: count);
     }
 
     final rows = <DataRow>[];
-
     for (int i = startIndex; i < startIndex + count; i++) {
-      if (i >= controller.data.length) break;
+      if (i >= controller.reports.length) break;
 
-      final custody = controller.data[i];
+      final custody = controller.reports[i];
 
       rows.add(
         DataRow(
@@ -449,7 +416,7 @@ class _CustodyDataSource extends AsyncDataTableSource {
                         ? 'active'.tr
                         : DateFormat('MMM dd, yyyy, hh:mm a',
                                 isLangEnglish() ? 'en_US' : 'ar_SA')
-                            .format(custody.openingTime.toDate()),
+                            .format(custody.closingTime.toDate()),
                     style: textStyle,
                   ),
                 )),
@@ -531,14 +498,14 @@ class _CustodyDataSource extends AsyncDataTableSource {
       );
     }
 
-    return AsyncRowsResponse(controller.totalItems.value, rows);
+    return AsyncRowsResponse(controller.totalTransactionsCount, rows);
   }
 
   @override
   bool get isRowCountApproximate => false;
 
   @override
-  int get rowCount => controller.data.length;
+  int get rowCount => controller.totalTransactionsCount;
 
   @override
   int get selectedRowCount => 0;

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -18,18 +19,15 @@ import '../components/custody_transactions_screen.dart';
 
 class CustodyReportsController extends GetxController {
   static CustodyReportsController get instance => Get.find();
-  final RxBool isLoading = false.obs;
   final int rowsPerPage = PaginatedDataTable.defaultRowsPerPage;
   final RxInt sortColumnIndex = 0.obs;
-  final RxBool sortAscending = true.obs;
-  final RxList<CustodyReport> data = <CustodyReport>[].obs;
-  final RxInt totalItems = 0.obs;
-  final RxInt initialRow = 0.obs;
+  final RxBool sortAscending = false.obs;
+  final RxList<CustodyReport> reports = <CustodyReport>[].obs;
+  int totalTransactionsCount = 0;
   final RxInt currentSelectedStatus = 0.obs;
-
+  late final GlobalKey<AsyncPaginatedDataTable2State> tableKey;
   int selectedSortColumnIndex = 0;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  int currentStartIndex = 0;
   Timer? _searchDebounce;
   String searchText = '';
   final RxMap<String, Map<String, DateTime>> dateRangeOptions =
@@ -39,9 +37,11 @@ class CustodyReportsController extends GetxController {
   final RxInt currentSelectedDate = 0.obs;
   final RefreshController shiftsRefreshController =
       RefreshController(initialRefresh: false);
+  DocumentSnapshot? lastDocument;
   @override
   void onInit() {
     super.onInit();
+    tableKey = GlobalKey<AsyncPaginatedDataTable2State>();
     final now = DateTime.now();
     dateFrom = DateTime(now.year, now.month, now.day);
     dateTo = DateTime(now.year, now.month, now.day, 23, 59, 59);
@@ -55,12 +55,14 @@ class CustodyReportsController extends GetxController {
   void updateNewDayDateFilters() {
     _initializeDateRangeOptions();
     resetTableValues();
-    fetchData(start: currentStartIndex);
+    //fetchData(start: currentStartIndex);
   }
 
   void resetTableValues() {
-    data.clear();
-    currentStartIndex = 0;
+    reports.clear();
+    lastDocument = null;
+    totalTransactionsCount = 0;
+    tableKey.currentState!.pageTo(0);
   }
 
   void _initializeDateRangeOptions() {
@@ -157,7 +159,7 @@ class CustodyReportsController extends GetxController {
               };
               currentSelectedDate.value = dateRangeOptions.length - 1;
               resetTableValues();
-              fetchData(start: currentStartIndex);
+              // fetchData(start: currentStartIndex);
             }
           } else {
             resetDateFilter();
@@ -168,7 +170,7 @@ class CustodyReportsController extends GetxController {
             dateFrom = selectedRange["from"];
             dateTo = selectedRange["to"];
             resetTableValues();
-            fetchData(start: currentStartIndex);
+            // fetchData(start: currentStartIndex);
             final dateKey = dateRangeOptions.keys
                 .toList()
                 .elementAt(currentSelectedDate.value);
@@ -196,7 +198,7 @@ class CustodyReportsController extends GetxController {
     dateTo = DateTime(now.year, now.month, now.day, 23, 59, 59);
     currentSelectedDate.value = 0;
     resetTableValues();
-    fetchData(start: currentStartIndex);
+    //  fetchData(start: currentStartIndex);
   }
 
   bool isDate(String input) {
@@ -214,14 +216,14 @@ class CustodyReportsController extends GetxController {
         searchText = '';
         if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
         resetTableValues();
-        fetchData(start: currentStartIndex);
+        //    fetchData(start: currentStartIndex);
       }
     } else {
       searchText = value;
       if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
       _searchDebounce = Timer(const Duration(milliseconds: 500), () {
         resetTableValues();
-        fetchData(start: currentStartIndex);
+        //  fetchData(start: currentStartIndex);
       });
     }
   }
@@ -231,14 +233,7 @@ class CustodyReportsController extends GetxController {
     int limit = 10,
     bool ascending = false,
   }) async {
-    if (isLoading.value) return;
-
-    if (start == currentStartIndex && data.isNotEmpty) return;
-
     try {
-      isLoading.value = true;
-      currentStartIndex = start;
-
       bool? isActiveQuery;
       if (currentSelectedStatus.value == 1) {
         isActiveQuery = true;
@@ -265,22 +260,33 @@ class CustodyReportsController extends GetxController {
         query = query.where('opening_time',
             isLessThanOrEqualTo: Timestamp.fromDate(dateTo!));
       }
-      if (start != 0) {
-        query = query.startAfter([data[start].toFirestore()[sortString]]);
+      if (start == 0) {
+        final countSnapshot = await query.count().get();
+        totalTransactionsCount = countSnapshot.count ?? 0;
+        lastDocument = null;
+      }
+      if (start != 0 && lastDocument != null) {
+        query = query.startAfterDocument(lastDocument!);
       }
       final querySnapshot = await query.limit(limit).get();
-
-      data.value = querySnapshot.docs
-          .map((doc) => CustodyReport.fromFirestore(doc))
-          .toList();
-
-      totalItems.value = querySnapshot.size;
+      if (querySnapshot.docs.isNotEmpty) {
+        lastDocument = querySnapshot.docs.last;
+        if (start == 0) {
+          reports.assignAll(querySnapshot.docs
+              .map((doc) => CustodyReport.fromFirestore(doc))
+              .toList());
+        } else {
+          reports.addAll(querySnapshot.docs
+              .map((doc) => CustodyReport.fromFirestore(doc))
+              .toList());
+        }
+      } else if (start == 0) {
+        reports.clear();
+      }
     } catch (e) {
       if (kDebugMode) {
         AppInit.logger.e(e.toString());
       }
-    } finally {
-      isLoading.value = false;
     }
   }
 
@@ -289,14 +295,14 @@ class CustodyReportsController extends GetxController {
     sortColumnIndex.value = columnIndex;
     sortAscending.value = ascending;
     resetTableValues();
-    fetchData(start: currentStartIndex, ascending: ascending);
+    //fetchData(start: currentStartIndex, ascending: ascending);
   }
 
   void onShiftStatusChanged(String value, index) {
     if (index != currentSelectedStatus.value) {
       currentSelectedStatus.value = index;
       resetTableValues();
-      fetchData(start: currentStartIndex);
+      // fetchData(start: currentStartIndex);
     }
   }
 
@@ -331,7 +337,7 @@ class CustodyReportsController extends GetxController {
 
   void onShiftsRefresh() {
     resetTableValues();
-    fetchData(start: currentStartIndex);
+    //fetchData(start: currentStartIndex);
     shiftsRefreshController.refreshCompleted();
   }
 
@@ -373,23 +379,3 @@ class CustodyReportsController extends GetxController {
     }
   }
 }
-
-//   Future<List<CustodyTransaction>?> fetchTransactions(String reportId) async {
-//     try {
-//       final querySnapshot = await _firestore
-//           .collection('custody_reports')
-//           .doc(reportId)
-//           .collection('transactions')
-//           .get();
-//
-//       return querySnapshot.docs
-//           .map((doc) => CustodyTransaction.fromFirestore(doc))
-//           .toList();
-//     } catch (e) {
-//       Get.snackbar('Error', 'Failed to fetch transactions: $e');
-//  if (kDebugMode) {
-//         AppInit.logger.e(e.toString());
-//       }
-//     }
-//     return null;
-//   }
