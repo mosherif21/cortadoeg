@@ -1,5 +1,6 @@
 import 'package:cortadoeg/src/connectivity/connectivity_controller.dart';
 import 'package:cortadoeg/src/general/app_init.dart';
+import 'package:cortadoeg/src/general/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -28,12 +29,7 @@ class MyApp extends StatelessWidget {
         );
       },
       translations: Languages(),
-      theme: ThemeData(
-        textSelectionTheme: TextSelectionThemeData(
-          selectionColor: Colors.grey.shade300,
-          selectionHandleColor: Colors.black,
-        ),
-      ),
+      theme: AppTheme.lightTheme,
       locale: AppInit.setLocale,
       fallbackLocale: const Locale('en', 'US'),
       home: const OrientationLockScreen(),

@@ -27,7 +27,7 @@ class FramedIconButton extends StatelessWidget {
         child: Container(
           height: height,
           width: double.infinity,
-          padding: EdgeInsets.all(height * 0.1),
+          padding: const EdgeInsets.all(12),
           child: Row(
             children: [
               Icon(

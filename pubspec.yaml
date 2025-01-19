@@ -40,7 +40,6 @@ dependencies:
   animated_snack_bar: ^0.4.0
   hive_flutter: ^1.1.0
   path_provider: ^2.1.5
-  syncfusion_flutter_barcodes: ^27.1.57
   share_plus: ^10.1.1
   permission_handler: ^11.3.1
   sidebarx: ^0.17.1
@@ -72,6 +71,7 @@ dependencies:
   http: ^1.2.2
   roundcheckbox: ^2.0.5
   device_preview: ^1.2.0
+  ping_discover_network_forked: ^0.0.1
   data_table_2: ^2.5.18
 
 

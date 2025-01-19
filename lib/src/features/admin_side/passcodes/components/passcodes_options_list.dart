@@ -46,14 +46,16 @@ class PasscodesOptionsList extends StatelessWidget {
                 itemBuilder: (context, index) {
                   return Obx(
                     () => SizedBox(
-                      height: 45,
+                      height: screenType.isPhone ? 55 : 45,
                       child: Material(
                         color: Colors.white,
                         child: InkWell(
-                          onTap: index == controller.chosenPasscodeOption.value
-                              ? null
-                              : () => controller.onPasscodeOptionTap(
-                                  index, screenType.isPhone),
+                          onTap:
+                              index == controller.chosenPasscodeOption.value &&
+                                      !screenType.isPhone
+                                  ? null
+                                  : () => controller.onPasscodeOptionTap(
+                                      index, screenType.isPhone),
                           splashFactory: InkSparkle.splashFactory,
                           child: Row(
                             children: [
@@ -68,10 +70,12 @@ class PasscodesOptionsList extends StatelessWidget {
                                       maxLines: 1,
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                                        fontSize: screenType.isPhone ? 20 : 16,
                                         color: index ==
-                                                controller
-                                                    .chosenPasscodeOption.value
+                                                    controller
+                                                        .chosenPasscodeOption
+                                                        .value ||
+                                                screenType.isPhone
                                             ? Colors.black
                                             : Colors.grey,
                                       ),
@@ -80,8 +84,9 @@ class PasscodesOptionsList extends StatelessWidget {
                                 ),
                               ),
                               const Spacer(),
-                              if (index ==
-                                  controller.chosenPasscodeOption.value)
+                              if (!screenType.isPhone &&
+                                  index ==
+                                      controller.chosenPasscodeOption.value)
                                 Container(
                                   decoration: BoxDecoration(
                                     color: Colors.black,

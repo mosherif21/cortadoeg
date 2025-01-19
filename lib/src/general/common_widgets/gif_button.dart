@@ -74,21 +74,24 @@ class IconElevatedButton extends StatelessWidget {
         foregroundColor: Colors.grey,
         padding: const EdgeInsets.symmetric(vertical: 8.0),
       ),
-      child: Column(
-        children: [
-          Icon(
-            iconData,
-            color: iconColor,
-            size: 100,
-          ),
-          const SizedBox(height: 8),
-          AutoSizeText(
-            text,
-            style: TextStyle(
-                fontSize: 22, fontWeight: FontWeight.w600, color: textColor),
-            maxLines: 1,
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          children: [
+            Icon(
+              iconData,
+              color: iconColor,
+              size: 100,
+            ),
+            const SizedBox(height: 8),
+            AutoSizeText(
+              text,
+              style: TextStyle(
+                  fontSize: 22, fontWeight: FontWeight.w600, color: textColor),
+              maxLines: 1,
+            ),
+          ],
+        ),
       ),
     );
   }

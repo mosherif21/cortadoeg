@@ -33,6 +33,8 @@ const String kPasswordResetAnim =
 const String kDeleteAnim = "assets/lottie_animations/delete.json";
 const String kLoadingCoffeeAnim =
     "assets/lottie_animations/loading_coffee.json";
+const String kLoadingWalkingCoffeeAnim =
+    "assets/lottie_animations/walking_coffee_cup.json";
 const String kNoNotificationsAnim =
     "assets/lottie_animations/no-notification.json";
 

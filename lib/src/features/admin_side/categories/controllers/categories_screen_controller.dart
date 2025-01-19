@@ -100,7 +100,13 @@ class CategoryScreenController extends GetxController {
         hasMore = false;
       }
     } catch (e) {
-      Get.snackbar('Error', e.toString());
+      showSnackBar(
+        text: e.toString(),
+        snackBarType: SnackBarType.error,
+      );
+      if (kDebugMode) {
+        AppInit.logger.e(e.toString());
+      }
     } finally {
       loadingCategories.value = false;
     }

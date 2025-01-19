@@ -1,8 +1,17 @@
+import 'package:anim_search_app_bar/anim_search_app_bar.dart';
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:data_table_2/data_table_2.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
+import '../../../../constants/assets_strings.dart';
 import '../../../../general/general_functions.dart';
 import '../../admin_main_screen/components/main_appbar.dart';
+import '../controllers/custody_screen_controller.dart';
 
 class CustodyShiftsScreen extends StatelessWidget {
   const CustodyShiftsScreen({super.key});
@@ -12,6 +21,13 @@ class CustodyShiftsScreen extends StatelessWidget {
     final screenHeight = getScreenHeight(context);
     final screenWidth = getScreenWidth(context);
     final screenType = GetScreenType(context);
+    final controller = Get.put(CustodyReportsController());
+    final statusSelectOptions = [
+      'allShifts'.tr,
+      'activeShifts'.tr,
+      'closedShifts'.tr,
+    ];
+    const textStyle = TextStyle(fontWeight: FontWeight.w500, fontSize: 16);
     return Scaffold(
       appBar: screenType.isPhone
           ? null
@@ -26,16 +42,504 @@ class CustodyShiftsScreen extends StatelessWidget {
               surfaceTintColor: Colors.white,
             ),
       backgroundColor: Colors.white,
-      body: const SafeArea(
-        child: StretchingOverscrollIndicator(
-          axisDirection: AxisDirection.down,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [Text('')],
+      body: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                SizedBox(
+                  width: 160,
+                  child: Obx(
+                    () => DropdownButtonHideUnderline(
+                      child: DropdownButton2<String>(
+                        isExpanded: true,
+                        hint: Text(
+                          'selectStatus'.tr,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Theme.of(context).hintColor,
+                          ),
+                        ),
+                        items: statusSelectOptions
+                            .map(
+                              (String item) => DropdownMenuItem<String>(
+                                value: item,
+                                child: Text(
+                                  item,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        value: statusSelectOptions
+                            .elementAt(controller.currentSelectedStatus.value),
+                        onChanged: (value) => value != null
+                            ? controller.onShiftStatusChanged(
+                                value, statusSelectOptions.indexOf(value))
+                            : controller.onShiftStatusChanged(
+                                'allShifts'.tr, 0),
+                        dropdownStyleData: DropdownStyleData(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        buttonStyleData: ButtonStyleData(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          height: 40,
+                          width: 160,
+                        ),
+                        menuItemStyleData: const MenuItemStyleData(
+                          height: 40,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Obx(
+                  () => SizedBox(
+                    width: controller.dateRangeOptions.keys.length > 6
+                        ? controller.dateRangeOptions.keys
+                                .toList()
+                                .elementAt(controller.currentSelectedDate.value)
+                                .contains('-')
+                            ? screenType.isPhone
+                                ? 210
+                                : 280
+                            : 170
+                        : 150,
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton2<String>(
+                        isExpanded: true,
+                        hint: Text(
+                          'selectDate'.tr,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Theme.of(context).hintColor,
+                          ),
+                        ),
+                        items: controller.dateRangeOptions.keys
+                            .toList()
+                            .map(
+                              (String item) => DropdownMenuItem<String>(
+                                value: item,
+                                child: Container(
+                                  constraints: screenType.isPhone &&
+                                          controller
+                                                  .currentSelectedDate.value ==
+                                              6
+                                      ? const BoxConstraints(maxWidth: 220)
+                                      : null,
+                                  child: Text(
+                                    overflow: TextOverflow.ellipsis,
+                                    item,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        dropdownStyleData: DropdownStyleData(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        value: controller.dateRangeOptions.keys
+                            .toList()
+                            .elementAt(controller.currentSelectedDate.value),
+                        onChanged: (key) => key != null
+                            ? controller.applyPredefinedDateRange(
+                                key,
+                                context,
+                                controller.dateRangeOptions.keys
+                                    .toList()
+                                    .indexOf(key))
+                            : controller.applyPredefinedDateRange(
+                                'today'.tr, context, 0),
+                        buttonStyleData: ButtonStyleData(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          height: 40,
+                          width: 140,
+                        ),
+                        menuItemStyleData: const MenuItemStyleData(
+                          height: 40,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
+            AnimSearchAppBar(
+              keyboardType: TextInputType.text,
+              cancelButtonTextStyle: const TextStyle(color: Colors.black87),
+              cancelButtonText: 'cancel'.tr,
+              hintText: 'searchCustodyShiftsHint'.tr,
+              onChanged: controller.onCustodyShiftsSearch,
+              hintStyle: const TextStyle(fontWeight: FontWeight.w500),
+              backgroundColor: Colors.white,
+              appBar: const SizedBox.shrink(),
+            ),
+            const SizedBox(height: 10),
+            Obx(
+              () => controller.isLoading.value
+                  ? Lottie.asset(
+                      kLoadingWalkingCoffeeAnim,
+                      height: screenHeight * 0.3,
+                    )
+                  : Expanded(
+                      child: RefreshConfiguration(
+                        headerTriggerDistance: 60,
+                        maxOverScrollExtent: 20,
+                        enableLoadingWhenFailed: true,
+                        hideFooterWhenNotFull: true,
+                        child: SmartRefresher(
+                          enablePullDown: true,
+                          header: ClassicHeader(
+                            completeDuration: const Duration(milliseconds: 0),
+                            releaseText: 'releaseToRefresh'.tr,
+                            refreshingText: 'refreshing'.tr,
+                            idleText: 'pullToRefresh'.tr,
+                            completeText: 'refreshCompleted'.tr,
+                            iconPos: isLangEnglish()
+                                ? IconPosition.left
+                                : IconPosition.right,
+                            textStyle: const TextStyle(color: Colors.grey),
+                            failedIcon:
+                                const Icon(Icons.error, color: Colors.grey),
+                            completeIcon:
+                                const Icon(Icons.done, color: Colors.grey),
+                            idleIcon: const Icon(Icons.arrow_downward,
+                                color: Colors.grey),
+                            releaseIcon:
+                                const Icon(Icons.refresh, color: Colors.grey),
+                          ),
+                          controller: controller.shiftsRefreshController,
+                          onRefresh: () => controller.onShiftsRefresh(),
+                          child: AsyncPaginatedDataTable2(
+                            rowsPerPage: controller.rowsPerPage,
+                            onPageChanged: (startRowIndex) {
+                              controller.fetchData(start: startRowIndex);
+                            },
+                            showCheckboxColumn: false,
+                            isVerticalScrollBarVisible: true,
+                            isHorizontalScrollBarVisible: true,
+                            sortColumnIndex: controller.sortColumnIndex.value,
+                            sortAscending: controller.sortAscending.value,
+                            onSelectAll: (_) {},
+                            wrapInCard: true,
+                            minWidth: 2500,
+                            headingRowColor:
+                                const WidgetStatePropertyAll(Colors.white),
+                            empty: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Lottie.asset(
+                                    kEmptyCoffeeCupAnim,
+                                    fit: BoxFit.contain,
+                                    height: screenHeight * 0.3,
+                                  ),
+                                  AutoSizeText(
+                                    'noCustodyShiftsFoundTitle'.tr,
+                                    style: const TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 30,
+                                        fontWeight: FontWeight.w600),
+                                    maxLines: 1,
+                                  ),
+                                  const SizedBox(height: 5.0),
+                                ],
+                              ),
+                            ),
+                            columns: [
+                              DataColumn2(
+                                label: alignHorizontalWidget(
+                                    child: Text('openingTime'.tr,
+                                        style: textStyle)),
+                                tooltip: 'openingTime'.tr,
+                                fixedWidth: 200,
+                                size: ColumnSize.L,
+                                onSort: (index, ascending) =>
+                                    controller.sortData(index, ascending),
+                              ),
+                              DataColumn2(
+                                label: alignHorizontalWidget(
+                                    child: Text('closingTime'.tr,
+                                        style: textStyle)),
+                                tooltip: 'closingTime'.tr,
+                                fixedWidth: 200,
+                                size: ColumnSize.L,
+                                onSort: (index, ascending) =>
+                                    controller.sortData(index, ascending),
+                              ),
+                              DataColumn2(
+                                label: alignHorizontalWidget(
+                                    child: Text('openingAmount'.tr,
+                                        style: textStyle)),
+                                tooltip: 'openingAmount'.tr,
+                                numeric: true,
+                                fixedWidth: 200,
+                                size: ColumnSize.L,
+                                onSort: (index, ascending) =>
+                                    controller.sortData(index, ascending),
+                              ),
+                              DataColumn2(
+                                label: alignHorizontalWidget(
+                                  child: Text('cashPaymentsNet'.tr,
+                                      style: textStyle),
+                                ),
+                                tooltip: 'cashPaymentsNet'.tr,
+                                numeric: true,
+                                fixedWidth: 220,
+                                size: ColumnSize.L,
+                                onSort: (index, ascending) =>
+                                    controller.sortData(index, ascending),
+                              ),
+                              DataColumn2(
+                                label: alignHorizontalWidget(
+                                    child: Text('totalPayIns'.tr,
+                                        style: textStyle)),
+                                tooltip: 'totalPayIns'.tr,
+                                numeric: true,
+                                fixedWidth: 180,
+                                size: ColumnSize.L,
+                                onSort: (index, ascending) =>
+                                    controller.sortData(index, ascending),
+                              ),
+                              DataColumn2(
+                                label: alignHorizontalWidget(
+                                    child: Text('totalPayOuts'.tr,
+                                        style: textStyle)),
+                                tooltip: 'totalPayOuts'.tr,
+                                numeric: true,
+                                fixedWidth: 180,
+                                size: ColumnSize.L,
+                                onSort: (index, ascending) =>
+                                    controller.sortData(index, ascending),
+                              ),
+                              DataColumn2(
+                                label: alignHorizontalWidget(
+                                    child:
+                                        Text('cashDrop'.tr, style: textStyle)),
+                                tooltip: 'cashDrop'.tr,
+                                fixedWidth: 160,
+                                size: ColumnSize.L,
+                                numeric: true,
+                                onSort: (index, ascending) =>
+                                    controller.sortData(index, ascending),
+                              ),
+                              DataColumn2(
+                                label: alignHorizontalWidget(
+                                    child: Text('closingAmount'.tr,
+                                        style: textStyle)),
+                                tooltip: 'closingAmount'.tr,
+                                numeric: true,
+                                fixedWidth: 200,
+                                size: ColumnSize.L,
+                                onSort: (index, ascending) =>
+                                    controller.sortData(index, ascending),
+                              ),
+                              DataColumn2(
+                                label: alignHorizontalWidget(
+                                  child: Text('expectedDrawerMoney'.tr,
+                                      style: textStyle),
+                                ),
+                                tooltip: 'expectedDrawerMoney'.tr,
+                                numeric: true,
+                                fixedWidth: 260,
+                                size: ColumnSize.L,
+                                onSort: (index, ascending) =>
+                                    controller.sortData(index, ascending),
+                              ),
+                              DataColumn2(
+                                label: alignHorizontalWidget(
+                                    child: Text('difference'.tr,
+                                        style: textStyle)),
+                                tooltip: 'difference'.tr,
+                                numeric: true,
+                                fixedWidth: 160,
+                                size: ColumnSize.L,
+                                onSort: (index, ascending) =>
+                                    controller.sortData(index, ascending),
+                              ),
+                              DataColumn2(
+                                label: alignHorizontalWidget(
+                                  child: Text('drawerOpenCount'.tr,
+                                      style: textStyle),
+                                ),
+                                tooltip: 'drawerOpenCount'.tr,
+                                numeric: true,
+                                fixedWidth: 200,
+                                size: ColumnSize.L,
+                                onSort: (index, ascending) =>
+                                    controller.sortData(index, ascending),
+                              ),
+                            ],
+                            source: _CustodyDataSource(
+                                controller, screenType.isPhone),
+                          ),
+                        ),
+                      ),
+                    ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
+
+class _CustodyDataSource extends AsyncDataTableSource {
+  final CustodyReportsController controller;
+  final bool isPhone;
+  _CustodyDataSource(this.controller, this.isPhone);
+  @override
+  Future<AsyncRowsResponse> getRows(int startIndex, int count) async {
+    const textStyle = TextStyle(fontWeight: FontWeight.w500, fontSize: 14);
+    if (startIndex >= controller.data.length) {
+      return AsyncRowsResponse(0, []);
+    }
+
+    final rows = <DataRow>[];
+
+    for (int i = startIndex; i < startIndex + count; i++) {
+      if (i >= controller.data.length) break;
+
+      final custody = controller.data[i];
+
+      rows.add(
+        DataRow(
+          cells: [
+            DataCell(
+                onTap: () => controller.onReportTap(
+                    isPhone: isPhone, custodyReport: custody),
+                alignHorizontalWidget(
+                  child: Text(
+                    DateFormat('MMM dd, yyyy, hh:mm a',
+                            isLangEnglish() ? 'en_US' : 'ar_SA')
+                        .format(custody.openingTime.toDate()),
+                    style: textStyle,
+                  ),
+                )),
+            DataCell(
+                onTap: () => controller.onReportTap(
+                    isPhone: isPhone, custodyReport: custody),
+                alignHorizontalWidget(
+                  child: Text(
+                    custody.isActive
+                        ? 'active'.tr
+                        : DateFormat('MMM dd, yyyy, hh:mm a',
+                                isLangEnglish() ? 'en_US' : 'ar_SA')
+                            .format(custody.openingTime.toDate()),
+                    style: textStyle,
+                  ),
+                )),
+            DataCell(
+                onTap: () => controller.onReportTap(
+                    isPhone: isPhone, custodyReport: custody),
+                Center(
+                    child: Text(
+                  custody.openingAmount.toString(),
+                  style: textStyle,
+                ))),
+            DataCell(
+                onTap: () => controller.onReportTap(
+                    isPhone: isPhone, custodyReport: custody),
+                Center(
+                    child: Text(
+                  custody.cashPaymentsNet.toString(),
+                  style: textStyle,
+                ))),
+            DataCell(
+                onTap: () => controller.onReportTap(
+                    isPhone: isPhone, custodyReport: custody),
+                Center(
+                    child: Text(
+                  custody.totalPayIns.toString(),
+                  style: textStyle,
+                ))),
+            DataCell(
+                onTap: () => controller.onReportTap(
+                    isPhone: isPhone, custodyReport: custody),
+                Center(
+                    child: Text(
+                  custody.totalPayOuts.toString(),
+                  style: textStyle,
+                ))),
+            DataCell(
+                onTap: () => controller.onReportTap(
+                    isPhone: isPhone, custodyReport: custody),
+                Center(
+                    child: Text(
+                  custody.cashDrop.toString(),
+                  style: textStyle,
+                ))),
+            DataCell(
+                onTap: () => controller.onReportTap(
+                    isPhone: isPhone, custodyReport: custody),
+                Center(
+                    child: Text(
+                  custody.closingAmount.toString(),
+                  style: textStyle,
+                ))),
+            DataCell(
+                onTap: () => controller.onReportTap(
+                    isPhone: isPhone, custodyReport: custody),
+                Center(
+                    child: Text(
+                  custody.expectedDrawerMoney.toString(),
+                  style: textStyle,
+                ))),
+            DataCell(
+                onTap: () => controller.onReportTap(
+                    isPhone: isPhone, custodyReport: custody),
+                Center(
+                    child: Text(
+                  custody.difference.toString(),
+                  style: textStyle,
+                ))),
+            DataCell(
+                onTap: () => controller.onReportTap(
+                    isPhone: isPhone, custodyReport: custody),
+                Center(
+                    child: Text(
+                  custody.drawerOpenCount.toString(),
+                  style: textStyle,
+                ))),
+          ],
+          color: const WidgetStatePropertyAll(Colors.white),
+        ),
+      );
+    }
+
+    return AsyncRowsResponse(controller.totalItems.value, rows);
+  }
+
+  @override
+  bool get isRowCountApproximate => false;
+
+  @override
+  int get rowCount => controller.data.length;
+
+  @override
+  int get selectedRowCount => 0;
 }

@@ -16,6 +16,7 @@ import 'package:image/image.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:ping_discover_network_forked/ping_discover_network_forked.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sweetsheet/sweetsheet.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -47,7 +48,7 @@ void showLoadingScreen() {
       content: PopScope(
         canPop: false,
         child: Lottie.asset(
-          kLoadingCoffeeAnim,
+          kLoadingWalkingCoffeeAnim,
           height: height * 0.3,
         ),
       ),
@@ -58,6 +59,13 @@ void showLoadingScreen() {
 
 void hideLoadingScreen() {
   Get.back();
+}
+
+Widget alignHorizontalWidget({required Widget child}) {
+  return Align(
+    alignment: isLangEnglish() ? Alignment.centerLeft : Alignment.centerRight,
+    child: child,
+  );
 }
 
 void closeKeyboard(BuildContext context) {
@@ -381,11 +389,19 @@ Future<FunctionStatus> printReceipt({
       orderId: orderId,
       taxId: '648-394-425',
     );
-    final printer = PrinterNetworkManager('192.168.1.8');
+    final printerIp = await getPrinterIP();
+
+    if (printerIp == null) {
+      return FunctionStatus.failure;
+    }
+
+    final printer = PrinterNetworkManager(printerIp);
     final PosPrintResult result = await printer.connect();
+
     if (result == PosPrintResult.success) {
       await printer.printTicket(receiptBytes);
       printer.disconnect();
+
       if (kDebugMode) {
         AppInit.logger.i('Receipt printed Successfully');
       }
@@ -396,11 +412,56 @@ Future<FunctionStatus> printReceipt({
       }
       return FunctionStatus.failure;
     }
+    // final printer = PrinterNetworkManager('192.168.1.8');
+    // final PosPrintResult result = await printer.connect();
+    // if (result == PosPrintResult.success) {
+    //   await printer.printTicket(receiptBytes);
+    //   printer.disconnect();
+    //   if (kDebugMode) {
+    //     AppInit.logger.i('Receipt printed Successfully');
+    //   }
+    //   return FunctionStatus.success;
+    // } else {
+    //   if (kDebugMode) {
+    //     AppInit.logger.e('Failed to connect to printer');
+    //   }
+    //   return FunctionStatus.failure;
+    // }
   } catch (e) {
     if (kDebugMode) {
       AppInit.logger.e(e.toString());
     }
     return FunctionStatus.failure;
+  }
+}
+
+Future<String?> getPrinterIP() async {
+  try {
+    const subnet = '192.168.1';
+    const port = 9100;
+    final stream = NetworkAnalyzer.discover2(
+      '$subnet.0',
+      port,
+      timeout: const Duration(seconds: 5),
+    );
+
+    await for (final NetworkAddress address in stream) {
+      if (address.exists) {
+        if (kDebugMode) {
+          AppInit.logger.i('Printer found at ${address.ip}');
+        }
+        return address.ip;
+      }
+    }
+    if (kDebugMode) {
+      AppInit.logger.e('No printers found on the network.');
+    }
+    return null;
+  } catch (e) {
+    if (kDebugMode) {
+      AppInit.logger.e('Error during printer discovery: $e');
+    }
+    return null;
   }
 }
 
@@ -589,13 +650,22 @@ Future<FunctionStatus> openDrawer({required String capabilitiesContent}) async {
     final generator = Generator(PaperSize.mm80, profile);
     List<int> openDrawerBytes = [];
     openDrawerBytes += generator.drawer();
-    final printer = PrinterNetworkManager('192.168.1.8');
+
+    final printerIp = await getPrinterIP();
+
+    if (printerIp == null) {
+      return FunctionStatus.failure;
+    }
+
+    final printer = PrinterNetworkManager(printerIp);
     final PosPrintResult result = await printer.connect();
+
     if (result == PosPrintResult.success) {
       await printer.printTicket(openDrawerBytes);
       printer.disconnect();
+
       if (kDebugMode) {
-        AppInit.logger.i('Cash drawer opened Successfully');
+        AppInit.logger.i('Cash drawer opened successfully Successfully');
       }
       return FunctionStatus.success;
     } else {
@@ -659,13 +729,24 @@ Future<FunctionStatus> generateAndPrintCustodyReceipt({
       logoBytes: logoBytes,
       capabilitiesContent: capabilitiesContent,
     );
-    final printer = PrinterNetworkManager('192.168.1.8');
+    final printerIp = await getPrinterIP();
+    if (printerIp == null) {
+      return FunctionStatus.failure;
+    }
+    final printer = PrinterNetworkManager(printerIp);
     final PosPrintResult result = await printer.connect();
     if (result == PosPrintResult.success) {
       await printer.printTicket(receiptBytes);
       printer.disconnect();
+
+      if (kDebugMode) {
+        AppInit.logger.i('Custody shift receipt printed Successfully');
+      }
       return FunctionStatus.success;
     } else {
+      if (kDebugMode) {
+        AppInit.logger.e('Failed to connect to printer');
+      }
       return FunctionStatus.failure;
     }
   } catch (e) {

@@ -52,6 +52,23 @@ String? validateNumberIsDouble(String? value) {
   return null;
 }
 
+String? validatePasscode(String? value) {
+  if (value == null || value.isEmpty) {
+    return 'textEmpty'.tr;
+  }
+
+  if (value.length != 6) {
+    return 'invalidPasscodeLength'.tr;
+  }
+
+  final intValue = int.tryParse(value);
+  if (intValue == null) {
+    return 'invalidPasscodeFormat'.tr;
+  }
+
+  return null;
+}
+
 String? validateNumberIsInt(String? value) {
   if (value == null || value.isEmpty) {
     return 'textEmpty'.tr;

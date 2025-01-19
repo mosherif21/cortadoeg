@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../../src/authentication/authentication_repository.dart';
 import '../../src/constants/enums.dart';
+import '../../src/features/admin_side/custody_shifts/controllers/custody_screen_controller.dart';
 import '../../src/features/cashier_side/orders/controllers/orders_controller.dart';
 import '../../src/general/app_init.dart';
 import '../../src/general/general_functions.dart';
@@ -54,6 +55,9 @@ Future<void> setLocaleLanguage(String languageCode) async {
     }
     if (Get.isRegistered<OrdersController>()) {
       OrdersController.instance.updateDateFilters();
+    }
+    if (Get.isRegistered<CustodyReportsController>()) {
+      CustodyReportsController.instance.updateDateFilters();
     }
     AuthenticationRepository.instance.setNotificationsLanguage();
     hideLoadingScreen();

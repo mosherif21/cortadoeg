@@ -7,6 +7,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
+import '../../features/admin_side/custody_shifts/controllers/custody_screen_controller.dart';
+
 class DateController extends GetxController {
   static DateController get instance => Get.find();
   var formattedDate = ''.obs; // Observable date string
@@ -32,6 +34,9 @@ class DateController extends GetxController {
       updateDate();
       if (Get.isRegistered<OrdersController>()) {
         OrdersController.instance.updateNewDayDateFilters();
+      }
+      if (Get.isRegistered<CustodyReportsController>()) {
+        CustodyReportsController.instance.updateNewDayDateFilters();
       }
       _setDailyUpdate();
     });

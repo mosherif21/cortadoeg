@@ -1,21 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum TransactionType {
-  sale, // Sale transaction
-  completeSale, // Sale transaction
-  reopenSale, // Reopen sale transaction
-  returnSale, // Return transaction
-  payIn, // Pay-in transaction
-  payOut, // Pay-out transaction
-  cashDrop, // Cash drop transaction
+  sale,
+  completeSale,
+  reopenSale,
+  returnSale,
+  payIn,
+  payOut,
+  cashDrop,
 }
 
 class CustodyTransaction {
-  final String id; // Document ID (optional for identification)
-  final TransactionType type; // Type of transaction
-  final double amount; // Amount involved in the transaction
-  final String description; // Optional description or notes
-  final Timestamp timestamp; // When the transaction occurred
+  final String id;
+  final TransactionType type;
+  final double amount;
+  final String description;
+  final Timestamp timestamp;
 
   CustodyTransaction({
     required this.id,
@@ -25,7 +25,6 @@ class CustodyTransaction {
     required this.timestamp,
   });
 
-  // Convert Firestore document to CustodyTransaction instance
   factory CustodyTransaction.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return CustodyTransaction(
@@ -37,7 +36,6 @@ class CustodyTransaction {
     );
   }
 
-  // Convert CustodyTransaction instance to Firestore document
   Map<String, dynamic> toFirestore() {
     return {
       'type': type.index,
@@ -49,18 +47,18 @@ class CustodyTransaction {
 }
 
 class CustodyReport {
-  final String id; // Document ID (optional, for identification)
-  final Timestamp openingTime; // Time the drawer was opened
-  final Timestamp closingTime; // Time the drawer was opened
-  final double openingAmount; // Amount at opening
-  final double cashPaymentsNet; // Cash received net of returns
-  final double totalPayIns; // Total pay-ins
-  final double totalPayOuts; // Total pay-outs
-  final double cashDrop; // Total cash drops
-  double closingAmount; // Actual cash in the drawer at closing
-  double expectedDrawerMoney; // Expected cash in the drawer
-  double difference; // Difference between actual and expected amounts
-  final int drawerOpenCount; // Number of manual drawer openings
+  final String id;
+  final Timestamp openingTime;
+  final Timestamp closingTime;
+  final double openingAmount;
+  final double cashPaymentsNet;
+  final double totalPayIns;
+  final double totalPayOuts;
+  final double cashDrop;
+  double closingAmount;
+  double expectedDrawerMoney;
+  double difference;
+  final int drawerOpenCount;
   final bool isActive;
 
   CustodyReport({
@@ -79,7 +77,6 @@ class CustodyReport {
     required this.isActive,
   });
 
-  // Convert Firestore document to CustodyReport instance
   factory CustodyReport.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return CustodyReport(
@@ -99,7 +96,6 @@ class CustodyReport {
     );
   }
 
-  // Convert CustodyReport instance to Firestore document
   Map<String, dynamic> toFirestore() {
     return {
       'opening_time': openingTime,

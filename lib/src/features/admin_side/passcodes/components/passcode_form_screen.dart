@@ -17,7 +17,7 @@ class PasscodeFormScreen extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         title: AutoSizeText(
-          'passcodeOption${controller.chosenPasscodeOption.value + 1}'.tr,
+          'passcodeOptionTitle${controller.chosenPasscodeOption.value + 1}'.tr,
           style: const TextStyle(
               fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
           maxLines: 1,
