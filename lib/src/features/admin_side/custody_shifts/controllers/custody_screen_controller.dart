@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
+import '../../../../constants/enums.dart';
 import '../../../../general/app_init.dart';
 import '../../../../general/common_widgets/regular_bottom_sheet.dart';
 import '../../../../general/general_functions.dart';
@@ -353,8 +354,13 @@ class CustodyReportsController extends GetxController {
                 custodyReportId: custodyReport.id));
           },
           onPrintReceiptPress: () {
-            Get.back();
-            printCustodyReceipt(custody: custodyReport);
+            if (custodyReport.isActive) {
+              showSnackBar(
+                  text: 'shiftActive'.tr, snackBarType: SnackBarType.info);
+            } else {
+              Get.back();
+              printCustodyReceipt(custody: custodyReport);
+            }
           },
         ),
       );
@@ -370,8 +376,13 @@ class CustodyReportsController extends GetxController {
                   custodyReportId: custodyReport.id));
             },
             onPrintReceiptPress: () {
-              Get.back();
-              printCustodyReceipt(custody: custodyReport);
+              if (custodyReport.isActive) {
+                showSnackBar(
+                    text: 'shiftActive'.tr, snackBarType: SnackBarType.info);
+              } else {
+                Get.back();
+                printCustodyReceipt(custody: custodyReport);
+              }
             },
           );
         },

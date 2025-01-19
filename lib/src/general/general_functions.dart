@@ -176,9 +176,6 @@ void showSnackBar({
           brightness: Brightness.light,
         );
         break;
-      default:
-        AppInit.logger.e("Invalid SnackBarType provided.");
-        return;
     }
     snackBar.show(
       Get.overlayContext!,
@@ -389,12 +386,12 @@ Future<FunctionStatus> printReceipt({
       orderId: orderId,
       taxId: '648-394-425',
     );
-    final printerIp = await getPrinterIP();
+    const printerIp = '192.168.1.8';
+    //await getPrinterIP();
 
-    if (printerIp == null) {
-      return FunctionStatus.failure;
-    }
-
+    // if (printerIp == null) {
+    //   return FunctionStatus.failure;
+    // }
     final printer = PrinterNetworkManager(printerIp);
     final PosPrintResult result = await printer.connect();
 
@@ -651,11 +648,12 @@ Future<FunctionStatus> openDrawer({required String capabilitiesContent}) async {
     List<int> openDrawerBytes = [];
     openDrawerBytes += generator.drawer();
 
-    final printerIp = await getPrinterIP();
+    const printerIp = '192.168.1.8';
+    //await getPrinterIP();
 
-    if (printerIp == null) {
-      return FunctionStatus.failure;
-    }
+    // if (printerIp == null) {
+    //   return FunctionStatus.failure;
+    // }
 
     final printer = PrinterNetworkManager(printerIp);
     final PosPrintResult result = await printer.connect();
@@ -729,10 +727,12 @@ Future<FunctionStatus> generateAndPrintCustodyReceipt({
       logoBytes: logoBytes,
       capabilitiesContent: capabilitiesContent,
     );
-    final printerIp = await getPrinterIP();
-    if (printerIp == null) {
-      return FunctionStatus.failure;
-    }
+    const printerIp = '192.168.1.8';
+    //await getPrinterIP();
+
+    // if (printerIp == null) {
+    //   return FunctionStatus.failure;
+    // }
     final printer = PrinterNetworkManager(printerIp);
     final PosPrintResult result = await printer.connect();
     if (result == PosPrintResult.success) {

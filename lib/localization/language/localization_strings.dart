@@ -621,7 +621,8 @@ class Languages extends Translations {
           "returnSale": "إرجاع البيع",
           "noDescription": "لا توجد وصف",
           "viewTransactions": "عرض المعاملات",
-          "chooseReportOption": "اختر خيار تقرير العهدة"
+          "chooseReportOption": "اختر خيار تقرير العهدة",
+          'shiftActive': 'النوبة قيد العمل',
         },
         'en_US': {
           'skip': 'Skip',
@@ -1257,6 +1258,7 @@ class Languages extends Translations {
           "noDescription": "No description",
           "viewTransactions": "View Transactions",
           'chooseReportOption': 'Choose custody report option',
+          'shiftActive': 'Custody shift is active',
         },
       };
 }
