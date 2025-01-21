@@ -623,6 +623,8 @@ class Languages extends Translations {
           "viewTransactions": "عرض المعاملات",
           "chooseReportOption": "اختر خيار تقرير العهدة",
           'shiftActive': 'النوبة قيد العمل',
+          'addVat': 'أضف 14% ضريبة',
+          'removeVat': 'احذف 14% ضريبة',
         },
         'en_US': {
           'skip': 'Skip',
@@ -1259,6 +1261,8 @@ class Languages extends Translations {
           "viewTransactions": "View Transactions",
           'chooseReportOption': 'Choose custody report option',
           'shiftActive': 'Custody shift is active',
+          'addVat': 'Add 14% vat',
+          'removeVat': 'Remove 14% vat',
         },
       };
 }

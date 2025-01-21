@@ -312,6 +312,7 @@ Future<FunctionStatus> chargeOrderPrinter(
     'orderId': order.orderId,
     'discountAmount': order.discountAmount,
     'subtotalAmount': order.subtotalAmount,
+    'taxAmount': order.taxTotalAmount,
     'totalAmount': order.totalAmount,
     'orderTime': order.timestamp.toDate(),
   });
@@ -333,6 +334,7 @@ void chargeOrderIsolate(Map<String, dynamic> data) async {
   final String orderId = data['orderId'];
   final double discountAmount = data['discountAmount'];
   final double subtotalAmount = data['subtotalAmount'];
+  final double taxTotalAmount = data['taxTotalAmount'];
   final double totalAmount = data['totalAmount'];
   final DateTime orderTime = data['orderTime'];
   final resultStatus = await printReceipt(
@@ -345,6 +347,7 @@ void chargeOrderIsolate(Map<String, dynamic> data) async {
     orderId: orderId,
     discountAmount: discountAmount,
     subtotalAmount: subtotalAmount,
+    taxTotalAmount: taxTotalAmount,
     totalAmount: totalAmount,
     orderTime: orderTime,
   );
@@ -358,6 +361,7 @@ Future<FunctionStatus> printReceipt({
   required String orderId,
   required double discountAmount,
   required double subtotalAmount,
+  required double taxTotalAmount,
   required double totalAmount,
   required DateTime orderTime,
   required String capabilitiesContent,
@@ -377,6 +381,7 @@ Future<FunctionStatus> printReceipt({
       creator: employeeName,
       orderItems: receiptOrderItems,
       discount: discountAmount,
+      taxTotalAmount: taxTotalAmount,
       subtotal: subtotalAmount,
       total: totalAmount,
       qrData: 'https://www.cortadoeg.com',
@@ -477,6 +482,7 @@ Future<List<int>> generateReceiptBytes({
   required List<Map<String, dynamic>> orderItems,
   required double discount,
   required double subtotal,
+  required double taxTotalAmount,
   required double total,
   required String qrData,
   required Uint8List logoBytes,
@@ -580,7 +586,7 @@ Future<List<int>> generateReceiptBytes({
     ]);
   }
   bytes += generator.hr();
-  if (discount > 0) {
+  if (discount > 0 || taxTotalAmount > 0) {
     bytes += generator.row([
       PosColumn(
         text: 'Subtotal:',
@@ -595,20 +601,38 @@ Future<List<int>> generateReceiptBytes({
             align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
       ),
     ]);
-    bytes += generator.row([
-      PosColumn(
-        text: 'Discount:',
-        width: 8,
-        styles: const PosStyles(
-            align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
-      ),
-      PosColumn(
-        text: 'EGP ${discount.toStringAsFixed(2)}',
-        width: 4,
-        styles: const PosStyles(
-            align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
-      ),
-    ]);
+    if (taxTotalAmount > 0) {
+      bytes += generator.row([
+        PosColumn(
+          text: '14% VAT:',
+          width: 8,
+          styles: const PosStyles(
+              align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
+        ),
+        PosColumn(
+          text: 'EGP ${taxTotalAmount.toStringAsFixed(2)}',
+          width: 4,
+          styles: const PosStyles(
+              align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
+        ),
+      ]);
+    }
+    if (discount > 0) {
+      bytes += generator.row([
+        PosColumn(
+          text: 'Discount:',
+          width: 8,
+          styles: const PosStyles(
+              align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
+        ),
+        PosColumn(
+          text: 'EGP ${discount.toStringAsFixed(2)}',
+          width: 4,
+          styles: const PosStyles(
+              align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
+        ),
+      ]);
+    }
   }
   bytes += generator.row([
     PosColumn(

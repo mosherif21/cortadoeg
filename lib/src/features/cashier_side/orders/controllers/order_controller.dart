@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../constants/enums.dart';
+import '../../main_screen/components/models.dart';
 import '../../tables/components/models.dart';
 import '../components/discount_widget.dart';
 import '../components/item_details.dart';
@@ -52,7 +53,7 @@ class OrderController extends GetxController {
   final RxDouble discountAmount = 0.0.obs;
   final RxDouble orderTotal = 0.0.obs;
   final RxDouble orderTax = 0.0.obs;
-  final double taxRate = 0;
+  double taxRate = 14;
 
   @override
   void onInit() async {
@@ -285,12 +286,15 @@ class OrderController extends GetxController {
       }
     }
 
-    final taxableAmount = (orderSubtotal.value - discountAmount.value) < 0
+    // Tax is calculated based on the original subtotal (before discounts)
+    orderTax.value = orderSubtotal.value * (taxRate / 100);
+
+    // Apply discount to subtotal before calculating the total
+    final discountedSubtotal = (orderSubtotal.value - discountAmount.value) < 0
         ? 0
         : (orderSubtotal.value - discountAmount.value);
-    orderTax.value = taxableAmount * (taxRate / 100);
     orderTotal.value =
-        roundToNearestHalfOrWhole(taxableAmount + orderTax.value);
+        roundToNearestHalfOrWhole(discountedSubtotal + orderTax.value);
 
     return orderTotal.value;
   }
@@ -660,6 +664,16 @@ class OrderController extends GetxController {
     }
   }
 
+  addTax() {
+    taxRate = 14.0;
+    calculateTotalAmount();
+  }
+
+  removeTax() {
+    taxRate = 0;
+    calculateTotalAmount();
+  }
+
   void onChargeTap(
       {required bool isPhone, required BuildContext context}) async {
     final hasChargeOrderPermission = hasPermission(
@@ -720,7 +734,10 @@ class OrderController extends GetxController {
   Future<FunctionStatus> chargeOrder({required String orderId}) async {
     try {
       final firestore = FirebaseFirestore.instance;
-      final batch = firestore.batch();
+      final batch = MainScreenController.instance.getLogCustodyTransactionBatch(
+          type: TransactionType.sale,
+          amount: orderModel.totalAmount,
+          shiftId: orderModel.shiftId);
 
       batch.update(firestore.collection('orders').doc(orderId), {
         'status': OrderStatus.complete.name,

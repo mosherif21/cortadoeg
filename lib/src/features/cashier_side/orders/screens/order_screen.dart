@@ -253,26 +253,50 @@ class OrderScreen extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: TextButton(
-                                    style: TextButton.styleFrom(
-                                      splashFactory: InkSparkle.splashFactory,
-                                      overlayColor: Colors.grey,
-                                    ),
-                                    child: Obx(
-                                      () => Text(
-                                        controller.discountAmount.value > 0
-                                            ? 'editDiscount'.tr
-                                            : 'addDiscount'.tr,
-                                        style: const TextStyle(
-                                            color: Colors.black87,
-                                            fontWeight: FontWeight.w800,
-                                            fontSize: 15),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    TextButton(
+                                      style: TextButton.styleFrom(
+                                        splashFactory: InkSparkle.splashFactory,
+                                        overlayColor: Colors.grey,
                                       ),
+                                      child: Obx(
+                                        () => Text(
+                                          controller.orderTax.value > 0
+                                              ? 'removeVat'.tr
+                                              : 'addVat'.tr,
+                                          style: const TextStyle(
+                                              color: Colors.black87,
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 15),
+                                        ),
+                                      ),
+                                      onPressed: () =>
+                                          controller.orderTax.value > 0
+                                              ? controller.removeTax()
+                                              : controller.addTax(),
                                     ),
-                                    onPressed: () => controller.addDiscount(),
-                                  ),
+                                    TextButton(
+                                      style: TextButton.styleFrom(
+                                        splashFactory: InkSparkle.splashFactory,
+                                        overlayColor: Colors.grey,
+                                      ),
+                                      child: Obx(
+                                        () => Text(
+                                          controller.discountAmount.value > 0
+                                              ? 'editDiscount'.tr
+                                              : 'addDiscount'.tr,
+                                          style: const TextStyle(
+                                              color: Colors.black87,
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 15),
+                                        ),
+                                      ),
+                                      onPressed: () => controller.addDiscount(),
+                                    ),
+                                  ],
                                 ),
                                 Container(
                                   decoration: BoxDecoration(
@@ -301,6 +325,33 @@ class OrderScreen extends StatelessWidget {
                                               ),
                                               Text(
                                                 'EGP ${controller.orderSubtotal.value.toStringAsFixed(2)}',
+                                                style: const TextStyle(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.w800,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 5),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 20),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                'totalSalesTax'.tr,
+                                                style: const TextStyle(
+                                                  color: Colors.black54,
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                              Text(
+                                                'EGP ${controller.orderTax.value.toStringAsFixed(2)}',
                                                 style: const TextStyle(
                                                   color: Colors.black,
                                                   fontWeight: FontWeight.w800,
@@ -364,33 +415,6 @@ class OrderScreen extends StatelessWidget {
                                                         color: Colors.grey,
                                                       )
                                                   ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(height: 5),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 20),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                'totalSalesTax'.tr,
-                                                style: const TextStyle(
-                                                  color: Colors.black54,
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                              Text(
-                                                'EGP ${controller.orderTax.value.toStringAsFixed(2)}',
-                                                style: const TextStyle(
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.w800,
-                                                  fontSize: 14,
                                                 ),
                                               ),
                                             ],

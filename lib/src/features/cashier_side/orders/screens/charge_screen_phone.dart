@@ -39,7 +39,7 @@ class ChargeScreenPhone extends StatelessWidget {
         barrierDismissible: false,
         useSafeArea: false,
         curve: Curves.easeIn,
-        maxExtent: screenHeight * 0.52,
+        maxExtent: screenHeight * 0.6,
         barrierColor: Colors.transparent,
         duration: const Duration(milliseconds: 200),
         onDragging: (pos) {},
@@ -178,6 +178,31 @@ class ChargeScreenPhone extends StatelessWidget {
                       ),
                       const SizedBox(height: 5),
                       Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'totalSalesTax'.tr,
+                              style: const TextStyle(
+                                color: Colors.black54,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 20,
+                              ),
+                            ),
+                            Text(
+                              'EGP ${controller.orderTax.value.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Padding(
                         padding: EdgeInsets.only(
                           left: isLangEnglish()
                               ? 20
@@ -222,31 +247,6 @@ class ChargeScreenPhone extends StatelessWidget {
                                       color: Colors.grey,
                                     ),
                                 ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 5),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'totalSalesTax'.tr,
-                              style: const TextStyle(
-                                color: Colors.black54,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 20,
-                              ),
-                            ),
-                            Text(
-                              'EGP ${controller.orderTax.value.toStringAsFixed(2)}',
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 20,
                               ),
                             ),
                           ],
@@ -353,7 +353,7 @@ class ChargeScreenPhone extends StatelessWidget {
                             fontSize: controller.currentCustomerName.value ==
                                     'guest'.tr
                                 ? 16
-                                : 15,
+                                : 14.6,
                             icon: controller.currentCustomerName.value ==
                                     'guest'.tr
                                 ? Icons.person
@@ -409,20 +409,43 @@ class ChargeScreenPhone extends StatelessWidget {
                             buttonColor: Colors.black,
                             textColor: Colors.white,
                             borderRadius: 15,
-                            fontSize: 15,
+                            fontSize: 16,
                             elevation: 0,
-                            icon: Icons.payments_outlined,
+                            icon: Icons.sell_outlined,
                             iconColor: Colors.white,
                             enabled: controller.orderItems.isNotEmpty,
-                            text:
-                                '${'charge'.tr} | EGP ${controller.orderTotal.value.toStringAsFixed(2)}',
-                            onClick: () => controller.onChargeTap(
-                                isPhone: true, context: context),
+                            text: controller.orderTax.value > 0
+                                ? 'removeVat'.tr
+                                : 'addVat'.tr,
+                            onClick: () => controller.orderTax.value > 0
+                                ? controller.removeTax()
+                                : controller.addTax(),
                           ),
                         ),
                       ),
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                height: 55,
+                child: Obx(
+                  () => IconTextElevatedButton(
+                    buttonColor: Colors.black,
+                    textColor: Colors.white,
+                    borderRadius: 15,
+                    fontSize: 18,
+                    elevation: 0,
+                    icon: Icons.payments_outlined,
+                    iconColor: Colors.white,
+                    enabled: controller.orderItems.isNotEmpty,
+                    text:
+                        '${'charge'.tr} | EGP ${controller.orderTotal.value.toStringAsFixed(2)}',
+                    onClick: () =>
+                        controller.onChargeTap(isPhone: true, context: context),
+                  ),
                 ),
               ),
               const SizedBox(height: 10),
