@@ -3,7 +3,7 @@ import 'package:cortadoeg/src/features/admin_side/admin_main_screen/controllers/
 import 'package:cortadoeg/src/features/admin_side/custody_shifts/screens/custody_shifts_screen.dart';
 import 'package:cortadoeg/src/features/admin_side/inventory/screens/inventory_screen.dart';
 import 'package:cortadoeg/src/features/admin_side/passcodes/screens/passcodes_screen.dart';
-import 'package:cortadoeg/src/features/admin_side/reports/screens/reports_screen.dart';
+import 'package:cortadoeg/src/features/admin_side/sales/screens/sales_screen.dart';
 import 'package:cortadoeg/src/general/general_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -81,7 +81,7 @@ class AdminMainScreen extends StatelessWidget {
               itemBuilder: (BuildContext context, int index) {
                 switch (index) {
                   case 0:
-                    return const ReportsScreen();
+                    return const SalesScreen();
                   case 1:
                     return const CustodyShiftsScreen();
                   case 2:

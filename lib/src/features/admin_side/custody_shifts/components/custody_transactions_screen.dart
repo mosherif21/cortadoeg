@@ -73,33 +73,12 @@ class CustodyShiftTransactionsScreen extends StatelessWidget {
               wrapInCard: true,
               minWidth: screenType.isPhone ? 1160 : 1460,
               headingRowColor: const WidgetStatePropertyAll(Colors.white),
-              empty: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Lottie.asset(
-                      kEmptyCoffeeCupAnim,
-                      fit: BoxFit.contain,
-                      height: screenHeight * 0.25,
-                    ),
-                    AutoSizeText(
-                      'noCustodyTransactionsFoundTitle'.tr,
-                      style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 26,
-                          fontWeight: FontWeight.w600),
-                      maxLines: 1,
-                    ),
-                    const SizedBox(height: 5.0),
-                  ],
-                ),
-              ),
+              empty: const SizedBox.shrink(),
               loading: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Lottie.asset(
                   kLoadingWalkingCoffeeAnim,
-                  height: screenHeight * 0.5,
+                  height: screenHeight * 0.2,
                 ),
               ),
               columns: [

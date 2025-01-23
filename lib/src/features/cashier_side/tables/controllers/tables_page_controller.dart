@@ -543,17 +543,18 @@ class TablesPageController extends GetxController {
       final DateTime now = DateTime.now();
 
       final ordersRef = FirebaseFirestore.instance.collection('orders');
-      final QuerySnapshot todayOrders = await ordersRef
+      final todayOrders = await ordersRef
           .where('timestamp',
               isGreaterThanOrEqualTo:
                   Timestamp.fromDate(DateTime(now.year, now.month, now.day)))
           .where('timestamp',
               isLessThan: Timestamp.fromDate(
                   DateTime(now.year, now.month, now.day + 1)))
+          .count()
           .get();
 
-      final int orderCount = todayOrders.docs.length;
-      return orderCount + 1;
+      final int orderCount = todayOrders.count ?? 1;
+      return orderCount;
     } on FirebaseException catch (error) {
       if (kDebugMode) {
         AppInit.logger.e(error.toString());

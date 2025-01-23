@@ -76,7 +76,7 @@ class AdminMainScreenController extends GetxController {
   String getPageTitle(int navBarIndex) {
     switch (navBarIndex) {
       case 0:
-        return 'reports'.tr;
+        return 'salesOverview'.tr;
       case 1:
         return 'custodyShifts'.tr;
       case 2:

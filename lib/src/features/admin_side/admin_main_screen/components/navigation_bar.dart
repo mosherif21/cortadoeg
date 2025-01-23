@@ -95,7 +95,7 @@ class AdminSideNavigationBar extends StatelessWidget {
       items: [
         SidebarXItem(
             icon: Icons.area_chart_rounded,
-            label: 'reports'.tr,
+            label: 'sales'.tr,
             onLongPress:
                 (!_isPhone) ? () => _controller.toggleExtended() : null,
             onTap: (_isPhone) ? () => Get.back() : null,

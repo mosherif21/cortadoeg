@@ -56,7 +56,6 @@ class CustodyReportsController extends GetxController {
   void updateNewDayDateFilters() {
     _initializeDateRangeOptions();
     resetTableValues();
-    //fetchData(start: currentStartIndex);
   }
 
   void resetTableValues() {
@@ -160,7 +159,6 @@ class CustodyReportsController extends GetxController {
               };
               currentSelectedDate.value = dateRangeOptions.length - 1;
               resetTableValues();
-              // fetchData(start: currentStartIndex);
             }
           } else {
             resetDateFilter();
@@ -171,7 +169,6 @@ class CustodyReportsController extends GetxController {
             dateFrom = selectedRange["from"];
             dateTo = selectedRange["to"];
             resetTableValues();
-            // fetchData(start: currentStartIndex);
             final dateKey = dateRangeOptions.keys
                 .toList()
                 .elementAt(currentSelectedDate.value);
@@ -199,7 +196,6 @@ class CustodyReportsController extends GetxController {
     dateTo = DateTime(now.year, now.month, now.day, 23, 59, 59);
     currentSelectedDate.value = 0;
     resetTableValues();
-    //  fetchData(start: currentStartIndex);
   }
 
   bool isDate(String input) {
@@ -217,14 +213,12 @@ class CustodyReportsController extends GetxController {
         searchText = '';
         if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
         resetTableValues();
-        //    fetchData(start: currentStartIndex);
       }
     } else {
       searchText = value;
       if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
       _searchDebounce = Timer(const Duration(milliseconds: 500), () {
         resetTableValues();
-        //  fetchData(start: currentStartIndex);
       });
     }
   }
@@ -296,14 +290,12 @@ class CustodyReportsController extends GetxController {
     sortColumnIndex.value = columnIndex;
     sortAscending.value = ascending;
     resetTableValues();
-    //fetchData(start: currentStartIndex, ascending: ascending);
   }
 
   void onShiftStatusChanged(String value, index) {
     if (index != currentSelectedStatus.value) {
       currentSelectedStatus.value = index;
       resetTableValues();
-      // fetchData(start: currentStartIndex);
     }
   }
 
@@ -338,7 +330,6 @@ class CustodyReportsController extends GetxController {
 
   void onShiftsRefresh() {
     resetTableValues();
-    //fetchData(start: currentStartIndex);
     shiftsRefreshController.refreshCompleted();
   }
 

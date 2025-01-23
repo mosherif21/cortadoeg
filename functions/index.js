@@ -109,125 +109,46 @@ exports.checkProductInventory = onSchedule("every 1 minutes", async (event) => {
   }
 });
 
-
-exports.checkProductInventory = onSchedule("every 1 minutes", async (event) => {
-  try {
-    const productsSnapshot = await firestore.collection("products").get();
-    const lowInventoryProducts = [];
-    const emptyInventoryProducts = [];
-
-    productsSnapshot.forEach((doc) => {
-      const product = doc.data();
-      const measuringUnit = product.measuringUnit;
-      const availableQuantity = product.availableQuantity || 0;
-
-      if (measuringUnit === "piece" && availableQuantity < 2) {
-        if (availableQuantity <= 0) {
-          emptyInventoryProducts.push({ id: doc.id, ...product });
-        } else {
-          lowInventoryProducts.push({ id: doc.id, ...product });
-        }
-      } else if ((measuringUnit === "ml" || measuringUnit === "gm") && availableQuantity < 100) {
-        if (availableQuantity <= 0) {
-          emptyInventoryProducts.push({ id: doc.id, ...product });
-        } else {
-          lowInventoryProducts.push({ id: doc.id, ...product });
-        }
-      }
-    });
-
-    if (lowInventoryProducts.length === 0 && emptyInventoryProducts.length === 0) {
-      console.log("No low or empty inventory products found");
-      return;
-    }
-    const adminsTokensDoc = await firestore.collection("fcmTokens").doc("adminsFcmTokens").get();
-    if (!adminsTokensDoc.exists) {
-      console.error("Admin FCM tokens not found");
-      return;
-    }
-
-    const adminsTokensData = adminsTokensDoc.data();
-    const tokens = adminsTokensData.tokens;
-
-    if (!tokens || tokens.length === 0) {
-      console.error("No admin FCM tokens available");
-      return;
-    }
-    const messages = [];
-
-    tokens.forEach((admin) => {
-      const notificationsLang = admin.notificationsLang || "en";
-      const adminFcmToken = admin.fcmToken;
-
-      lowInventoryProducts.forEach((product) => {
-        const title = notificationsLang === "en" ? "Low Inventory Alert" : "تنبيه جرد منخفض";
-        const body =
-          notificationsLang === "en"
-            ? `Product ${product.name} inventory is low. Only ${product.availableQuantity} ${product.measuringUnit} left.`
-            : `المنتج ${product.name} جرده منخفض. فقط ${product.availableQuantity} ${product.measuringUnit} متبقية.`;
-
-        messages.push({
-          token: adminFcmToken,
-          notification: {
-            title,
-            body,
-          },
-        });
-      });
-
-      emptyInventoryProducts.forEach((product) => {
-        const title = notificationsLang === "en" ? "Out of Stock Alert" : "تنبيه نفاد المخزون";
-        const body =
-          notificationsLang === "en"
-            ? `Product ${product.name} is out of stock.`
-            : `المنتج ${product.name} نفد من المخزون.`;
-
-        messages.push({
-          token: adminFcmToken,
-          notification: {
-            title,
-            body,
-          },
-        });
-      });
-    });
-    const messagingPromises = messages.map((message) => messaging.send(message));
-    await Promise.all(messagingPromises);
-
-    console.log("Notifications sent successfully");
-  } catch (error) {
-    console.error("Error checking product inventory:", error);
-  }
-});
-
-exports.deleteUserWithResources = onRequest(async (data, context) => {
-  const userId = data.body.employeeId;
+exports.deleteUserWithResources = functions.https.onRequest(async (req, res) => {
+  const userId = req.body.userId;
 
   if (!userId) {
-    throw new functions.https.HttpsError(
-      'invalid-argument',
-      'The function must be called with a userId.'
-    );
+    res.status(400).send('The function must be called with a valid userId.');
+    return;
   }
 
-  const storage = getStorage.bucket('gs://cortadoegypt.firebasestorage.app');
   const employeesCollection = 'employees';
+  const fcmTokensCollection = 'fcmTokens';
+  const notificationsCollection = 'notifications';
   const storageFolder = `users/${userId}`;
 
   try {
-    await getAuth.deleteUser(userId);
+    await auth.deleteUser(userId);
     console.log(`Successfully deleted user with UID: ${userId}`);
-
-    const docRef = firestore.collection(employeesCollection).doc(userId);
-    await docRef.delete();
-    console.log(`Firestore document deleted from collection '${employeesCollection}' for userId: ${userId}`);
-
+    const employeeDocRef = firestore.collection(employeesCollection).doc(userId);
+    await employeeDocRef.delete();
+    console.log(`Firestore document deleted from '${employeesCollection}' for userId: ${userId}`);
+    const fcmTokensSnapshot = await firestore.collection(fcmTokensCollection).where('userId', '==', userId).get();
+    if (!fcmTokensSnapshot.empty) {
+      const deleteFcmTokensPromises = fcmTokensSnapshot.docs.map((doc) => doc.ref.delete());
+      await Promise.all(deleteFcmTokensPromises);
+      console.log(`FCM tokens deleted for userId: ${userId}`);
+    } else {
+      console.log(`No FCM tokens found for userId: ${userId}`);
+    }
+    const notificationsSnapshot = await firestore.collection(notificationsCollection).where('userId', '==', userId).get();
+    if (!notificationsSnapshot.empty) {
+      const deleteNotificationsPromises = notificationsSnapshot.docs.map((doc) => doc.ref.delete());
+      await Promise.all(deleteNotificationsPromises);
+      console.log(`Notifications deleted for userId: ${userId}`);
+    } else {
+      console.log(`No notifications found for userId: ${userId}`);
+    }
     try {
       const [files] = await storage.getFiles({ prefix: storageFolder });
-
       if (files.length > 0) {
-        const deletionPromises = files.map((file) => file.delete());
-        await Promise.all(deletionPromises);
+        const deleteFilesPromises = files.map((file) => file.delete());
+        await Promise.all(deleteFilesPromises);
         console.log(`Storage folder '${storageFolder}' and its contents have been deleted.`);
       } else {
         console.log(`No storage folder found for userId: ${userId}, skipping deletion.`);
@@ -235,14 +156,12 @@ exports.deleteUserWithResources = onRequest(async (data, context) => {
     } catch (storageError) {
       console.warn(`Error deleting storage folder for userId: ${userId}. This may indicate the folder does not exist.`);
     }
-      console.log('User, Firestore document, and Storage folder processed successfully.');
-      context.status(200).send("Employee deleted successfully.");
+
+    console.log('User, Firestore documents, and storage folder processed successfully.');
+    res.status(200).send('Employee and related resources deleted successfully.');
   } catch (error) {
     console.error('Error during deletion:', error);
-    throw new functions.https.HttpsError(
-      'internal',
-      `Failed to process deletion for userId ${userId}: ${error.message}`
-    );
+    res.status(500).send(`Failed to delete user and resources: ${error.message}`);
   }
 });
 

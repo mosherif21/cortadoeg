@@ -173,16 +173,16 @@ class InventoryScreen extends StatelessWidget {
                                                       const EdgeInsets.all(10),
                                                   child: Container(
                                                     decoration: BoxDecoration(
-                                                      color: Colors.white,
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                               15),
+                                                      color: Colors.white,
                                                       boxShadow: [
                                                         BoxShadow(
                                                           color: Colors.grey
-                                                              .shade300, //New
-                                                          blurRadius: 5.0,
-                                                        )
+                                                              .shade200, //New
+                                                          blurRadius: 10,
+                                                        ),
                                                       ],
                                                     ),
                                                     child: Padding(
@@ -322,11 +322,12 @@ class ProductCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
+          color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.shade300, //New
-              blurRadius: 5.0,
-            )
+              color: Colors.grey.shade200, //New
+              blurRadius: 10,
+            ),
           ],
         ),
         child: Material(

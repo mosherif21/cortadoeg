@@ -1263,6 +1263,16 @@ class Languages extends Translations {
           'shiftActive': 'Custody shift is active',
           'addVat': 'Add 14% vat',
           'removeVat': 'Remove 14% vat',
+          'salesOverview': 'Sales Overview',
+          'totalRevenue': 'Total Revenue',
+          'totalOrders': 'Total Orders',
+          'totalCustomers': 'Total Customers',
+          'fromLastDay': 'From Last Day',
+          'fromPreviousDays': 'From the previous @difference days',
+          'fromPreviousMonth': 'From the previous @difference month',
+          'fromPreviousMonths': 'From the previous @difference months',
+          'fromPreviousYear': 'From the previous @difference year',
+          'fromPreviousYears': 'From the previous @difference years',
         },
       };
 }

@@ -181,9 +181,9 @@ class CategoriesScreen extends StatelessWidget {
                                                       boxShadow: [
                                                         BoxShadow(
                                                           color: Colors.grey
-                                                              .shade300, //New
-                                                          blurRadius: 5.0,
-                                                        )
+                                                              .shade200, //New
+                                                          blurRadius: 10,
+                                                        ),
                                                       ],
                                                     ),
                                                     child: Padding(
@@ -228,9 +228,9 @@ class CategoriesScreen extends StatelessWidget {
                                                       boxShadow: [
                                                         BoxShadow(
                                                           color: Colors.grey
-                                                              .shade300, //New
-                                                          blurRadius: 5.0,
-                                                        )
+                                                              .shade200, //New
+                                                          blurRadius: 10,
+                                                        ),
                                                       ],
                                                     ),
                                                     child: Material(
@@ -325,9 +325,9 @@ class CategoryCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.shade300, //New
-              blurRadius: 5.0,
-            )
+              color: Colors.grey.shade200, //New
+              blurRadius: 10,
+            ),
           ],
         ),
         child: Material(

@@ -40,6 +40,13 @@ class CategoryScreenController extends GetxController {
     super.onInit();
   }
 
+  @override
+  void onClose() {
+    categoryRefreshController.dispose();
+    categoryNameTextController.dispose();
+    super.onClose();
+  }
+
   void onCategoriesSearch(String value) {
     if (value.trim().isEmpty) {
       if (searchText.isNotEmpty) {
