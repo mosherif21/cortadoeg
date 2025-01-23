@@ -8,9 +8,9 @@ import 'package:get/get.dart';
 import 'localization/language/localization_strings.dart';
 
 void main() async {
-  await AppInit.initialize().whenComplete(
-    () => runApp(const MyApp()),
-  );
+  await AppInit.initialize().whenComplete(() {
+    runApp(const MyApp());
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -32,44 +32,30 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       locale: AppInit.setLocale,
       fallbackLocale: const Locale('en', 'US'),
-      home: const OrientationLockScreen(),
+      home: const OrientationHandler(),
     );
   }
 }
 
-class OrientationLockScreen extends StatefulWidget {
-  const OrientationLockScreen({super.key});
-
-  @override
-  State<OrientationLockScreen> createState() => _OrientationLockScreenState();
-}
-
-class _OrientationLockScreenState extends State<OrientationLockScreen> {
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    final isPhone = MediaQuery.of(context).size.shortestSide < 600;
-    if (isPhone) {
-      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    } else {
-      SystemChrome.setPreferredOrientations(
-          [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
-    }
-  }
-
-  @override
-  void dispose() {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
-    super.dispose();
-  }
+class OrientationHandler extends StatelessWidget {
+  const OrientationHandler({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.shortestSide;
+
+    if (screenWidth >= 600) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    } else {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    }
+
     return AppInit.getInitialPage();
   }
 }
