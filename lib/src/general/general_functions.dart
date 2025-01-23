@@ -295,7 +295,7 @@ Future<FunctionStatus> chargeOrderPrinter(
   final ReceivePort receivePort = ReceivePort();
   final receiptOrderItems = order.items
       .map((item) => {
-            'name': item.name,
+            'name': '${item.name} - ${item.selectedSize.name}',
             'qty': item.quantity,
             'price': item.price,
           })
@@ -312,7 +312,7 @@ Future<FunctionStatus> chargeOrderPrinter(
     'orderId': order.orderId,
     'discountAmount': order.discountAmount,
     'subtotalAmount': order.subtotalAmount,
-    'taxAmount': order.taxTotalAmount,
+    'taxTotalAmount': order.taxTotalAmount,
     'totalAmount': order.totalAmount,
     'orderTime': order.timestamp.toDate(),
   });

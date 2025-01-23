@@ -22,12 +22,20 @@ class SalesScreenController extends GetxController {
   final RxString lastPeriodString = 'fromLastDay'.tr.obs;
   final RxDouble totalRevenue = 0.0.obs;
   final RxInt totalOrders = 0.obs;
-  final RxInt totalCustomers = 0.obs;
+  final RxInt totalRegularCustomerOrders = 0.obs;
   final RxDouble revenueChangePercentage = 0.0.obs;
   final RxDouble ordersChangePercentage = 0.0.obs;
   final RxDouble customersChangePercentage = 0.0.obs;
+  final totalProfit = 0.0.obs;
+  final totalCostPrice = 0.0.obs;
+  final profitChangePercentage = 0.0.obs;
+  final completeOrderPercentage = 0.0.obs;
+  final returnedOrderPercentage = 0.0.obs;
+  final canceledOrderPercentage = 0.0.obs;
+  final dineInOrdersPercentage = 0.0.obs;
+  final takeawayOrdersPercentage = 0.0.obs;
 
-  final RxBool loadingSales = true.obs;
+  final RxBool loadingGeneralSales = true.obs;
   @override
   void onInit() {
     super.onInit();
@@ -36,16 +44,18 @@ class SalesScreenController extends GetxController {
     dateFrom = DateTime(now.year, now.month, now.day);
     dateTo = DateTime(now.year, now.month, now.day, 23, 59, 59);
     _initializeDateRangeOptions();
-    fetchSales();
+    fetchGeneralSales();
   }
 
-  void updateDateFilters() {
+  void updateLanguagesFilters() {
     _initializeDateRangeOptions();
+
+    lastPeriodString.value = getFromLastPeriodString(dateFrom!, dateTo!);
   }
 
   void updateNewDayDateFilters() {
     _initializeDateRangeOptions();
-    fetchSales();
+    fetchGeneralSales();
   }
 
   void _initializeDateRangeOptions() {
@@ -141,7 +151,7 @@ class SalesScreenController extends GetxController {
                 "to": dateTo!,
               };
               currentSelectedDate.value = dateRangeOptions.length - 1;
-              fetchSales();
+              fetchGeneralSales();
             }
           } else {
             resetDateFilter();
@@ -151,7 +161,7 @@ class SalesScreenController extends GetxController {
           if (selectedRange != null) {
             dateFrom = selectedRange["from"];
             dateTo = selectedRange["to"];
-            fetchSales();
+            fetchGeneralSales();
             final dateKey = dateRangeOptions.keys
                 .toList()
                 .elementAt(currentSelectedDate.value);
@@ -178,7 +188,7 @@ class SalesScreenController extends GetxController {
     dateFrom = DateTime(now.year, now.month, now.day);
     dateTo = DateTime(now.year, now.month, now.day, 23, 59, 59);
     currentSelectedDate.value = 0;
-    fetchSales();
+    fetchGeneralSales();
   }
 
   bool isDate(String input) {
@@ -191,37 +201,73 @@ class SalesScreenController extends GetxController {
   }
 
   void onRefresh() async {
-    fetchSales();
+    fetchGeneralSales();
     salesRefreshController.refreshCompleted();
   }
 
-  void fetchSales() async {
+  void fetchGeneralSales() async {
     try {
-      loadingSales.value = true;
+      loadingGeneralSales.value = true;
       final revenueQuery = await _fetchMetricsForDateRange(dateFrom, dateTo);
       final revenue = revenueQuery['revenue'];
       final orders = revenueQuery['orders'];
       final customers = revenueQuery['customers'];
+      final costPrice = revenueQuery['costPrice'];
+      final statusCounts = revenueQuery['statusCounts'];
+      final dineInCount = revenueQuery['dineInCount'];
+      final takeawayCount = revenueQuery['takeawayCount'];
+      final profit = revenue - costPrice;
+
+      // Calculate percentages for each status
+      final completePercentage =
+          orders > 0 ? (statusCounts['complete'] / orders) * 100 : 0.0;
+      final returnedPercentage =
+          orders > 0 ? (statusCounts['returned'] / orders) * 100 : 0.0;
+      final canceledPercentage =
+          orders > 0 ? (statusCounts['canceled'] / orders) * 100 : 0.0;
+
+      final dineInPercentage = orders > 0 ? (dineInCount / orders) * 100 : 0.0;
+      final takeawayPercentage =
+          orders > 0 ? (takeawayCount / orders) * 100 : 0.0;
+
+      totalCostPrice.value = roundToNearestHalfOrWhole(costPrice);
+      totalRevenue.value = roundToNearestHalfOrWhole(revenue);
+      totalOrders.value = orders;
+      totalRegularCustomerOrders.value = customers;
+      totalProfit.value = roundToNearestHalfOrWhole(profit);
+      completeOrderPercentage.value =
+          roundToNearestHalfOrWhole(completePercentage);
+      returnedOrderPercentage.value =
+          roundToNearestHalfOrWhole(returnedPercentage);
+      canceledOrderPercentage.value =
+          roundToNearestHalfOrWhole(canceledPercentage);
+      dineInOrdersPercentage.value =
+          roundToNearestHalfOrWhole(dineInPercentage);
+      takeawayOrdersPercentage.value =
+          roundToNearestHalfOrWhole(takeawayPercentage);
       final previousRange = _getPreviousDateRange(dateFrom!, dateTo!);
       final previousQuery = await _fetchMetricsForDateRange(
           previousRange['from'], previousRange['to']);
       final previousRevenue = previousQuery['revenue'];
       final previousOrders = previousQuery['orders'];
       final previousCustomers = previousQuery['customers'];
-      totalRevenue.value = revenue;
-      totalOrders.value = orders;
-      totalCustomers.value = customers;
+      final previousCostPrice = previousQuery['costPrice'];
+      final previousProfit = previousRevenue - previousCostPrice;
+
       revenueChangePercentage.value =
           _calculatePercentageChange(previousRevenue, revenue);
       ordersChangePercentage.value = _calculatePercentageChange(
           previousOrders.toDouble(), orders.toDouble());
       customersChangePercentage.value = _calculatePercentageChange(
           previousCustomers.toDouble(), customers.toDouble());
+      profitChangePercentage.value =
+          _calculatePercentageChange(previousProfit, profit);
+
       lastPeriodString.value = getFromLastPeriodString(dateFrom!, dateTo!);
     } catch (e) {
       if (kDebugMode) AppInit.logger.e('Error fetching metrics: $e');
     } finally {
-      loadingSales.value = false;
+      loadingGeneralSales.value = false;
     }
   }
 
@@ -232,22 +278,70 @@ class SalesScreenController extends GetxController {
           .collection('orders')
           .where('timestamp', isGreaterThanOrEqualTo: from)
           .where('timestamp', isLessThanOrEqualTo: to)
+          .where('status', isNotEqualTo: 'active')
           .get();
 
       double revenue = 0.0;
+      double totalCostPrice = 0.0;
       int orders = query.docs.length;
       int customers = 0;
+      int dineInCount = 0;
+      int takeawayCount = 0;
+      final statusCounts = {
+        'complete': 0,
+        'returned': 0,
+        'canceled': 0,
+      };
 
       for (var doc in query.docs) {
-        revenue += doc.data()['totalAmount'] ?? 0.0;
+        final data = doc.data();
+        revenue += data['totalAmount'] ?? 0.0;
 
-        customers++;
+        final items = data['items'] as List<dynamic>? ?? [];
+        for (var item in items) {
+          totalCostPrice += item['costPrice'] ?? 0.0;
+        }
+
+        final status = data['status'] ?? '';
+        if (statusCounts.containsKey(status)) {
+          statusCounts[status] = (statusCounts[status] ?? 0) + 1;
+        }
+
+        final isTakeaway = data['isTakeaway'] ?? false;
+        if (isTakeaway) {
+          takeawayCount++;
+        } else {
+          dineInCount++;
+        }
+        if (data['customerId'] != null) {
+          customers++;
+        }
       }
 
-      return {'revenue': revenue, 'orders': orders, 'customers': customers};
+      return {
+        'revenue': revenue,
+        'costPrice': totalCostPrice,
+        'orders': orders,
+        'customers': customers,
+        'statusCounts': statusCounts,
+        'dineInCount': dineInCount,
+        'takeawayCount': takeawayCount,
+      };
     } catch (e) {
       if (kDebugMode) AppInit.logger.e('Error fetching metrics for range: $e');
-      return {'revenue': 0.0, 'orders': 0, 'customers': 0};
+      return {
+        'revenue': 0.0,
+        'costPrice': 0.0,
+        'orders': 0,
+        'customers': 0,
+        'statusCounts': {
+          'complete': 0,
+          'returned': 0,
+          'canceled': 0,
+        },
+        'dineInCount': 0,
+        'takeawayCount': 0,
+      };
     }
   }
 

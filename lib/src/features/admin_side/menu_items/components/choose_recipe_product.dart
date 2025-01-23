@@ -54,7 +54,6 @@ class ChooseRecipeProduct extends StatelessWidget {
               child: Obx(
                 () => SmartRefresher(
                   enablePullDown: true,
-                  enablePullUp: true,
                   header: ClassicHeader(
                     completeDuration: const Duration(milliseconds: 0),
                     releaseText: 'releaseToRefresh'.tr,

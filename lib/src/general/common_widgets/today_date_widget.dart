@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import '../../features/admin_side/custody_shifts/controllers/custody_screen_controller.dart';
+import '../../features/admin_side/sales/controllers/sales_screen_controller.dart';
 
 class DateController extends GetxController {
   static DateController get instance => Get.find();
@@ -37,6 +38,9 @@ class DateController extends GetxController {
       }
       if (Get.isRegistered<CustodyReportsController>()) {
         CustodyReportsController.instance.updateNewDayDateFilters();
+      }
+      if (Get.isRegistered<SalesScreenController>()) {
+        SalesScreenController.instance.updateNewDayDateFilters();
       }
       _setDailyUpdate();
     });

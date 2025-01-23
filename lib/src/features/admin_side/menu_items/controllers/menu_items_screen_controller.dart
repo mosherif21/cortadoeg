@@ -836,12 +836,15 @@ class ItemsScreenController extends GetxController {
 
   double calculateCostPriceForSize(ItemSizeModel sizeModel) {
     double sizeCost = 0.0;
+
+    // Calculate the cost price based on the recipe
     for (var recipeItem in sizeModel.recipe) {
       sizeCost +=
           (recipeItem.cost / recipeItem.costQuantity) * recipeItem.quantity;
     }
 
-    return sizeCost;
+    // Round to the nearest 0.5
+    return roundToNearestHalfOrWhole(sizeCost);
   }
 
   void onEditOptionValueRecipeTap(

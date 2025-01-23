@@ -3,6 +3,8 @@ import 'package:cortadoeg/src/features/cashier_side/orders/components/models.dar
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
+import '../../../../general/general_functions.dart';
+
 class OrderItemController extends GetxController {
   final ItemModel itemModel;
   final OrderItemModel? orderItemModel;
@@ -102,8 +104,7 @@ class OrderItemController extends GetxController {
             (recipeItem.cost / recipeItem.costQuantity) * recipeItem.quantity;
       }
     }
-
-    return totalCost;
+    return roundToNearestHalfOrWhole(totalCost);
   }
 
   @override

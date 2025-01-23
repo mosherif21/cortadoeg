@@ -1,3 +1,4 @@
+import 'package:cortadoeg/src/features/admin_side/sales/controllers/sales_screen_controller.dart';
 import 'package:cortadoeg/src/general/common_widgets/today_date_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -58,6 +59,9 @@ Future<void> setLocaleLanguage(String languageCode) async {
     }
     if (Get.isRegistered<CustodyReportsController>()) {
       CustodyReportsController.instance.updateDateFilters();
+    }
+    if (Get.isRegistered<SalesScreenController>()) {
+      SalesScreenController.instance.updateLanguagesFilters();
     }
     AuthenticationRepository.instance.setNotificationsLanguage();
     hideLoadingScreen();

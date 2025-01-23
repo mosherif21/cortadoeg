@@ -285,11 +285,7 @@ class OrderController extends GetxController {
         discountAmount.value = discountValue!;
       }
     }
-
-    // Tax is calculated based on the original subtotal (before discounts)
     orderTax.value = orderSubtotal.value * (taxRate / 100);
-
-    // Apply discount to subtotal before calculating the total
     final discountedSubtotal = (orderSubtotal.value - discountAmount.value) < 0
         ? 0
         : (orderSubtotal.value - discountAmount.value);
@@ -672,6 +668,48 @@ class OrderController extends GetxController {
   removeTax() {
     taxRate = 0;
     calculateTotalAmount();
+  }
+
+  void printOrderTap(
+      {required bool isPhone, required BuildContext context}) async {
+    final hasChargeOrderPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.finalizeOrders);
+    final hasChargeOrderPassPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.finalizeOrdersWithPass);
+    if (hasChargeOrderPermission || hasChargeOrderPassPermission) {
+      final passcodeValid = hasChargeOrderPermission
+          ? true
+          : await MainScreenController.instance.showPassCodeScreen(
+              context: context, passcodeType: PasscodeType.finalizeOrders);
+      if (passcodeValid) {
+        orderModel.subtotalAmount = orderSubtotal.value;
+        orderModel.taxTotalAmount = orderTax.value;
+        orderModel.discountAmount = discountAmount.value;
+        orderModel.totalAmount = orderTotal.value;
+        orderModel.items = orderItems.value;
+        showLoadingScreen();
+        final printStatus =
+            await chargeOrderPrinter(order: orderModel, openDrawer: false);
+        hideLoadingScreen();
+        if (printStatus == FunctionStatus.success) {
+          showSnackBar(
+            text: 'orderPrintSuccess'.tr,
+            snackBarType: SnackBarType.success,
+          );
+        } else {
+          showSnackBar(
+              text: 'receiptPrintFailed'.tr,
+              snackBarType: SnackBarType.warning);
+        }
+      }
+    } else {
+      showSnackBar(
+        text: 'functionNotAllowed'.tr,
+        snackBarType: SnackBarType.error,
+      );
+    }
   }
 
   void onChargeTap(

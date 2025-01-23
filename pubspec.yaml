@@ -73,6 +73,7 @@ dependencies:
   device_preview: ^1.2.0
   ping_discover_network_forked: ^0.0.1
   data_table_2: ^2.5.18
+  fl_chart: ^0.70.2
 
 
   #state management dependencies
