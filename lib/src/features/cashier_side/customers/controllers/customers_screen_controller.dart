@@ -877,7 +877,7 @@ class CustomersScreenController extends GetxController {
       {required bool isPhone, required OrderModel orderModel}) async {
     showLoadingScreen();
     final printStatus =
-        await chargeOrderPrinter(order: orderModel, openDrawer: false);
+        await chargeReceiptPrint(order: orderModel, openDrawer: false);
     hideLoadingScreen();
     if (printStatus == FunctionStatus.success) {
       showSnackBar(

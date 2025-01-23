@@ -380,32 +380,4 @@ class ManageTablesPageController extends GetxController {
     tablesRefreshController.dispose();
     super.onClose();
   }
-
-  Future<int?> generateOrderNumber() async {
-    try {
-      final DateTime now = DateTime.now();
-
-      final ordersRef = FirebaseFirestore.instance.collection('orders');
-      final QuerySnapshot todayOrders = await ordersRef
-          .where('timestamp',
-              isGreaterThanOrEqualTo:
-                  Timestamp.fromDate(DateTime(now.year, now.month, now.day)))
-          .where('timestamp',
-              isLessThan: Timestamp.fromDate(
-                  DateTime(now.year, now.month, now.day + 1)))
-          .get();
-
-      final int orderCount = todayOrders.docs.length;
-      return orderCount + 1;
-    } on FirebaseException catch (error) {
-      if (kDebugMode) {
-        AppInit.logger.e(error.toString());
-      }
-    } catch (err) {
-      if (kDebugMode) {
-        AppInit.logger.e(err.toString());
-      }
-    }
-    return null;
-  }
 }

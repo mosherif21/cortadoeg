@@ -761,16 +761,9 @@ class MainScreenController extends GetxController {
 
   Future<int?> generateOrderNumber() async {
     try {
-      final DateTime now = DateTime.now();
-
       final ordersRef = firestore.collection('orders');
       final todayOrders = await ordersRef
-          .where('timestamp',
-              isGreaterThanOrEqualTo:
-                  Timestamp.fromDate(DateTime(now.year, now.month, now.day)))
-          .where('timestamp',
-              isLessThan: Timestamp.fromDate(
-                  DateTime(now.year, now.month, now.day + 1)))
+          .where('shiftId', isEqualTo: currentActiveShiftId.value)
           .count()
           .get();
 

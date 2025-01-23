@@ -260,7 +260,7 @@ class CustodyShiftsScreen extends StatelessWidget {
                           label: alignHorizontalWidget(
                               child: Text('closingTime'.tr, style: textStyle)),
                           tooltip: 'closingTime'.tr,
-                          fixedWidth: 220,
+                          fixedWidth: 230,
                           size: ColumnSize.L,
                           onSort: (index, ascending) =>
                               controller.sortData(index, ascending),

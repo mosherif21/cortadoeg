@@ -286,7 +286,7 @@ Future<FunctionStatus> sendNotification({
   return FunctionStatus.failure;
 }
 
-Future<FunctionStatus> chargeOrderPrinter(
+Future<FunctionStatus> customerReceiptPrint(
     {required OrderModel order, required bool openDrawer}) async {
   final ByteData data = await rootBundle.load(kLogoImage);
   final capabilitiesContent = await rootBundle
@@ -300,7 +300,7 @@ Future<FunctionStatus> chargeOrderPrinter(
             'price': item.price,
           })
       .toList();
-  await Isolate.spawn(chargeOrderIsolate, {
+  await Isolate.spawn(customerReceiptPrintIsolate, {
     'sendPort': receivePort.sendPort,
     'orderValue': order,
     'capabilitiesContent': capabilitiesContent,
@@ -322,7 +322,7 @@ Future<FunctionStatus> chargeOrderPrinter(
       : FunctionStatus.failure;
 }
 
-void chargeOrderIsolate(Map<String, dynamic> data) async {
+void customerReceiptPrintIsolate(Map<String, dynamic> data) async {
   final SendPort sendPort = data['sendPort'];
   final String capabilitiesContent = data['capabilitiesContent'];
   final Uint8List logoBytes = data['logoBytes'];
@@ -337,7 +337,7 @@ void chargeOrderIsolate(Map<String, dynamic> data) async {
   final double taxTotalAmount = data['taxTotalAmount'];
   final double totalAmount = data['totalAmount'];
   final DateTime orderTime = data['orderTime'];
-  final resultStatus = await printReceipt(
+  final resultStatus = await printCustomerReceipt(
     logoBytes: logoBytes,
     capabilitiesContent: capabilitiesContent,
     openDrawer: openDrawer,
@@ -354,7 +354,7 @@ void chargeOrderIsolate(Map<String, dynamic> data) async {
   sendPort.send(resultStatus == FunctionStatus.success ? 'success' : 'failure');
 }
 
-Future<FunctionStatus> printReceipt({
+Future<FunctionStatus> printCustomerReceipt({
   required List<Map<String, dynamic>> receiptOrderItems,
   required String orderNumber,
   required String employeeName,
@@ -369,7 +369,7 @@ Future<FunctionStatus> printReceipt({
   required bool openDrawer,
 }) async {
   try {
-    final receiptBytes = await generateReceiptBytes(
+    final receiptBytes = await generateCustomerReceiptBytes(
       cafeName: 'Cortado Egypt - Louran Branch',
       slogan: 'Fix What Others Have Ruined',
       address: '50 Al Akbal Street, Louran, Alexandria EG',
@@ -437,37 +437,7 @@ Future<FunctionStatus> printReceipt({
   }
 }
 
-Future<String?> getPrinterIP() async {
-  try {
-    const subnet = '192.168.1';
-    const port = 9100;
-    final stream = NetworkAnalyzer.discover2(
-      '$subnet.0',
-      port,
-      timeout: const Duration(seconds: 5),
-    );
-
-    await for (final NetworkAddress address in stream) {
-      if (address.exists) {
-        if (kDebugMode) {
-          AppInit.logger.i('Printer found at ${address.ip}');
-        }
-        return address.ip;
-      }
-    }
-    if (kDebugMode) {
-      AppInit.logger.e('No printers found on the network.');
-    }
-    return null;
-  } catch (e) {
-    if (kDebugMode) {
-      AppInit.logger.e('Error during printer discovery: $e');
-    }
-    return null;
-  }
-}
-
-Future<List<int>> generateReceiptBytes({
+Future<List<int>> generateCustomerReceiptBytes({
   required String cafeName,
   required String slogan,
   required String address,
@@ -704,20 +674,354 @@ Future<FunctionStatus> openDrawer({required String capabilitiesContent}) async {
   }
 }
 
+Future<FunctionStatus> chargeReceiptPrint(
+    {required OrderModel order, required bool openDrawer}) async {
+  final capabilitiesContent = await rootBundle
+      .loadString('packages/flutter_esc_pos_utils/resources/capabilities.json');
+  final ReceivePort receivePort = ReceivePort();
+  final receiptOrderItems = order.items
+      .map((item) => {
+            'name': '${item.name} - ${item.selectedSize.name}',
+            'qty': item.quantity,
+            'price': item.price,
+          })
+      .toList();
+  await Isolate.spawn(chargeReceiptPrintIsolate, {
+    'sendPort': receivePort.sendPort,
+    'orderValue': order,
+    'capabilitiesContent': capabilitiesContent,
+    'openDrawer': openDrawer,
+    'receiptOrderItems': receiptOrderItems,
+    'orderNumber': order.orderNumber,
+    'employeeName': order.employeeName,
+    'orderId': order.orderId,
+    'discountAmount': order.discountAmount,
+    'subtotalAmount': order.subtotalAmount,
+    'taxTotalAmount': order.taxTotalAmount,
+    'totalAmount': order.totalAmount,
+    'orderTime': order.timestamp.toDate(),
+  });
+  final resultFromIsolate = await receivePort.first;
+  return (resultFromIsolate as String).compareTo('success') == 0
+      ? FunctionStatus.success
+      : FunctionStatus.failure;
+}
+
+void chargeReceiptPrintIsolate(Map<String, dynamic> data) async {
+  final SendPort sendPort = data['sendPort'];
+  final String capabilitiesContent = data['capabilitiesContent'];
+  final bool openDrawer = data['openDrawer'];
+  final List<Map<String, dynamic>> receiptOrderItems =
+      data['receiptOrderItems'];
+  final int orderNumber = data['orderNumber'];
+  final String employeeName = data['employeeName'];
+  final String orderId = data['orderId'];
+  final double discountAmount = data['discountAmount'];
+  final double subtotalAmount = data['subtotalAmount'];
+  final double taxTotalAmount = data['taxTotalAmount'];
+  final double totalAmount = data['totalAmount'];
+  final DateTime orderTime = data['orderTime'];
+  final resultStatus = await printChargeReceipt(
+    capabilitiesContent: capabilitiesContent,
+    openDrawer: openDrawer,
+    receiptOrderItems: receiptOrderItems,
+    orderNumber: orderNumber.toString(),
+    employeeName: employeeName,
+    orderId: orderId,
+    discountAmount: discountAmount,
+    subtotalAmount: subtotalAmount,
+    taxTotalAmount: taxTotalAmount,
+    totalAmount: totalAmount,
+    orderTime: orderTime,
+  );
+  sendPort.send(resultStatus == FunctionStatus.success ? 'success' : 'failure');
+}
+
+Future<FunctionStatus> printChargeReceipt({
+  required List<Map<String, dynamic>> receiptOrderItems,
+  required String orderNumber,
+  required String employeeName,
+  required String orderId,
+  required double discountAmount,
+  required double subtotalAmount,
+  required double taxTotalAmount,
+  required double totalAmount,
+  required DateTime orderTime,
+  required String capabilitiesContent,
+  required bool openDrawer,
+}) async {
+  try {
+    final receiptBytes = await generateChargeReceiptBytes(
+      cafeName: 'Cortado Egypt - Louran Branch',
+      orderNumber: orderNumber,
+      printedAt: DateTime.now(),
+      orderTime: orderTime,
+      creator: employeeName,
+      orderItems: receiptOrderItems,
+      discount: discountAmount,
+      taxTotalAmount: taxTotalAmount,
+      subtotal: subtotalAmount,
+      total: totalAmount,
+      capabilitiesContent: capabilitiesContent,
+      openDrawer: openDrawer,
+      orderId: orderId,
+      taxId: '648-394-425',
+    );
+    const printerIp = '192.168.1.8';
+    //await getPrinterIP();
+
+    // if (printerIp == null) {
+    //   return FunctionStatus.failure;
+    // }
+    final printer = PrinterNetworkManager(printerIp);
+    final PosPrintResult result = await printer.connect();
+
+    if (result == PosPrintResult.success) {
+      await printer.printTicket(receiptBytes);
+      printer.disconnect();
+
+      if (kDebugMode) {
+        AppInit.logger.i('Receipt printed Successfully');
+      }
+      return FunctionStatus.success;
+    } else {
+      if (kDebugMode) {
+        AppInit.logger.e('Failed to connect to printer');
+      }
+      return FunctionStatus.failure;
+    }
+    // final printer = PrinterNetworkManager('192.168.1.8');
+    // final PosPrintResult result = await printer.connect();
+    // if (result == PosPrintResult.success) {
+    //   await printer.printTicket(receiptBytes);
+    //   printer.disconnect();
+    //   if (kDebugMode) {
+    //     AppInit.logger.i('Receipt printed Successfully');
+    //   }
+    //   return FunctionStatus.success;
+    // } else {
+    //   if (kDebugMode) {
+    //     AppInit.logger.e('Failed to connect to printer');
+    //   }
+    //   return FunctionStatus.failure;
+    // }
+  } catch (e) {
+    if (kDebugMode) {
+      AppInit.logger.e(e.toString());
+    }
+    return FunctionStatus.failure;
+  }
+}
+
+Future<List<int>> generateChargeReceiptBytes({
+  required String cafeName,
+  required String orderId,
+  required String taxId,
+  required String orderNumber,
+  required DateTime printedAt,
+  required DateTime orderTime,
+  required String creator,
+  required List<Map<String, dynamic>> orderItems,
+  required double discount,
+  required double subtotal,
+  required double taxTotalAmount,
+  required double total,
+  required String capabilitiesContent,
+  required bool openDrawer,
+}) async {
+  final profile =
+      await CapabilityProfile.load(capabilitiesContent: capabilitiesContent);
+  final generator = Generator(PaperSize.mm80, profile);
+  List<int> bytes = [];
+  if (openDrawer) {
+    bytes += generator.drawer();
+  }
+  bytes += generator.text(cafeName,
+      styles: const PosStyles(
+          align: PosAlign.center, bold: true, fontType: PosFontType.fontA));
+  bytes += generator.text('Free Palestine',
+      styles: const PosStyles(
+          align: PosAlign.center, bold: true, fontType: PosFontType.fontA));
+  bytes += generator.feed(1);
+
+  bytes += generator.text('Order# $orderNumber',
+      styles: const PosStyles(
+        align: PosAlign.center,
+        bold: true,
+        fontType: PosFontType.fontA,
+        width: PosTextSize.size2,
+        height: PosTextSize.size2,
+      ));
+  bytes += generator.feed(1);
+  bytes += generator.text(
+      'Printed At: ${DateFormat('yyyy/MM/dd hh:mm:ss a').format(printedAt)}',
+      styles: const PosStyles(
+          align: PosAlign.left, bold: true, fontType: PosFontType.fontA));
+  bytes += generator.text(
+      'Order Time: ${DateFormat('yyyy/MM/dd hh:mm:ss a').format(orderTime)}',
+      styles: const PosStyles(
+          align: PosAlign.left, bold: true, fontType: PosFontType.fontA));
+  bytes += generator.text('Creator: $creator',
+      styles: const PosStyles(
+          align: PosAlign.left, bold: true, fontType: PosFontType.fontA));
+  bytes += generator.hr(); // Horizontal line
+
+  bytes += generator.row([
+    PosColumn(
+        text: 'QTY',
+        width: 2,
+        styles: const PosStyles(
+            align: PosAlign.left, bold: true, fontType: PosFontType.fontA)),
+    PosColumn(
+        text: 'ITEM',
+        width: 6,
+        styles: const PosStyles(
+            align: PosAlign.left, bold: true, fontType: PosFontType.fontA)),
+    PosColumn(
+        text: 'PRICE',
+        width: 4,
+        styles: const PosStyles(
+            align: PosAlign.right, bold: true, fontType: PosFontType.fontA)),
+  ]);
+  bytes += generator.hr();
+
+  for (var item in orderItems) {
+    bytes += generator.row([
+      PosColumn(
+        text: '${item['qty']}',
+        width: 2,
+        styles: const PosStyles(
+            align: PosAlign.left, bold: true, fontType: PosFontType.fontA),
+      ),
+      PosColumn(
+        text: item['name'],
+        width: 6,
+        styles: const PosStyles(
+            align: PosAlign.left, bold: true, fontType: PosFontType.fontA),
+      ),
+      PosColumn(
+        text: 'EGP ${item['price'].toStringAsFixed(2)}',
+        width: 4,
+        styles: const PosStyles(
+            align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
+      ),
+    ]);
+  }
+  bytes += generator.hr();
+  if (discount > 0 || taxTotalAmount > 0) {
+    bytes += generator.row([
+      PosColumn(
+        text: 'Subtotal:',
+        width: 8,
+        styles: const PosStyles(
+            align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
+      ),
+      PosColumn(
+        text: 'EGP ${subtotal.toStringAsFixed(2)}',
+        width: 4,
+        styles: const PosStyles(
+            align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
+      ),
+    ]);
+    if (taxTotalAmount > 0) {
+      bytes += generator.row([
+        PosColumn(
+          text: '14% VAT:',
+          width: 8,
+          styles: const PosStyles(
+              align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
+        ),
+        PosColumn(
+          text: 'EGP ${taxTotalAmount.toStringAsFixed(2)}',
+          width: 4,
+          styles: const PosStyles(
+              align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
+        ),
+      ]);
+    }
+    if (discount > 0) {
+      bytes += generator.row([
+        PosColumn(
+          text: 'Discount:',
+          width: 8,
+          styles: const PosStyles(
+              align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
+        ),
+        PosColumn(
+          text: 'EGP ${discount.toStringAsFixed(2)}',
+          width: 4,
+          styles: const PosStyles(
+              align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
+        ),
+      ]);
+    }
+  }
+  bytes += generator.row([
+    PosColumn(
+      text: 'Total:',
+      width: 8,
+      styles: const PosStyles(
+          align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
+    ),
+    PosColumn(
+      text: 'EGP ${total.toStringAsFixed(2)}',
+      width: 4,
+      styles: const PosStyles(
+          align: PosAlign.right, bold: true, fontType: PosFontType.fontA),
+    ),
+  ]);
+  bytes += generator.feed(1);
+  bytes += generator.text('Tax-ID $taxId',
+      styles: const PosStyles(
+          align: PosAlign.center, bold: true, fontType: PosFontType.fontA));
+  bytes += generator.feed(1);
+
+  bytes += generator.cut();
+  return bytes;
+}
+
+Future<String?> getPrinterIP() async {
+  try {
+    const subnet = '192.168.1';
+    const port = 9100;
+    final stream = NetworkAnalyzer.discover2(
+      '$subnet.0',
+      port,
+      timeout: const Duration(seconds: 5),
+    );
+
+    await for (final NetworkAddress address in stream) {
+      if (address.exists) {
+        if (kDebugMode) {
+          AppInit.logger.i('Printer found at ${address.ip}');
+        }
+        return address.ip;
+      }
+    }
+    if (kDebugMode) {
+      AppInit.logger.e('No printers found on the network.');
+    }
+    return null;
+  } catch (e) {
+    if (kDebugMode) {
+      AppInit.logger.e('Error during printer discovery: $e');
+    }
+    return null;
+  }
+}
+
 Future<FunctionStatus> printCustodyReceipt({
   required CustodyReport custody,
 }) async {
-  final ByteData data = await rootBundle.load(kLogoImage);
   final capabilitiesContent = await rootBundle
       .loadString('packages/flutter_esc_pos_utils/resources/capabilities.json');
-  final logoBytes = data.buffer.asUint8List();
+
   final ReceivePort receivePort = ReceivePort();
 
   await Isolate.spawn(printCustodyIsolate, {
     'sendPort': receivePort.sendPort,
     'custody': custody,
     'capabilitiesContent': capabilitiesContent,
-    'logoBytes': logoBytes,
   });
 
   final resultFromIsolate = await receivePort.first;
@@ -730,11 +1034,9 @@ void printCustodyIsolate(Map<String, dynamic> data) async {
   final SendPort sendPort = data['sendPort'];
   final CustodyReport custody = data['custody'];
   final String capabilitiesContent = data['capabilitiesContent'];
-  final Uint8List logoBytes = data['logoBytes'];
 
   final resultStatus = await generateAndPrintCustodyReceipt(
     custody: custody,
-    logoBytes: logoBytes,
     capabilitiesContent: capabilitiesContent,
   );
   sendPort.send(resultStatus == FunctionStatus.success ? 'success' : 'failure');
@@ -742,13 +1044,11 @@ void printCustodyIsolate(Map<String, dynamic> data) async {
 
 Future<FunctionStatus> generateAndPrintCustodyReceipt({
   required CustodyReport custody,
-  required Uint8List logoBytes,
   required String capabilitiesContent,
 }) async {
   try {
     final receiptBytes = await generateCustodyReceiptBytes(
       custody: custody,
-      logoBytes: logoBytes,
       capabilitiesContent: capabilitiesContent,
     );
     const printerIp = '192.168.1.8';
@@ -780,21 +1080,12 @@ Future<FunctionStatus> generateAndPrintCustodyReceipt({
 
 Future<List<int>> generateCustodyReceiptBytes({
   required CustodyReport custody,
-  required Uint8List logoBytes,
   required String capabilitiesContent,
 }) async {
   final profile =
       await CapabilityProfile.load(capabilitiesContent: capabilitiesContent);
   final generator = Generator(PaperSize.mm80, profile);
   List<int> bytes = [];
-
-  // Add logo
-  final image = decodeImage(logoBytes);
-  if (image != null) {
-    final resizedImage = copyResize(image, width: 384);
-    bytes += generator.image(resizedImage);
-  }
-  bytes += generator.feed(1);
 
   // Header
   bytes += generator.text('Cortado Egypt - Louran Branch',
@@ -906,9 +1197,6 @@ Future<List<int>> generateCustodyReceiptBytes({
       styles: const PosStyles(align: PosAlign.left));
   bytes += generator.hr();
 
-  // Footer
-  bytes += generator.text('Thank you for using Cortado!',
-      styles: const PosStyles(align: PosAlign.center, bold: true));
   bytes += generator.feed(1);
   bytes += generator.cut();
 

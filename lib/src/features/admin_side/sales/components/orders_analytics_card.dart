@@ -9,9 +9,11 @@ class OrdersAnalyticsCard extends StatelessWidget {
     super.key,
     required this.dineInPercent,
     required this.takeawayPercent,
+    required this.isPhone,
   });
   final double dineInPercent;
   final double takeawayPercent;
+  final bool isPhone;
   @override
   Widget build(BuildContext context) {
     final RxInt touchedIndex = RxInt(-1);
@@ -40,7 +42,7 @@ class OrdersAnalyticsCard extends StatelessWidget {
             ),
           ),
           AspectRatio(
-            aspectRatio: 1.3,
+            aspectRatio: isPhone ? 1.3 : 2.2,
             child: Row(
               children: <Widget>[
                 Expanded(

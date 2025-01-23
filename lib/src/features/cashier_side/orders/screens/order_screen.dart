@@ -36,7 +36,7 @@ class OrderScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  flex: 3,
+                  flex: 2,
                   child: StretchingOverscrollIndicator(
                     axisDirection: AxisDirection.down,
                     child: SingleChildScrollView(
@@ -89,7 +89,7 @@ class OrderScreen extends StatelessWidget {
                                             crossAxisCount:
                                                 controller.orderItems.isEmpty
                                                     ? 5
-                                                    : 4,
+                                                    : 3,
                                             shrinkWrap: true,
                                             children: List.generate(
                                               controller.loadingItems.value
@@ -105,7 +105,7 @@ class OrderScreen extends StatelessWidget {
                                                   columnCount: controller
                                                           .orderItems.isEmpty
                                                       ? 5
-                                                      : 4,
+                                                      : 3,
                                                   child: ScaleAnimation(
                                                     child: FadeInAnimation(
                                                       child: controller
@@ -494,7 +494,6 @@ class OrderScreen extends StatelessWidget {
                                         buttonColor: Colors.green,
                                         textColor: Colors.white,
                                         borderRadius: 15,
-                                        fontSize: 18,
                                         elevation: 0,
                                         icon: Icons.print_outlined,
                                         iconColor: Colors.white,

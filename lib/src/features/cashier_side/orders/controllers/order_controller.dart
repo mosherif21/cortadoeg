@@ -691,7 +691,7 @@ class OrderController extends GetxController {
         orderModel.items = orderItems.value;
         showLoadingScreen();
         final printStatus =
-            await chargeOrderPrinter(order: orderModel, openDrawer: false);
+            await customerReceiptPrint(order: orderModel, openDrawer: false);
         hideLoadingScreen();
         if (printStatus == FunctionStatus.success) {
           showSnackBar(
@@ -737,7 +737,7 @@ class OrderController extends GetxController {
         hideLoadingScreen();
         if (chargeOrderStatus == FunctionStatus.success) {
           orderModel.status = OrderStatus.complete;
-          chargeOrderPrinter(order: orderModel, openDrawer: true);
+          chargeReceiptPrint(order: orderModel, openDrawer: true);
           if (isPhone) Get.back();
           Get.back(result: true);
           if (orderModel.isTakeaway &&
@@ -775,7 +775,8 @@ class OrderController extends GetxController {
       final batch = MainScreenController.instance.getLogCustodyTransactionBatch(
           type: TransactionType.sale,
           amount: orderModel.totalAmount,
-          shiftId: orderModel.shiftId);
+          shiftId: orderModel.shiftId,
+          description: 'Order Id: ${orderModel.orderId}');
 
       batch.update(firestore.collection('orders').doc(orderId), {
         'status': OrderStatus.complete.name,

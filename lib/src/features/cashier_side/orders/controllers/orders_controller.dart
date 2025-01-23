@@ -743,7 +743,7 @@ class OrdersController extends GetxController {
     if (hasManageOrdersPermission) {
       showLoadingScreen();
       final printStatus =
-          await chargeOrderPrinter(order: orderModel, openDrawer: false);
+          await chargeReceiptPrint(order: orderModel, openDrawer: false);
       hideLoadingScreen();
       if (printStatus == FunctionStatus.success) {
         showSnackBar(

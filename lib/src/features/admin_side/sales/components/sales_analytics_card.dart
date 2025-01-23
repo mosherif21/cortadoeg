@@ -10,10 +10,12 @@ class SalesAnalyticsCard extends StatelessWidget {
     required this.completePercent,
     required this.returnPercent,
     required this.canceledPercent,
+    required this.isPhone,
   });
   final double completePercent;
   final double returnPercent;
   final double canceledPercent;
+  final bool isPhone;
   @override
   Widget build(BuildContext context) {
     final RxInt touchedIndex = RxInt(-1);
@@ -42,7 +44,7 @@ class SalesAnalyticsCard extends StatelessWidget {
             ),
           ),
           AspectRatio(
-            aspectRatio: 1.3,
+            aspectRatio: isPhone ? 1.3 : 2.2,
             child: Row(
               children: <Widget>[
                 Expanded(
