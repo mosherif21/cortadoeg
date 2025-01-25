@@ -381,47 +381,71 @@ class SalesScreenController extends GetxController {
             elevation: 0,
             child: Center(
               child: Container(
-                padding: const EdgeInsets.all(30),
-                height: 320,
-                width: 700,
+                height: 700,
+                width: 450,
                 decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20)),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                child: Stack(
                   children: [
-                    AutoSizeText(
-                      'inventoryUsage'.tr,
-                      maxLines: 2,
-                      style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: StretchingOverscrollIndicator(
-                        axisDirection: AxisDirection.down,
-                        child: SingleChildScrollView(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: productsUsage.entries.map((entry) {
-                              final productName = entry.value.productName;
-                              final quantity = entry.value.quantity;
-                              final measuringUnit = entry.value.measuringUnit;
-                              return Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Text(
-                                  '$productName: $quantity ${measuringUnit.tr}',
-                                  style: TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.w800,
-                                    color: Colors.grey.shade600,
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(30),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            AutoSizeText(
+                              'inventoryUsage'.tr,
+                              maxLines: 2,
+                              style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 16),
+                            Expanded(
+                              child: StretchingOverscrollIndicator(
+                                axisDirection: AxisDirection.down,
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children:
+                                        productsUsage.entries.map((entry) {
+                                      final productName =
+                                          entry.value.productName;
+                                      final quantity = entry.value.quantity;
+                                      final measuringUnit =
+                                          entry.value.measuringUnit;
+                                      return Padding(
+                                        padding: const EdgeInsets.all(12),
+                                        child: Text(
+                                          '$productName: $quantity ${measuringUnit.tr}',
+                                          style: TextStyle(
+                                            fontSize: 32,
+                                            fontWeight: FontWeight.w800,
+                                            color: Colors.grey.shade600,
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
                                   ),
                                 ),
-                              );
-                            }).toList(),
-                          ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 5,
+                      right: isLangEnglish() ? 5 : null,
+                      left: isLangEnglish() ? null : 5,
+                      child: IconButton(
+                        onPressed: () => Get.back(),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          size: 25,
                         ),
                       ),
                     ),
