@@ -294,7 +294,7 @@ class SalesScreen extends StatelessWidget {
                                               child: Text('orders'.tr,
                                                   style: textStyle)),
                                           tooltip: 'orders'.tr,
-                                          fixedWidth: 140,
+                                          fixedWidth: 120,
                                           size: ColumnSize.L,
                                         ),
                                         DataColumn2(
@@ -380,6 +380,87 @@ class SalesScreen extends StatelessWidget {
                                         ),
                                       ],
                                       source: _ProductsDataSource(controller,
+                                          screenType.isPhone, context),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'takeawayRevenue'.tr,
+                                    style: TextStyle(
+                                      overflow: TextOverflow.ellipsis,
+                                      fontSize: 24,
+                                      color: Colors.grey.shade800,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  SizedBox(
+                                    height: screenHeight * 0.6,
+                                    child: AsyncPaginatedDataTable2(
+                                      key: controller.employeesTableKey,
+                                      rowsPerPage: controller.rowsPerPage,
+                                      showCheckboxColumn: false,
+                                      isVerticalScrollBarVisible: true,
+                                      initialFirstRowIndex: 0,
+                                      isHorizontalScrollBarVisible: true,
+                                      onSelectAll: (_) {},
+                                      wrapInCard: true,
+                                      minWidth: 1000,
+                                      headingRowColor:
+                                          const WidgetStatePropertyAll(
+                                              Colors.white),
+                                      empty: const SizedBox.shrink(),
+                                      loading: Padding(
+                                        padding: const EdgeInsets.all(12),
+                                        child: Lottie.asset(
+                                          kLoadingWalkingCoffeeAnim,
+                                          height: screenHeight * 0.5,
+                                        ),
+                                      ),
+                                      columns: [
+                                        DataColumn2(
+                                          label: alignHorizontalWidget(
+                                              child: Text('employeeName'.tr,
+                                                  style: textStyle)),
+                                          tooltip: 'employeeName'.tr,
+                                          fixedWidth: 160,
+                                          size: ColumnSize.L,
+                                        ),
+                                        DataColumn2(
+                                          label: alignHorizontalWidget(
+                                              child: Text('totalOrders'.tr,
+                                                  style: textStyle)),
+                                          tooltip: 'totalOrders'.tr,
+                                          fixedWidth: 160,
+                                          size: ColumnSize.L,
+                                        ),
+                                        DataColumn2(
+                                          label: alignHorizontalWidget(
+                                              child: Text('totalRevenue'.tr,
+                                                  style: textStyle)),
+                                          tooltip: 'totalRevenue'.tr,
+                                          fixedWidth: 160,
+                                          size: ColumnSize.L,
+                                        ),
+                                        DataColumn2(
+                                          label: alignHorizontalWidget(
+                                              child: Text(
+                                                  'takeawayPercentage'.tr,
+                                                  style: textStyle)),
+                                          tooltip: 'takeawayPercentage'.tr,
+                                          fixedWidth: 220,
+                                          size: ColumnSize.L,
+                                        ),
+                                        DataColumn2(
+                                          label: alignHorizontalWidget(
+                                              child: Text('employeeRevenue'.tr,
+                                                  style: textStyle)),
+                                          tooltip: 'employeeRevenue'.tr,
+                                          fixedWidth: 180,
+                                          size: ColumnSize.L,
+                                        ),
+                                      ],
+                                      source: _EmployeesDataSource(controller,
                                           screenType.isPhone, context),
                                     ),
                                   ),
@@ -786,6 +867,72 @@ class _ProductsDataSource extends AsyncDataTableSource {
                 style: textStyle,
               ),
             )),
+          ],
+          color: const WidgetStatePropertyAll(Colors.white),
+        ),
+      );
+    }
+
+    return AsyncRowsResponse(controller.totalItemsCount, rows);
+  }
+
+  @override
+  bool get isRowCountApproximate => false;
+
+  @override
+  int get rowCount => controller.totalItemsCount;
+
+  @override
+  int get selectedRowCount => 0;
+}
+
+class _EmployeesDataSource extends AsyncDataTableSource {
+  final SalesScreenController controller;
+  final bool isPhone;
+  final BuildContext context;
+  _EmployeesDataSource(this.controller, this.isPhone, this.context);
+  @override
+  Future<AsyncRowsResponse> getRows(int startIndex, int count) async {
+    const textStyle = TextStyle(fontWeight: FontWeight.w500, fontSize: 14);
+    if (startIndex + count > controller.employeesList.length) {
+      await controller.fetchTakeawayEmployeesData(
+          start: startIndex, limit: count);
+    }
+    final rows = <DataRow>[];
+    for (int i = startIndex; i < startIndex + count; i++) {
+      if (i >= controller.employeesList.length) break;
+      final employee = controller.employeesList[i];
+      rows.add(
+        DataRow(
+          cells: [
+            DataCell(alignHorizontalWidget(
+              child: Text(
+                employee.employeeName,
+                style: textStyle,
+              ),
+            )),
+            DataCell(alignHorizontalWidget(
+              child: Text(
+                employee.totalOrders.toString(),
+                style: textStyle,
+              ),
+            )),
+            DataCell(alignHorizontalWidget(
+                child: Text(
+              '${employee.totalRevenue.toStringAsFixed(2)} EGP',
+              style: textStyle,
+            ))),
+            DataCell(alignHorizontalWidget(
+              child: Text(
+                '${controller.takeawayPercentage}%',
+                style: textStyle,
+              ),
+            )),
+            DataCell(alignHorizontalWidget(
+                child: Text(
+              '${employee.employeeRevenue.toStringAsFixed(2)} EGP',
+              style: textStyle,
+            ))),
           ],
           color: const WidgetStatePropertyAll(Colors.white),
         ),

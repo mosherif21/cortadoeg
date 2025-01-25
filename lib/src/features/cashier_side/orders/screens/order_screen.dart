@@ -1,9 +1,12 @@
+import 'package:anim_search_app_bar/anim_search_app_bar.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cortadoeg/src/features/cashier_side/orders/components/models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:get/get.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../../general/common_widgets/back_button.dart';
 import '../../../../general/common_widgets/icon_text_elevated_button.dart';
 import '../../../../general/common_widgets/section_divider.dart';
 import '../../../../general/general_functions.dart';
@@ -12,7 +15,6 @@ import '../components/cart_item_widget.dart';
 import '../components/discount_widget.dart';
 import '../components/item_widget.dart';
 import '../components/new_order_categories.dart';
-import '../components/new_order_screen_appbar.dart';
 import '../controllers/order_controller.dart';
 
 class OrderScreen extends StatelessWidget {
@@ -52,13 +54,36 @@ class OrderScreen extends StatelessWidget {
                               ),
                             ),
                             children: [
-                              NewOrderScreenAppbar(
-                                searchBarTextController:
-                                    controller.searchBarTextController,
-                                isTakeaway: orderModel.isTakeaway,
-                                orderNumber: orderModel.orderNumber.toString(),
-                                tablesNo: orderModel.tableNumbers,
-                                titleFontSize: 20,
+                              AnimSearchAppBar(
+                                keyboardType: TextInputType.text,
+                                cancelButtonTextStyle:
+                                    const TextStyle(color: Colors.black87),
+                                cancelButtonText: 'cancel'.tr,
+                                hintText: 'searchItemsHint'.tr,
+                                hintStyle: const TextStyle(
+                                    fontWeight: FontWeight.w600),
+                                backgroundColor: Colors.grey.shade100,
+                                onChanged: controller.onItemsSearch,
+                                appBar: AppBar(
+                                  elevation: 0,
+                                  leading: const RegularBackButton(padding: 0),
+                                  title: AutoSizeText(
+                                    formatOrderDetails(
+                                      isTakeaway: orderModel.isTakeaway,
+                                      orderNumber:
+                                          orderModel.orderNumber.toString(),
+                                      tablesNo: orderModel.tableNumbers,
+                                    ),
+                                    maxLines: 2,
+                                    style: const TextStyle(
+                                        color: Colors.black87,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 20),
+                                  ),
+                                  backgroundColor: Colors.grey.shade100,
+                                  foregroundColor: Colors.grey.shade100,
+                                  surfaceTintColor: Colors.grey.shade100,
+                                ),
                               ),
                               Obx(
                                 () => controller.loadingCategories.value

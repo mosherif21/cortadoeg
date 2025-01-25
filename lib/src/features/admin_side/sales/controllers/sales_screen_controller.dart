@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:bottom_sheet/bottom_sheet.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
@@ -41,25 +43,136 @@ class SalesScreenController extends GetxController {
   final RxBool loadingSales = true.obs;
   DocumentSnapshot? itemsLastDocument;
   DocumentSnapshot? productsLastDocument;
+  DocumentSnapshot? employeesLastDocument;
   late final GlobalKey<AsyncPaginatedDataTable2State> itemsTableKey;
   late final GlobalKey<AsyncPaginatedDataTable2State> productsTableKey;
+  late final GlobalKey<AsyncPaginatedDataTable2State> employeesTableKey;
   final int rowsPerPage = 8;
   int totalItemsCount = 0;
   int totalProductsCount = 0;
+  int totalEmployeesCount = 0;
+  double takeawayPercentage = 10;
   List<ItemReport> itemsList = [];
   List<InventoryReport> productsList = [];
-
+  List<TakeawayEmployeeReport> employeesList = [];
+  late final StreamSubscription takeawayPercentListener;
   @override
   void onInit() {
     super.onInit();
     _firestore = FirebaseFirestore.instance;
     itemsTableKey = GlobalKey<AsyncPaginatedDataTable2State>();
     productsTableKey = GlobalKey<AsyncPaginatedDataTable2State>();
+    employeesTableKey = GlobalKey<AsyncPaginatedDataTable2State>();
     final now = DateTime.now();
     dateFrom = DateTime(now.year, now.month, now.day);
     dateTo = DateTime(now.year, now.month, now.day, 23, 59, 59);
     _initializeDateRangeOptions();
     fetchGeneralSales();
+  }
+
+  @override
+  void onReady() {
+    takeawayPercentListener = listenToTakeawayPercent().listen((percent) {
+      if (percent != null) {
+        takeawayPercentage = percent;
+        resetEmployeesTableValues();
+      }
+    });
+    super.onReady();
+  }
+
+  Future<void> fetchTakeawayEmployeesData({
+    int start = 0,
+    int limit = 8,
+  }) async {
+    try {
+      Map<String, dynamic> employeeMetrics = {};
+      Query query = _firestore
+          .collection('orders')
+          .where('timestamp', isGreaterThanOrEqualTo: dateFrom)
+          .where('timestamp', isLessThanOrEqualTo: dateTo)
+          .where('status', isNotEqualTo: 'active')
+          .where('takeawayEmployeeId', isNotEqualTo: null);
+
+      if (start == 0) {
+        final countSnapshot = await query.count().get();
+        totalEmployeesCount = countSnapshot.count ?? 0;
+        employeesLastDocument = null;
+      } else if (employeesLastDocument != null) {
+        query = query.startAfterDocument(employeesLastDocument!);
+      } else {
+        return;
+      }
+
+      final querySnapshot = await query.limit(limit).get();
+      if (querySnapshot.docs.isEmpty) {
+        if (start == 0) {
+          employeesList.clear();
+        }
+        return;
+      }
+      employeesLastDocument = querySnapshot.docs.last;
+
+      for (var doc in querySnapshot.docs) {
+        final order = OrderModel.fromFirestore(
+            doc.data() as Map<String, dynamic>, doc.id);
+
+        if (order.takeawayEmployeeId != null &&
+            order.takeawayEmployeeName != null &&
+            order.takeawayEmployeeName!.isNotEmpty) {
+          employeeMetrics.update(order.takeawayEmployeeId!, (value) {
+            value['totalOrders'] += 1;
+            value['totalRevenue'] += order.totalAmount;
+            value['employeeRevenue'] +=
+                (order.totalAmount * takeawayPercentage / 100);
+            return value;
+          }, ifAbsent: () {
+            return {
+              'employeeName': order.takeawayEmployeeName!,
+              'totalOrders': 1,
+              'totalRevenue': order.totalAmount,
+              'employeeRevenue': (order.totalAmount * takeawayPercentage / 100),
+            };
+          });
+        }
+      }
+
+      final sortedEmployees = employeeMetrics.values.toList()
+        ..sort((a, b) => b['totalRevenue'].compareTo(a['totalRevenue']));
+
+      final newEmployeesList = sortedEmployees.map((employee) {
+        return TakeawayEmployeeReport(
+          employeeName: employee['employeeName'],
+          totalOrders: employee['totalOrders'],
+          totalRevenue: employee['totalRevenue'],
+          employeeRevenue: employee['employeeRevenue'],
+        );
+      }).toList();
+
+      if (start == 0) {
+        employeesList.assignAll(newEmployeesList);
+      } else {
+        employeesList.addAll(newEmployeesList);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        AppInit.logger.e(e.toString());
+      }
+    }
+  }
+
+  Stream<double?> listenToTakeawayPercent() {
+    final takeawayPercentRef = FirebaseFirestore.instance
+        .collection('employees')
+        .doc('employeeVariables');
+    return takeawayPercentRef.snapshots().map((snapshot) {
+      if (snapshot.exists) {
+        final takeawayPercentage =
+            snapshot.data()!['takeawayPercentage'] as double;
+        return takeawayPercentage;
+      }
+      return null;
+    });
   }
 
   Future<void> fetchTopUsedInventoryProducts({
@@ -268,6 +381,13 @@ class SalesScreenController extends GetxController {
     }
   }
 
+  void resetEmployeesTableValues() {
+    employeesList.clear();
+    employeesLastDocument = null;
+    totalEmployeesCount = 0;
+    employeesTableKey.currentState!.pageTo(0);
+  }
+
   void resetItemsTableValues() {
     itemsList.clear();
     itemsLastDocument = null;
@@ -470,6 +590,7 @@ class SalesScreenController extends GetxController {
     fetchGeneralSales();
     resetItemsTableValues();
     resetProductsTableValues();
+    resetEmployeesTableValues();
   }
 
   void _initializeDateRangeOptions() {
@@ -568,6 +689,7 @@ class SalesScreenController extends GetxController {
               fetchGeneralSales();
               resetItemsTableValues();
               resetProductsTableValues();
+              resetEmployeesTableValues();
             }
           } else {
             resetDateFilter();
@@ -580,6 +702,7 @@ class SalesScreenController extends GetxController {
             fetchGeneralSales();
             resetItemsTableValues();
             resetProductsTableValues();
+            resetEmployeesTableValues();
             final dateKey = dateRangeOptions.keys
                 .toList()
                 .elementAt(currentSelectedDate.value);
@@ -609,6 +732,7 @@ class SalesScreenController extends GetxController {
     fetchGeneralSales();
     resetItemsTableValues();
     resetProductsTableValues();
+    resetEmployeesTableValues();
   }
 
   bool isDate(String input) {
@@ -624,6 +748,7 @@ class SalesScreenController extends GetxController {
     fetchGeneralSales();
     resetItemsTableValues();
     resetProductsTableValues();
+    resetEmployeesTableValues();
     salesRefreshController.refreshCompleted();
   }
 
@@ -801,6 +926,7 @@ class SalesScreenController extends GetxController {
   @override
   void onClose() {
     salesRefreshController.dispose();
+    takeawayPercentListener.cancel();
     super.onClose();
   }
 }
@@ -847,5 +973,18 @@ class InventoryReport {
     required this.productName,
     required this.measuringUnit,
     required this.totalQuantity,
+  });
+}
+
+class TakeawayEmployeeReport {
+  final String employeeName;
+  final int totalOrders;
+  final double totalRevenue;
+  final double employeeRevenue;
+  TakeawayEmployeeReport({
+    required this.employeeName,
+    required this.totalOrders,
+    required this.totalRevenue,
+    required this.employeeRevenue,
   });
 }

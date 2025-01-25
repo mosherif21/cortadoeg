@@ -1203,6 +1203,27 @@ Future<List<int>> generateCustodyReceiptBytes({
   return bytes;
 }
 
+String formatOrderDetails({
+  required String orderNumber,
+  required bool isTakeaway,
+  required List<int>? tablesNo,
+}) {
+  final orderStr = 'orderNumber'.trParams({
+    'number': orderNumber.toString(),
+  });
+  String locationStr;
+  if (isTakeaway) {
+    locationStr = 'takeawayOrder'.tr;
+  } else {
+    locationStr = '${'table'.tr} (';
+    locationStr += tablesNo!.map((tableNo) {
+      return 'tableNumber'.trParams({'number': tableNo.toString()});
+    }).join(', ');
+    locationStr += ')';
+  }
+  return '$orderStr - $locationStr';
+}
+
 Transition getPageTransition() {
   final context = Get.context;
   if (context != null) {

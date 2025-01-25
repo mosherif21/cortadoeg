@@ -640,7 +640,17 @@ class Languages extends Translations {
           'salesAnalytics': 'تحليلات المبيعات',
           'ordersAnalytics': 'تحليلات الطلبات',
           'totalProfit': 'إجمالي الربح',
-          'dineIn': 'داخل الكافيه'
+          'dineIn': 'داخل الكافيه',
+          "itemName": "اسم العنصر",
+          "topSoldItems": "أكثر العناصر مبيعًا",
+          "topInventoryProducts": "أهم منتجات المخزون",
+          "inventoryUsage": "استخدام المخزون",
+          "usedQuantity": "الكمية المستخدمة",
+          "totalCostPrice": "إجمالي سعر التكلفة",
+          "takeawayRevenue": "إيرادات التوصيل",
+          "employeeName": "اسم الموظف",
+          "takeawayPercentage": "نسبة التوصيل",
+          "employeeRevenue": "إيرادات الموظف"
         },
         'en_US': {
           'skip': 'Skip',
@@ -1301,6 +1311,10 @@ class Languages extends Translations {
           "inventoryUsage": "Inventory Usage",
           "usedQuantity": "Used Quantity",
           "totalCostPrice": "Total Cost Price",
+          "takeawayRevenue": "Takeaway Revenue",
+          "employeeName": "Employee Name",
+          "takeawayPercentage": "Takeaway Percentage",
+          "employeeRevenue": "Employee Revenue",
         },
       };
 }

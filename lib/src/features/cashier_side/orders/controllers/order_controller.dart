@@ -39,7 +39,7 @@ class OrderController extends GetxController {
   final RxList<ItemModel> filteredItems = <ItemModel>[].obs;
   final RxList<OrderItemModel> orderItems = <OrderItemModel>[].obs;
   late final TextEditingController discountTextController;
-  late final TextEditingController searchBarTextController;
+
   late final DraggableScrollableController phoneItemDetailsScrollController;
   String? discountType;
   double? discountValue;
@@ -54,10 +54,11 @@ class OrderController extends GetxController {
   final RxDouble orderTotal = 0.0.obs;
   final RxDouble orderTax = 0.0.obs;
   double taxRate = 14;
-
+  String searchText = '';
+  late final StreamSubscription itemsListener;
+  late final StreamSubscription categoriesListener;
   @override
   void onInit() async {
-    searchBarTextController = TextEditingController();
     discountTextController = TextEditingController();
 
     if (orderModel.discountType != null && orderModel.discountValue != null) {
@@ -76,93 +77,88 @@ class OrderController extends GetxController {
 
   @override
   void onReady() async {
-    searchBarTextController.addListener(() {
-      if (!loadingCategories.value && !loadingItems.value) {
-        final searchText = searchBarTextController.text.trim().toUpperCase();
+    itemsListener = listenToItems().listen((itemsFetch) {
+      if (itemsFetch != null) {
+        loadingItems.value = false;
+        items = itemsFetch;
+        categoryFilteredItems = selectedCategory.value == 0
+            ? items
+            : items
+                .where((item) =>
+                    item.categoryId == categories[selectedCategory.value].id)
+                .toList();
         filteredItems.value = searchText.isEmpty
             ? categoryFilteredItems
             : categoryFilteredItems
                 .where((item) => item.name.toUpperCase().contains(searchText))
                 .toList();
+      } else {
+        showSnackBar(
+          text: 'errorOccurred'.tr,
+          snackBarType: SnackBarType.error,
+        );
       }
     });
-    loadCategories();
-    loadItems();
+    categoriesListener = listenToCategories().listen((categoriesFetch) {
+      if (categoriesFetch != null) {
+        loadingCategories.value = false;
+        categoriesFetch.insert(0,
+            CategoryModel(id: 'all', name: 'allMenu'.tr, iconName: 'allMenu'));
+        categories.value = categoriesFetch;
+        selectedCategory.value = 0;
+        categoryFilteredItems = items;
+        filteredItems.value = searchText.isEmpty
+            ? categoryFilteredItems
+            : categoryFilteredItems
+                .where((item) => item.name.toUpperCase().contains(searchText))
+                .toList();
+      } else {
+        showSnackBar(
+          text: 'errorOccurred'.tr,
+          snackBarType: SnackBarType.error,
+        );
+      }
+    });
     super.onReady();
   }
 
-  void loadItems() async {
-    final itemsFetch = await fetchItems();
-
-    if (itemsFetch != null) {
-      loadingItems.value = false;
-      items = itemsFetch;
-      categoryFilteredItems = itemsFetch;
-      filteredItems.value = items;
-    } else {
-      showSnackBar(
-        text: 'errorOccurred'.tr,
-        snackBarType: SnackBarType.error,
-      );
-    }
-  }
-
-  Future<List<ItemModel>?> fetchItems() async {
-    try {
-      final firestore = FirebaseFirestore.instance;
-      final querySnapshot = await firestore.collection('items').get();
-      return querySnapshot.docs.map((doc) {
-        return ItemModel.fromFirestore(doc.data(), doc.id);
-      }).toList();
-    } on FirebaseException catch (error) {
-      if (kDebugMode) {
-        AppInit.logger.e(error.toString());
-      }
-    } catch (err) {
-      if (kDebugMode) {
-        AppInit.logger.e(err.toString());
+  Stream<List<ItemModel>?> listenToItems() {
+    final itemsRef = FirebaseFirestore.instance.collection('items');
+    return itemsRef.snapshots().map((querySnapshot) {
+      if (querySnapshot.size > 0) {
+        return querySnapshot.docs.map((doc) {
+          return ItemModel.fromFirestore(doc.data(), doc.id);
+        }).toList();
       }
       return null;
-    }
-    return null;
+    });
   }
 
-  void loadCategories() async {
-    final categoriesFetch = await fetchCategories();
-    if (categoriesFetch != null) {
-      loadingCategories.value = false;
-      categoriesFetch.insert(
-          0, CategoryModel(id: 'all', name: 'allMenu'.tr, iconName: 'allMenu'));
-      categories.value = categoriesFetch;
-    } else {
-      showSnackBar(
-        text: 'errorOccurred'.tr,
-        snackBarType: SnackBarType.error,
-      );
-    }
-  }
+  Stream<List<CategoryModel>?> listenToCategories() {
+    final categoriesRef = FirebaseFirestore.instance
+        .collection('categories')
+        .orderBy('name_lowercase');
 
-  Future<List<CategoryModel>?> fetchCategories() async {
-    try {
-      final firestore = FirebaseFirestore.instance;
-      final querySnapshot = await firestore
-          .collection('categories')
-          .orderBy('name_lowercase')
-          .get();
-      return querySnapshot.docs.map((doc) {
-        return CategoryModel.fromFirestore(doc.data(), doc.id);
-      }).toList();
-    } on FirebaseException catch (error) {
-      if (kDebugMode) {
-        AppInit.logger.e(error.toString());
-      }
-    } catch (err) {
-      if (kDebugMode) {
-        AppInit.logger.e(err.toString());
+    return categoriesRef.snapshots().map((querySnapshot) {
+      if (querySnapshot.size > 0) {
+        final categories = querySnapshot.docs.map((doc) {
+          return CategoryModel.fromFirestore(doc.data(), doc.id);
+        }).toList();
+        return categories;
       }
       return null;
+    });
+  }
+
+  void onItemsSearch(String value) {
+    searchText = value.trim().toUpperCase();
+    if (!loadingCategories.value && !loadingItems.value) {
+      filteredItems.value = searchText.isEmpty
+          ? categoryFilteredItems
+          : categoryFilteredItems
+              .where((item) => item.name.toUpperCase().contains(searchText))
+              .toList();
     }
-    return null;
   }
 
   void onCategorySelect(int selectedCatIndex) {
@@ -174,7 +170,7 @@ class OrderController extends GetxController {
               .where(
                   (item) => item.categoryId == categories[selectedCatIndex].id)
               .toList();
-      final searchText = searchBarTextController.text.trim().toUpperCase();
+
       filteredItems.value = searchText.isEmpty
           ? categoryFilteredItems
           : categoryFilteredItems
@@ -1144,7 +1140,9 @@ class OrderController extends GetxController {
 
   @override
   void onClose() async {
-    //
+    discountTextController.dispose();
+    itemsListener.cancel();
+    categoriesListener.cancel();
     super.onClose();
   }
 }

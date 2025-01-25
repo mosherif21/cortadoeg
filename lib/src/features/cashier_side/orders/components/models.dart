@@ -47,6 +47,8 @@ class OrderModel {
   String? customerId;
   final String employeeId;
   final String employeeName;
+  String? takeawayEmployeeId;
+  String? takeawayEmployeeName;
   String? customerName;
   double totalAmount;
   double discountAmount;
@@ -57,6 +59,8 @@ class OrderModel {
     required this.orderId,
     required this.employeeId,
     required this.employeeName,
+    this.takeawayEmployeeId,
+    this.takeawayEmployeeName,
     required this.isTakeaway,
     required this.orderNumber,
     required this.shiftId,
@@ -82,6 +86,8 @@ class OrderModel {
       'shiftId': shiftId,
       'employeeId': employeeId,
       'employeeName': employeeName,
+      'takeawayEmployeeId': takeawayEmployeeId,
+      'takeawayEmployeeName': takeawayEmployeeName,
       'items': items.map((item) => item.toFirestore()).toList(),
       'status': status.name,
       'timestamp': timestamp,

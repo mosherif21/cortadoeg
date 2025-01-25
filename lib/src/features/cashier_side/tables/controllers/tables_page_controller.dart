@@ -548,7 +548,9 @@ class TablesPageController extends GetxController {
           .count()
           .get();
 
-      final int orderCount = todayOrders.count ?? 1;
+      final int orderCount = todayOrders.count != null && todayOrders.count != 0
+          ? todayOrders.count!
+          : 1;
       return orderCount;
     } on FirebaseException catch (error) {
       if (kDebugMode) {
