@@ -1295,6 +1295,12 @@ class Languages extends Translations {
           "ordersAnalytics": "Orders Analytics",
           "totalProfit": "Total Profit",
           "dineIn": "Dine in",
+          "itemName": "Item Name",
+          "topSoldItems": "Top Sold Items",
+          "topInventoryProducts": "Top Inventory Products",
+          "inventoryUsage": "Inventory Usage",
+          "usedQuantity": "Used Quantity",
+          "totalCostPrice": "Total Cost Price",
         },
       };
 }

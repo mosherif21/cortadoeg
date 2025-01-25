@@ -1,5 +1,8 @@
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:bottom_sheet/bottom_sheet.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -8,6 +11,7 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../../../general/app_init.dart';
 import '../../../../general/general_functions.dart';
+import '../../../cashier_side/orders/components/models.dart';
 
 class SalesScreenController extends GetxController {
   static SalesScreenController get instance => Get.find();
@@ -34,17 +38,401 @@ class SalesScreenController extends GetxController {
   final canceledOrderPercentage = 0.0.obs;
   final dineInOrdersPercentage = 0.0.obs;
   final takeawayOrdersPercentage = 0.0.obs;
+  final RxBool loadingSales = true.obs;
+  DocumentSnapshot? itemsLastDocument;
+  DocumentSnapshot? productsLastDocument;
+  late final GlobalKey<AsyncPaginatedDataTable2State> itemsTableKey;
+  late final GlobalKey<AsyncPaginatedDataTable2State> productsTableKey;
+  final int rowsPerPage = 8;
+  int totalItemsCount = 0;
+  int totalProductsCount = 0;
+  List<ItemReport> itemsList = [];
+  List<InventoryReport> productsList = [];
 
-  final RxBool loadingGeneralSales = true.obs;
   @override
   void onInit() {
     super.onInit();
     _firestore = FirebaseFirestore.instance;
+    itemsTableKey = GlobalKey<AsyncPaginatedDataTable2State>();
+    productsTableKey = GlobalKey<AsyncPaginatedDataTable2State>();
     final now = DateTime.now();
     dateFrom = DateTime(now.year, now.month, now.day);
     dateTo = DateTime(now.year, now.month, now.day, 23, 59, 59);
     _initializeDateRangeOptions();
     fetchGeneralSales();
+  }
+
+  Future<void> fetchTopUsedInventoryProducts({
+    int start = 0,
+    int limit = 8,
+  }) async {
+    try {
+      Map<String, dynamic> inventoryMetrics = {};
+      Query query = _firestore
+          .collection('orders')
+          .where('timestamp', isGreaterThanOrEqualTo: dateFrom)
+          .where('timestamp', isLessThanOrEqualTo: dateTo)
+          .where('status', isNotEqualTo: 'active');
+      if (start == 0) {
+        final countSnapshot = await query.count().get();
+        totalItemsCount = countSnapshot.count ?? 0;
+        itemsLastDocument = null;
+      } else if (itemsLastDocument != null) {
+        query = query.startAfterDocument(itemsLastDocument!);
+      } else {
+        return;
+      }
+      final querySnapshot = await query.limit(limit).get();
+      if (querySnapshot.docs.isEmpty) {
+        if (start == 0) {
+          productsList.clear();
+        }
+        return;
+      }
+      itemsLastDocument = querySnapshot.docs.last;
+
+      for (var doc in querySnapshot.docs) {
+        final order = OrderModel.fromFirestore(
+            doc.data() as Map<String, dynamic>, doc.id);
+        for (var item in order.items) {
+          for (var recipeItem in item.selectedSize.recipe) {
+            inventoryMetrics.update(recipeItem.productId, (value) {
+              value['totalQuantity'] += recipeItem.quantity * item.quantity;
+
+              return value;
+            }, ifAbsent: () {
+              return {
+                'productName': recipeItem.productName,
+                'totalQuantity': recipeItem.quantity * item.quantity,
+                'measuringUnit': recipeItem.measuringUnit.name,
+              };
+            });
+          }
+
+          for (var option in item.selectedOptions) {
+            for (var recipeItem in option.recipe) {
+              inventoryMetrics.update(recipeItem.productId, (value) {
+                value['totalQuantity'] += recipeItem.quantity * item.quantity;
+
+                return value;
+              }, ifAbsent: () {
+                return {
+                  'productName': recipeItem.productName,
+                  'totalQuantity': recipeItem.quantity * item.quantity,
+                  'measuringUnit': recipeItem.measuringUnit.name,
+                };
+              });
+            }
+          }
+        }
+      }
+
+      final sortedInventory = inventoryMetrics.values.toList()
+        ..sort((a, b) => b['totalQuantity'] - a['totalQuantity']);
+
+      final newInventoryList = sortedInventory.map((product) {
+        return InventoryReport(
+          productName: product['productName'],
+          totalQuantity: product['totalQuantity'],
+          measuringUnit: product['measuringUnit'],
+        );
+      }).toList();
+
+      if (start == 0) {
+        productsList.assignAll(newInventoryList);
+      } else {
+        productsList.addAll(newInventoryList);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        AppInit.logger.e(e.toString());
+      }
+    }
+  }
+
+  Future<void> fetchMostOrderedItems({
+    int start = 0,
+    int limit = 8,
+  }) async {
+    try {
+      Map<String, dynamic> itemMetrics = {};
+      Query query = _firestore
+          .collection('orders')
+          .where('timestamp', isGreaterThanOrEqualTo: dateFrom)
+          .where('timestamp', isLessThanOrEqualTo: dateTo)
+          .where('status', isNotEqualTo: 'active');
+      if (start == 0) {
+        final countSnapshot = await query.count().get();
+        totalItemsCount = countSnapshot.count ?? 0;
+        itemsLastDocument = null;
+      } else if (itemsLastDocument != null) {
+        query = query.startAfterDocument(itemsLastDocument!);
+      } else {
+        return;
+      }
+      final querySnapshot = await query.limit(limit).get();
+      if (querySnapshot.docs.isEmpty) {
+        if (start == 0) {
+          itemsList.clear();
+        }
+        return;
+      }
+      itemsLastDocument = querySnapshot.docs.last;
+
+      for (var doc in querySnapshot.docs) {
+        final order = OrderModel.fromFirestore(
+            doc.data() as Map<String, dynamic>, doc.id);
+        for (var item in order.items) {
+          if (!itemMetrics.containsKey(item.itemId)) {
+            itemMetrics[item.itemId] = {
+              'itemId': item.itemId,
+              'name': item.name,
+              'totalOrders': 0,
+              'totalRevenue': 0.0,
+              'totalProfit': 0.0,
+              'totalCostPrice': 0.0,
+              'usedProducts': <String, dynamic>{}
+            };
+          }
+          itemMetrics[item.itemId]['totalOrders'] += item.quantity;
+          itemMetrics[item.itemId]['totalRevenue'] +=
+              item.price * item.quantity;
+          itemMetrics[item.itemId]['totalProfit'] +=
+              (item.price - item.costPrice) * item.quantity;
+          itemMetrics[item.itemId]['totalCostPrice'] +=
+              item.costPrice * item.quantity;
+
+          for (var recipeItem in item.selectedSize.recipe) {
+            itemMetrics[item.itemId]['usedProducts']
+                .update(recipeItem.productId, (value) {
+              value['quantity'] += recipeItem.quantity * item.quantity;
+              return value;
+            }, ifAbsent: () {
+              return {
+                'productName': recipeItem.productName,
+                'quantity': recipeItem.quantity * item.quantity,
+                'measuringUnit': recipeItem.measuringUnit.name,
+              };
+            });
+          }
+
+          for (var option in item.selectedOptions) {
+            for (var recipeItem in option.recipe) {
+              itemMetrics[item.itemId]['usedProducts']
+                  .update(recipeItem.productId, (value) {
+                value['quantity'] += recipeItem.quantity * item.quantity;
+                return value;
+              }, ifAbsent: () {
+                return {
+                  'productName': recipeItem.productName,
+                  'quantity': recipeItem.quantity * item.quantity,
+                  'measuringUnit': recipeItem.measuringUnit,
+                };
+              });
+            }
+          }
+        }
+      }
+      final sortedItems = itemMetrics.values.toList()
+        ..sort((a, b) => b['totalOrders'] - a['totalOrders']);
+
+      final newItemsList = sortedItems.map((item) {
+        return ItemReport(
+          itemId: item['itemId'],
+          name: item['name'],
+          totalOrders: item['totalOrders'],
+          totalRevenue: item['totalRevenue'],
+          totalProfit: item['totalProfit'],
+          totalCostPrice: item['totalCostPrice'],
+          usedProducts: (item['usedProducts'] as Map<String, dynamic>).map(
+            (key, value) => MapEntry(
+              key,
+              ProductUsage(
+                  productId: key,
+                  productName: value['productName'],
+                  quantity: value['quantity'],
+                  measuringUnit: value['measuringUnit']),
+            ),
+          ),
+        );
+      }).toList();
+      if (start == 0) {
+        itemsList.assignAll(newItemsList);
+      } else {
+        itemsList.addAll(newItemsList);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        AppInit.logger.e(e.toString());
+      }
+    }
+  }
+
+  void resetItemsTableValues() {
+    itemsList.clear();
+    itemsLastDocument = null;
+    totalItemsCount = 0;
+    itemsTableKey.currentState!.pageTo(0);
+  }
+
+  void resetProductsTableValues() {
+    productsList.clear();
+    productsLastDocument = null;
+    totalProductsCount = 0;
+    productsTableKey.currentState!.pageTo(0);
+  }
+
+  void viewItemInventoryUsage(
+      {required bool isPhone,
+      required Map<String, ProductUsage> productsUsage,
+      required BuildContext context}) {
+    if (isPhone) {
+      showFlexibleBottomSheet(
+        bottomSheetColor: Colors.transparent,
+        duration: const Duration(milliseconds: 500),
+        minHeight: 0,
+        initHeight: 0.75,
+        maxHeight: 1,
+        anchors: [0, 0.75, 1],
+        isSafeArea: true,
+        context: context,
+        builder: (
+          BuildContext context,
+          ScrollController scrollController,
+          double bottomSheetOffset,
+        ) {
+          return Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(35),
+                topRight: Radius.circular(35),
+              ),
+            ),
+            width: double.maxFinite,
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: const BorderRadius.all(Radius.circular(25)),
+                  ),
+                  height: 7,
+                  width: 40,
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        AutoSizeText(
+                          'inventoryUsage'.tr,
+                          maxLines: 2,
+                          style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 16),
+                        Expanded(
+                          child: StretchingOverscrollIndicator(
+                            axisDirection: AxisDirection.down,
+                            child: SingleChildScrollView(
+                              controller: scrollController,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: productsUsage.entries.map((entry) {
+                                  final productName = entry.value.productName;
+                                  final quantity = entry.value.quantity;
+                                  final measuringUnit =
+                                      entry.value.measuringUnit;
+                                  return Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: Text(
+                                      '$productName: $quantity ${measuringUnit.tr}',
+                                      style: TextStyle(
+                                        fontSize: 32,
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    } else {
+      showDialog(
+        context: Get.context!,
+        builder: (BuildContext context) {
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.all(30),
+                height: 320,
+                width: 700,
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    AutoSizeText(
+                      'inventoryUsage'.tr,
+                      maxLines: 2,
+                      style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: StretchingOverscrollIndicator(
+                        axisDirection: AxisDirection.down,
+                        child: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: productsUsage.entries.map((entry) {
+                              final productName = entry.value.productName;
+                              final quantity = entry.value.quantity;
+                              final measuringUnit = entry.value.measuringUnit;
+                              return Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Text(
+                                  '$productName: $quantity ${measuringUnit.tr}',
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
   }
 
   void updateLanguagesFilters() {
@@ -56,6 +444,8 @@ class SalesScreenController extends GetxController {
   void updateNewDayDateFilters() {
     _initializeDateRangeOptions();
     fetchGeneralSales();
+    resetItemsTableValues();
+    resetProductsTableValues();
   }
 
   void _initializeDateRangeOptions() {
@@ -152,6 +542,8 @@ class SalesScreenController extends GetxController {
               };
               currentSelectedDate.value = dateRangeOptions.length - 1;
               fetchGeneralSales();
+              resetItemsTableValues();
+              resetProductsTableValues();
             }
           } else {
             resetDateFilter();
@@ -162,6 +554,8 @@ class SalesScreenController extends GetxController {
             dateFrom = selectedRange["from"];
             dateTo = selectedRange["to"];
             fetchGeneralSales();
+            resetItemsTableValues();
+            resetProductsTableValues();
             final dateKey = dateRangeOptions.keys
                 .toList()
                 .elementAt(currentSelectedDate.value);
@@ -189,6 +583,8 @@ class SalesScreenController extends GetxController {
     dateTo = DateTime(now.year, now.month, now.day, 23, 59, 59);
     currentSelectedDate.value = 0;
     fetchGeneralSales();
+    resetItemsTableValues();
+    resetProductsTableValues();
   }
 
   bool isDate(String input) {
@@ -202,12 +598,14 @@ class SalesScreenController extends GetxController {
 
   void onRefresh() async {
     fetchGeneralSales();
+    resetItemsTableValues();
+    resetProductsTableValues();
     salesRefreshController.refreshCompleted();
   }
 
   void fetchGeneralSales() async {
     try {
-      loadingGeneralSales.value = true;
+      loadingSales.value = true;
       final revenueQuery = await _fetchMetricsForDateRange(dateFrom, dateTo);
       final revenue = revenueQuery['revenue'];
       final orders = revenueQuery['orders'];
@@ -217,8 +615,6 @@ class SalesScreenController extends GetxController {
       final dineInCount = revenueQuery['dineInCount'];
       final takeawayCount = revenueQuery['takeawayCount'];
       final profit = revenue - costPrice;
-
-      // Calculate percentages for each status
       final completePercentage =
           orders > 0 ? (statusCounts['complete'] / orders) * 100 : 0.0;
       final returnedPercentage =
@@ -267,7 +663,7 @@ class SalesScreenController extends GetxController {
     } catch (e) {
       if (kDebugMode) AppInit.logger.e('Error fetching metrics: $e');
     } finally {
-      loadingGeneralSales.value = false;
+      loadingSales.value = false;
     }
   }
 
@@ -383,4 +779,49 @@ class SalesScreenController extends GetxController {
     salesRefreshController.dispose();
     super.onClose();
   }
+}
+
+class ItemReport {
+  final String itemId;
+  final String name;
+  final int totalOrders;
+  final double totalRevenue;
+  final double totalProfit;
+  final double totalCostPrice;
+  final Map<String, ProductUsage> usedProducts;
+
+  ItemReport({
+    required this.itemId,
+    required this.name,
+    required this.totalOrders,
+    required this.totalRevenue,
+    required this.totalProfit,
+    required this.totalCostPrice,
+    required this.usedProducts,
+  });
+}
+
+class ProductUsage {
+  final String productId;
+  final String productName;
+  final String measuringUnit;
+  final int quantity;
+
+  ProductUsage({
+    required this.productId,
+    required this.productName,
+    required this.measuringUnit,
+    required this.quantity,
+  });
+}
+
+class InventoryReport {
+  final String productName;
+  final int totalQuantity;
+  final String measuringUnit;
+  InventoryReport({
+    required this.productName,
+    required this.measuringUnit,
+    required this.totalQuantity,
+  });
 }

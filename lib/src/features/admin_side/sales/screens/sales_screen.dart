@@ -1,9 +1,12 @@
+import 'package:data_table_2/data_table_2.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
+import '../../../../constants/assets_strings.dart';
 import '../../../../general/general_functions.dart';
 import '../../admin_main_screen/components/main_appbar.dart';
 import '../components/general_sales_card.dart';
@@ -21,6 +24,7 @@ class SalesScreen extends StatelessWidget {
     final screenWidth = getScreenWidth(context);
     final screenType = GetScreenType(context);
     final controller = Get.put(SalesScreenController());
+    const textStyle = TextStyle(fontWeight: FontWeight.w500, fontSize: 16);
     return Scaffold(
       appBar: screenType.isPhone
           ? null
@@ -154,18 +158,17 @@ class SalesScreen extends StatelessWidget {
                                     iconBackgroundColor:
                                         const Color.fromRGBO(255, 237, 213, 1),
                                     amount:
-                                        '${SalesScreenController.instance.totalRevenue.value.toStringAsFixed(2)} EGP',
+                                        '${controller.totalRevenue.value.toStringAsFixed(2)} EGP',
                                     subtitle: 'totalRevenue'.tr,
                                     percentageTitle:
                                         controller.lastPeriodString.value,
                                     percentage:
-                                        '${SalesScreenController.instance.revenueChangePercentage.value.toStringAsFixed(1)}%',
-                                    increase: SalesScreenController.instance
+                                        '${controller.revenueChangePercentage.value.toStringAsFixed(1)}%',
+                                    increase: controller
                                             .revenueChangePercentage.value >=
                                         0,
                                     icon: Icons.monetization_on_outlined,
-                                    loading:
-                                        controller.loadingGeneralSales.value,
+                                    loading: controller.loadingSales.value,
                                   ),
                                   const SizedBox(height: 16),
                                   GeneralReportsCard(
@@ -186,8 +189,7 @@ class SalesScreen extends StatelessWidget {
                                             .ordersChangePercentage.value >=
                                         0,
                                     icon: FontAwesomeIcons.listUl,
-                                    loading:
-                                        controller.loadingGeneralSales.value,
+                                    loading: controller.loadingSales.value,
                                   ),
                                   const SizedBox(height: 16),
                                   GeneralReportsCard(
@@ -209,8 +211,7 @@ class SalesScreen extends StatelessWidget {
                                             .customersChangePercentage.value >=
                                         0,
                                     icon: Icons.people_rounded,
-                                    loading:
-                                        controller.loadingGeneralSales.value,
+                                    loading: controller.loadingSales.value,
                                   ),
                                   const SizedBox(height: 16),
                                   SalesProfitCard(
@@ -225,8 +226,7 @@ class SalesScreen extends StatelessWidget {
                                     increase: controller
                                             .customersChangePercentage.value >=
                                         0,
-                                    loading:
-                                        controller.loadingGeneralSales.value,
+                                    loading: controller.loadingSales.value,
                                   ),
                                   const SizedBox(height: 16),
                                   SalesAnalyticsCard(
@@ -246,6 +246,143 @@ class SalesScreen extends StatelessWidget {
                                         .takeawayOrdersPercentage.value,
                                     isPhone: screenType.isPhone,
                                   ),
+                                  const SizedBox(height: 24),
+                                  Text(
+                                    'topSoldItems'.tr,
+                                    style: TextStyle(
+                                      overflow: TextOverflow.ellipsis,
+                                      fontSize: 24,
+                                      color: Colors.grey.shade800,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  SizedBox(
+                                    height: screenHeight * 0.6,
+                                    child: AsyncPaginatedDataTable2(
+                                      key: controller.itemsTableKey,
+                                      rowsPerPage: controller.rowsPerPage,
+                                      showCheckboxColumn: false,
+                                      isVerticalScrollBarVisible: true,
+                                      initialFirstRowIndex: 0,
+                                      isHorizontalScrollBarVisible: true,
+                                      onSelectAll: (_) {},
+                                      wrapInCard: true,
+                                      minWidth: 1100,
+                                      headingRowColor:
+                                          const WidgetStatePropertyAll(
+                                              Colors.white),
+                                      empty: const SizedBox.shrink(),
+                                      loading: Padding(
+                                        padding: const EdgeInsets.all(12),
+                                        child: Lottie.asset(
+                                          kLoadingWalkingCoffeeAnim,
+                                          height: screenHeight * 0.5,
+                                        ),
+                                      ),
+                                      columns: [
+                                        DataColumn2(
+                                          label: alignHorizontalWidget(
+                                              child: Text('itemName'.tr,
+                                                  style: textStyle)),
+                                          tooltip: 'itemName'.tr,
+                                          fixedWidth: 140,
+                                          size: ColumnSize.L,
+                                        ),
+                                        DataColumn2(
+                                          label: alignHorizontalWidget(
+                                              child: Text('orders'.tr,
+                                                  style: textStyle)),
+                                          tooltip: 'orders'.tr,
+                                          fixedWidth: 140,
+                                          size: ColumnSize.L,
+                                        ),
+                                        DataColumn2(
+                                          label: alignHorizontalWidget(
+                                              child: Text('totalRevenue'.tr,
+                                                  style: textStyle)),
+                                          tooltip: 'totalRevenue'.tr,
+                                          fixedWidth: 160,
+                                          size: ColumnSize.L,
+                                        ),
+                                        DataColumn2(
+                                          label: alignHorizontalWidget(
+                                            child: Text('totalProfit'.tr,
+                                                style: textStyle),
+                                          ),
+                                          tooltip: 'totalProfit'.tr,
+                                          fixedWidth: 140,
+                                          size: ColumnSize.L,
+                                        ),
+                                        DataColumn2(
+                                          label: alignHorizontalWidget(
+                                              child: Text('costPrice'.tr,
+                                                  style: textStyle)),
+                                          tooltip: 'costPrice'.tr,
+                                          fixedWidth: 140,
+                                          size: ColumnSize.L,
+                                        ),
+                                      ],
+                                      source: _ItemsDataSource(controller,
+                                          screenType.isPhone, context),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'topInventoryProducts'.tr,
+                                    style: TextStyle(
+                                      overflow: TextOverflow.ellipsis,
+                                      fontSize: 24,
+                                      color: Colors.grey.shade800,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  SizedBox(
+                                    height: screenHeight * 0.6,
+                                    child: AsyncPaginatedDataTable2(
+                                      key: controller.productsTableKey,
+                                      rowsPerPage: controller.rowsPerPage,
+                                      showCheckboxColumn: false,
+                                      isVerticalScrollBarVisible: true,
+                                      initialFirstRowIndex: 0,
+                                      isHorizontalScrollBarVisible: true,
+                                      onSelectAll: (_) {},
+                                      wrapInCard: true,
+                                      minWidth: 380,
+                                      headingRowColor:
+                                          const WidgetStatePropertyAll(
+                                              Colors.white),
+                                      empty: const SizedBox.shrink(),
+                                      loading: Padding(
+                                        padding: const EdgeInsets.all(12),
+                                        child: Lottie.asset(
+                                          kLoadingWalkingCoffeeAnim,
+                                          height: screenHeight * 0.5,
+                                        ),
+                                      ),
+                                      columns: [
+                                        DataColumn2(
+                                          label: alignHorizontalWidget(
+                                              child: Text('productName'.tr,
+                                                  style: textStyle)),
+                                          tooltip: 'productName'.tr,
+                                          fixedWidth: 140,
+                                          size: ColumnSize.L,
+                                        ),
+                                        DataColumn2(
+                                          label: alignHorizontalWidget(
+                                              child: Text('usedQuantity'.tr,
+                                                  style: textStyle)),
+                                          tooltip: 'usedQuantity'.tr,
+                                          fixedWidth: 160,
+                                          size: ColumnSize.L,
+                                        ),
+                                      ],
+                                      source: _ProductsDataSource(controller,
+                                          screenType.isPhone, context),
+                                    ),
+                                  )
                                 ],
                               )
                             : Row(
@@ -264,20 +401,19 @@ class SalesScreen extends StatelessWidget {
                                               const Color.fromRGBO(
                                                   255, 237, 213, 1),
                                           amount:
-                                              '${SalesScreenController.instance.totalRevenue.value.toStringAsFixed(2)} EGP',
+                                              '${controller.totalRevenue.value.toStringAsFixed(2)} EGP',
                                           subtitle: 'totalRevenue'.tr,
                                           percentageTitle:
                                               controller.lastPeriodString.value,
                                           percentage:
-                                              '${SalesScreenController.instance.revenueChangePercentage.value.toStringAsFixed(1)}%',
-                                          increase: SalesScreenController
-                                                  .instance
+                                              '${controller.revenueChangePercentage.value.toStringAsFixed(1)}%',
+                                          increase: controller
                                                   .revenueChangePercentage
                                                   .value >=
                                               0,
                                           icon: Icons.monetization_on_outlined,
-                                          loading: controller
-                                              .loadingGeneralSales.value,
+                                          loading:
+                                              controller.loadingSales.value,
                                         ),
                                         const SizedBox(height: 16),
                                         GeneralReportsCard(
@@ -300,8 +436,8 @@ class SalesScreen extends StatelessWidget {
                                                   .value >=
                                               0,
                                           icon: FontAwesomeIcons.listUl,
-                                          loading: controller
-                                              .loadingGeneralSales.value,
+                                          loading:
+                                              controller.loadingSales.value,
                                         ),
                                         const SizedBox(height: 16),
                                         GeneralReportsCard(
@@ -325,18 +461,10 @@ class SalesScreen extends StatelessWidget {
                                                   .value >=
                                               0,
                                           icon: Icons.people_rounded,
-                                          loading: controller
-                                              .loadingGeneralSales.value,
+                                          loading:
+                                              controller.loadingSales.value,
                                         ),
                                         const SizedBox(height: 16),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    flex: 3,
-                                    child: Column(
-                                      children: [
                                         SalesProfitCard(
                                           totalProfit:
                                               '${controller.totalProfit.value.toStringAsFixed(2)} EGP',
@@ -350,10 +478,18 @@ class SalesScreen extends StatelessWidget {
                                                   .customersChangePercentage
                                                   .value >=
                                               0,
-                                          loading: controller
-                                              .loadingGeneralSales.value,
+                                          loading:
+                                              controller.loadingSales.value,
                                         ),
                                         const SizedBox(height: 16),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    flex: 3,
+                                    child: Column(
+                                      children: [
                                         SalesAnalyticsCard(
                                           completePercent: controller
                                               .completeOrderPercentage.value,
@@ -371,6 +507,7 @@ class SalesScreen extends StatelessWidget {
                                               .takeawayOrdersPercentage.value,
                                           isPhone: screenType.isPhone,
                                         ),
+                                        const SizedBox(height: 16),
                                       ],
                                     ),
                                   ),
@@ -381,12 +518,151 @@ class SalesScreen extends StatelessWidget {
                   ),
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),
     );
   }
+}
+
+class _ItemsDataSource extends AsyncDataTableSource {
+  final SalesScreenController controller;
+  final bool isPhone;
+  final BuildContext context;
+  _ItemsDataSource(this.controller, this.isPhone, this.context);
+  @override
+  Future<AsyncRowsResponse> getRows(int startIndex, int count) async {
+    const textStyle = TextStyle(fontWeight: FontWeight.w500, fontSize: 14);
+    if (startIndex + count > controller.itemsList.length) {
+      await controller.fetchMostOrderedItems(start: startIndex, limit: count);
+    }
+    final rows = <DataRow>[];
+    for (int i = startIndex; i < startIndex + count; i++) {
+      if (i >= controller.itemsList.length) break;
+      final item = controller.itemsList[i];
+      rows.add(
+        DataRow(
+          cells: [
+            DataCell(
+                onTap: () => controller.viewItemInventoryUsage(
+                    isPhone: isPhone,
+                    productsUsage: item.usedProducts,
+                    context: context),
+                alignHorizontalWidget(
+                  child: Text(
+                    item.name,
+                    style: textStyle,
+                  ),
+                )),
+            DataCell(
+                onTap: () => controller.viewItemInventoryUsage(
+                    isPhone: isPhone,
+                    productsUsage: item.usedProducts,
+                    context: context),
+                alignHorizontalWidget(
+                  child: Text(
+                    item.totalOrders.toString(),
+                    style: textStyle,
+                  ),
+                )),
+            DataCell(
+                onTap: () => controller.viewItemInventoryUsage(
+                    isPhone: isPhone,
+                    productsUsage: item.usedProducts,
+                    context: context),
+                alignHorizontalWidget(
+                    child: Text(
+                  '${item.totalRevenue.toStringAsFixed(2)} EGP',
+                  style: textStyle,
+                ))),
+            DataCell(
+                onTap: () => controller.viewItemInventoryUsage(
+                    isPhone: isPhone,
+                    productsUsage: item.usedProducts,
+                    context: context),
+                alignHorizontalWidget(
+                    child: Text(
+                  '${item.totalProfit.toStringAsFixed(2)} EGP',
+                  style: textStyle,
+                ))),
+            DataCell(
+                onTap: () => controller.viewItemInventoryUsage(
+                    isPhone: isPhone,
+                    productsUsage: item.usedProducts,
+                    context: context),
+                alignHorizontalWidget(
+                    child: Text(
+                  '${item.totalCostPrice.toStringAsFixed(2)} EGP',
+                  style: textStyle,
+                ))),
+          ],
+          color: const WidgetStatePropertyAll(Colors.white),
+        ),
+      );
+    }
+
+    return AsyncRowsResponse(controller.totalItemsCount, rows);
+  }
+
+  @override
+  bool get isRowCountApproximate => false;
+
+  @override
+  int get rowCount => controller.totalItemsCount;
+
+  @override
+  int get selectedRowCount => 0;
+}
+
+class _ProductsDataSource extends AsyncDataTableSource {
+  final SalesScreenController controller;
+  final bool isPhone;
+  final BuildContext context;
+  _ProductsDataSource(this.controller, this.isPhone, this.context);
+  @override
+  Future<AsyncRowsResponse> getRows(int startIndex, int count) async {
+    const textStyle = TextStyle(fontWeight: FontWeight.w500, fontSize: 14);
+    if (startIndex + count > controller.productsList.length) {
+      await controller.fetchTopUsedInventoryProducts(
+          start: startIndex, limit: count);
+    }
+    final rows = <DataRow>[];
+    for (int i = startIndex; i < startIndex + count; i++) {
+      if (i >= controller.productsList.length) break;
+      final product = controller.productsList[i];
+      rows.add(
+        DataRow(
+          cells: [
+            DataCell(alignHorizontalWidget(
+              child: Text(
+                product.productName,
+                style: textStyle,
+              ),
+            )),
+            DataCell(alignHorizontalWidget(
+              child: Text(
+                '${product.totalQuantity} ${product.measuringUnit.tr}',
+                style: textStyle,
+              ),
+            )),
+          ],
+          color: const WidgetStatePropertyAll(Colors.white),
+        ),
+      );
+    }
+
+    return AsyncRowsResponse(controller.totalItemsCount, rows);
+  }
+
+  @override
+  bool get isRowCountApproximate => false;
+
+  @override
+  int get rowCount => controller.totalItemsCount;
+
+  @override
+  int get selectedRowCount => 0;
 }
 
 class Indicator extends StatelessWidget {

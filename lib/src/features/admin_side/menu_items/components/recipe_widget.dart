@@ -264,7 +264,7 @@ class NoRecipeFound extends StatelessWidget {
         Lottie.asset(
           kEmptyCoffeeCupAnim,
           fit: BoxFit.contain,
-          height: screenHeight * 0.3,
+          height: screenHeight * 0.2,
         ),
         AutoSizeText(
           'noRecipeTitle'.tr,
