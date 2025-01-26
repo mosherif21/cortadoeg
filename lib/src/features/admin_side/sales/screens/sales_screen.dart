@@ -248,6 +248,87 @@ class SalesScreen extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 24),
                                   Text(
+                                    'takeawayRevenue'.tr,
+                                    style: TextStyle(
+                                      overflow: TextOverflow.ellipsis,
+                                      fontSize: 24,
+                                      color: Colors.grey.shade800,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  SizedBox(
+                                    height: screenHeight * 0.6,
+                                    child: AsyncPaginatedDataTable2(
+                                      key: controller.employeesTableKey,
+                                      rowsPerPage: controller.rowsPerPage,
+                                      showCheckboxColumn: false,
+                                      isVerticalScrollBarVisible: true,
+                                      initialFirstRowIndex: 0,
+                                      isHorizontalScrollBarVisible: true,
+                                      onSelectAll: (_) {},
+                                      wrapInCard: true,
+                                      minWidth: 1000,
+                                      headingRowColor:
+                                          const WidgetStatePropertyAll(
+                                              Colors.white),
+                                      empty: const SizedBox.shrink(),
+                                      loading: Padding(
+                                        padding: const EdgeInsets.all(12),
+                                        child: Lottie.asset(
+                                          kLoadingWalkingCoffeeAnim,
+                                          height: screenHeight * 0.5,
+                                        ),
+                                      ),
+                                      columns: [
+                                        DataColumn2(
+                                          label: alignHorizontalWidget(
+                                              child: Text('employeeName'.tr,
+                                                  style: textStyle)),
+                                          tooltip: 'employeeName'.tr,
+                                          fixedWidth: 160,
+                                          size: ColumnSize.L,
+                                        ),
+                                        DataColumn2(
+                                          label: alignHorizontalWidget(
+                                              child: Text('totalOrders'.tr,
+                                                  style: textStyle)),
+                                          tooltip: 'totalOrders'.tr,
+                                          fixedWidth: 160,
+                                          size: ColumnSize.L,
+                                        ),
+                                        DataColumn2(
+                                          label: alignHorizontalWidget(
+                                              child: Text('totalRevenue'.tr,
+                                                  style: textStyle)),
+                                          tooltip: 'totalRevenue'.tr,
+                                          fixedWidth: 160,
+                                          size: ColumnSize.L,
+                                        ),
+                                        DataColumn2(
+                                          label: alignHorizontalWidget(
+                                              child: Text(
+                                                  'takeawayPercentage'.tr,
+                                                  style: textStyle)),
+                                          tooltip: 'takeawayPercentage'.tr,
+                                          fixedWidth: 220,
+                                          size: ColumnSize.L,
+                                        ),
+                                        DataColumn2(
+                                          label: alignHorizontalWidget(
+                                              child: Text('employeeRevenue'.tr,
+                                                  style: textStyle)),
+                                          tooltip: 'employeeRevenue'.tr,
+                                          fixedWidth: 180,
+                                          size: ColumnSize.L,
+                                        ),
+                                      ],
+                                      source: _EmployeesDataSource(controller,
+                                          screenType.isPhone, context),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
                                     'topSoldItems'.tr,
                                     style: TextStyle(
                                       overflow: TextOverflow.ellipsis,
@@ -380,87 +461,6 @@ class SalesScreen extends StatelessWidget {
                                         ),
                                       ],
                                       source: _ProductsDataSource(controller,
-                                          screenType.isPhone, context),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'takeawayRevenue'.tr,
-                                    style: TextStyle(
-                                      overflow: TextOverflow.ellipsis,
-                                      fontSize: 24,
-                                      color: Colors.grey.shade800,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  SizedBox(
-                                    height: screenHeight * 0.6,
-                                    child: AsyncPaginatedDataTable2(
-                                      key: controller.employeesTableKey,
-                                      rowsPerPage: controller.rowsPerPage,
-                                      showCheckboxColumn: false,
-                                      isVerticalScrollBarVisible: true,
-                                      initialFirstRowIndex: 0,
-                                      isHorizontalScrollBarVisible: true,
-                                      onSelectAll: (_) {},
-                                      wrapInCard: true,
-                                      minWidth: 1000,
-                                      headingRowColor:
-                                          const WidgetStatePropertyAll(
-                                              Colors.white),
-                                      empty: const SizedBox.shrink(),
-                                      loading: Padding(
-                                        padding: const EdgeInsets.all(12),
-                                        child: Lottie.asset(
-                                          kLoadingWalkingCoffeeAnim,
-                                          height: screenHeight * 0.5,
-                                        ),
-                                      ),
-                                      columns: [
-                                        DataColumn2(
-                                          label: alignHorizontalWidget(
-                                              child: Text('employeeName'.tr,
-                                                  style: textStyle)),
-                                          tooltip: 'employeeName'.tr,
-                                          fixedWidth: 160,
-                                          size: ColumnSize.L,
-                                        ),
-                                        DataColumn2(
-                                          label: alignHorizontalWidget(
-                                              child: Text('totalOrders'.tr,
-                                                  style: textStyle)),
-                                          tooltip: 'totalOrders'.tr,
-                                          fixedWidth: 160,
-                                          size: ColumnSize.L,
-                                        ),
-                                        DataColumn2(
-                                          label: alignHorizontalWidget(
-                                              child: Text('totalRevenue'.tr,
-                                                  style: textStyle)),
-                                          tooltip: 'totalRevenue'.tr,
-                                          fixedWidth: 160,
-                                          size: ColumnSize.L,
-                                        ),
-                                        DataColumn2(
-                                          label: alignHorizontalWidget(
-                                              child: Text(
-                                                  'takeawayPercentage'.tr,
-                                                  style: textStyle)),
-                                          tooltip: 'takeawayPercentage'.tr,
-                                          fixedWidth: 220,
-                                          size: ColumnSize.L,
-                                        ),
-                                        DataColumn2(
-                                          label: alignHorizontalWidget(
-                                              child: Text('employeeRevenue'.tr,
-                                                  style: textStyle)),
-                                          tooltip: 'employeeRevenue'.tr,
-                                          fixedWidth: 180,
-                                          size: ColumnSize.L,
-                                        ),
-                                      ],
-                                      source: _EmployeesDataSource(controller,
                                           screenType.isPhone, context),
                                     ),
                                   ),
@@ -648,6 +648,94 @@ class SalesScreen extends StatelessWidget {
                                           isPhone: screenType.isPhone,
                                         ),
                                         const SizedBox(height: 24),
+                                        Text(
+                                          'takeawayRevenue'.tr,
+                                          style: TextStyle(
+                                            overflow: TextOverflow.ellipsis,
+                                            fontSize: 24,
+                                            color: Colors.grey.shade800,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        SizedBox(
+                                          height: screenHeight * 0.6,
+                                          child: AsyncPaginatedDataTable2(
+                                            key: controller.employeesTableKey,
+                                            rowsPerPage: controller.rowsPerPage,
+                                            showCheckboxColumn: false,
+                                            isVerticalScrollBarVisible: true,
+                                            initialFirstRowIndex: 0,
+                                            isHorizontalScrollBarVisible: true,
+                                            onSelectAll: (_) {},
+                                            wrapInCard: true,
+                                            minWidth: 1000,
+                                            headingRowColor:
+                                                const WidgetStatePropertyAll(
+                                                    Colors.white),
+                                            empty: const SizedBox.shrink(),
+                                            loading: Padding(
+                                              padding: const EdgeInsets.all(12),
+                                              child: Lottie.asset(
+                                                kLoadingWalkingCoffeeAnim,
+                                                height: screenHeight * 0.5,
+                                              ),
+                                            ),
+                                            columns: [
+                                              DataColumn2(
+                                                label: alignHorizontalWidget(
+                                                    child: Text(
+                                                        'employeeName'.tr,
+                                                        style: textStyle)),
+                                                tooltip: 'employeeName'.tr,
+                                                fixedWidth: 160,
+                                                size: ColumnSize.L,
+                                              ),
+                                              DataColumn2(
+                                                label: alignHorizontalWidget(
+                                                    child: Text(
+                                                        'totalOrders'.tr,
+                                                        style: textStyle)),
+                                                tooltip: 'totalOrders'.tr,
+                                                fixedWidth: 160,
+                                                size: ColumnSize.L,
+                                              ),
+                                              DataColumn2(
+                                                label: alignHorizontalWidget(
+                                                    child: Text(
+                                                        'totalRevenue'.tr,
+                                                        style: textStyle)),
+                                                tooltip: 'totalRevenue'.tr,
+                                                fixedWidth: 160,
+                                                size: ColumnSize.L,
+                                              ),
+                                              DataColumn2(
+                                                label: alignHorizontalWidget(
+                                                    child: Text(
+                                                        'takeawayPercentage'.tr,
+                                                        style: textStyle)),
+                                                tooltip:
+                                                    'takeawayPercentage'.tr,
+                                                fixedWidth: 220,
+                                                size: ColumnSize.L,
+                                              ),
+                                              DataColumn2(
+                                                label: alignHorizontalWidget(
+                                                    child: Text(
+                                                        'employeeRevenue'.tr,
+                                                        style: textStyle)),
+                                                tooltip: 'employeeRevenue'.tr,
+                                                fixedWidth: 180,
+                                                size: ColumnSize.L,
+                                              ),
+                                            ],
+                                            source: _EmployeesDataSource(
+                                                controller,
+                                                screenType.isPhone,
+                                                context),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
                                         Text(
                                           'topSoldItems'.tr,
                                           style: TextStyle(

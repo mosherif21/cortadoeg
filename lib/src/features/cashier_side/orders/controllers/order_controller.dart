@@ -31,7 +31,7 @@ class OrderController extends GetxController {
   final List<String>? tablesIds;
   final selectedCategory = 0.obs;
   final RxList<CategoryModel> categories = <CategoryModel>[].obs;
-  late final List<ItemModel> items;
+  List<ItemModel> items = [];
 
   final RxString currentCustomerName = 'guest'.tr.obs;
   CustomerModel? currentCustomer;
@@ -81,17 +81,19 @@ class OrderController extends GetxController {
       if (itemsFetch != null) {
         loadingItems.value = false;
         items = itemsFetch;
-        categoryFilteredItems = selectedCategory.value == 0
-            ? items
-            : items
-                .where((item) =>
-                    item.categoryId == categories[selectedCategory.value].id)
-                .toList();
-        filteredItems.value = searchText.isEmpty
-            ? categoryFilteredItems
-            : categoryFilteredItems
-                .where((item) => item.name.toUpperCase().contains(searchText))
-                .toList();
+        if (categories.isNotEmpty) {
+          categoryFilteredItems = selectedCategory.value == 0
+              ? items
+              : items
+                  .where((item) =>
+                      item.categoryId == categories[selectedCategory.value].id)
+                  .toList();
+          filteredItems.value = searchText.isEmpty
+              ? categoryFilteredItems
+              : categoryFilteredItems
+                  .where((item) => item.name.toUpperCase().contains(searchText))
+                  .toList();
+        }
       } else {
         showSnackBar(
           text: 'errorOccurred'.tr,
@@ -106,12 +108,14 @@ class OrderController extends GetxController {
             CategoryModel(id: 'all', name: 'allMenu'.tr, iconName: 'allMenu'));
         categories.value = categoriesFetch;
         selectedCategory.value = 0;
-        categoryFilteredItems = items;
-        filteredItems.value = searchText.isEmpty
-            ? categoryFilteredItems
-            : categoryFilteredItems
-                .where((item) => item.name.toUpperCase().contains(searchText))
-                .toList();
+        if (items.isNotEmpty) {
+          categoryFilteredItems = items;
+          filteredItems.value = searchText.isEmpty
+              ? categoryFilteredItems
+              : categoryFilteredItems
+                  .where((item) => item.name.toUpperCase().contains(searchText))
+                  .toList();
+        }
       } else {
         showSnackBar(
           text: 'errorOccurred'.tr,

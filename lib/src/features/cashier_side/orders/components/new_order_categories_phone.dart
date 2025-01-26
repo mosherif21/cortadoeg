@@ -1,6 +1,7 @@
 import 'package:cortadoeg/src/features/cashier_side/orders/components/models.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_rx/src/rx_types/rx_types.dart';
+import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 
 import '../../../../general/general_functions.dart';
 import 'category_item_phone.dart';
@@ -23,19 +24,21 @@ class CategoryMenuPhone extends StatelessWidget {
         child: StretchingOverscrollIndicator(
           axisDirection:
               isLangEnglish() ? AxisDirection.right : AxisDirection.left,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: categories.length,
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              return CategoryItemPhone(
-                icon: categoriesIconMap[categories[index].iconName] ??
-                    Icons.local_drink,
-                categoryTitle: categories[index].name,
-                isSelected: index == selectedCategory,
-                onSelect: () => onSelect(index),
-              );
-            },
+          child: Obx(
+            () => ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: categories.length,
+              shrinkWrap: true,
+              itemBuilder: (context, index) {
+                return CategoryItemPhone(
+                  icon: categoriesIconMap[categories[index].iconName] ??
+                      Icons.local_drink,
+                  categoryTitle: categories[index].name,
+                  isSelected: index == selectedCategory,
+                  onSelect: () => onSelect(index),
+                );
+              },
+            ),
           ),
         ),
       ),

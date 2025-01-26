@@ -79,6 +79,7 @@ class EmployeesScreenController extends GetxController {
             AuthenticationRepository.instance.userEmail.value;
 
         employeesList = querySnapshot.docs
+            .where((doc) => doc.id != 'employeeVariables')
             .map((doc) => EmployeeModel.fromFirestore(doc.data(), doc.id))
             .where((employee) => employee.email != currentUserEmail)
             .toList();
