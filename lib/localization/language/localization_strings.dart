@@ -650,7 +650,8 @@ class Languages extends Translations {
           "takeawayRevenue": "إيرادات التوصيل",
           "employeeName": "اسم الموظف",
           "takeawayPercentage": "نسبة التوصيل",
-          "employeeRevenue": "إيرادات الموظف"
+          "employeeRevenue": "إيرادات الموظف",
+          "taxAmount": "مبلغ الضريبة"
         },
         'en_US': {
           'skip': 'Skip',
@@ -1315,6 +1316,7 @@ class Languages extends Translations {
           "employeeName": "Employee Name",
           "takeawayPercentage": "Takeaway Percentage",
           "employeeRevenue": "Employee Revenue",
+          "taxAmount": "Tax Amount",
         },
       };
 }

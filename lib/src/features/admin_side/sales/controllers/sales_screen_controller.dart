@@ -4,7 +4,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:bottom_sheet/bottom_sheet.dart';
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -34,6 +33,7 @@ class SalesScreenController extends GetxController {
   final RxDouble customersChangePercentage = 0.0.obs;
   final totalProfit = 0.0.obs;
   final totalCostPrice = 0.0.obs;
+  final totalTaxAmount = 0.0.obs;
   final profitChangePercentage = 0.0.obs;
   final completeOrderPercentage = 0.0.obs;
   final returnedOrderPercentage = 0.0.obs;
@@ -41,33 +41,30 @@ class SalesScreenController extends GetxController {
   final dineInOrdersPercentage = 0.0.obs;
   final takeawayOrdersPercentage = 0.0.obs;
   final RxBool loadingSales = true.obs;
-  DocumentSnapshot? itemsLastDocument;
-  DocumentSnapshot? productsLastDocument;
-  DocumentSnapshot? employeesLastDocument;
-  late final GlobalKey<AsyncPaginatedDataTable2State> itemsTableKey;
-  late final GlobalKey<AsyncPaginatedDataTable2State> productsTableKey;
-  late final GlobalKey<AsyncPaginatedDataTable2State> employeesTableKey;
   final int rowsPerPage = 8;
   int totalItemsCount = 0;
   int totalProductsCount = 0;
   int totalEmployeesCount = 0;
+
   double takeawayPercentage = 10;
+  List<OrderModel> ordersList = [];
   List<ItemReport> itemsList = [];
   List<InventoryReport> productsList = [];
+  final updateItemsTable = 0.obs;
+  final updateEmployeesTable = 0.obs;
+  final updateProductsTable = 0.obs;
   List<TakeawayEmployeeReport> employeesList = [];
   late final StreamSubscription takeawayPercentListener;
+  StreamSubscription? ordersListener;
   @override
   void onInit() {
     super.onInit();
     _firestore = FirebaseFirestore.instance;
-    itemsTableKey = GlobalKey<AsyncPaginatedDataTable2State>();
-    productsTableKey = GlobalKey<AsyncPaginatedDataTable2State>();
-    employeesTableKey = GlobalKey<AsyncPaginatedDataTable2State>();
     final now = DateTime.now();
     dateFrom = DateTime(now.year, now.month, now.day);
     dateTo = DateTime(now.year, now.month, now.day, 23, 59, 59);
     _initializeDateRangeOptions();
-    fetchGeneralSales();
+    _listenToGeneralSalesOrders();
   }
 
   @override
@@ -75,88 +72,148 @@ class SalesScreenController extends GetxController {
     takeawayPercentListener = listenToTakeawayPercent().listen((percent) {
       if (percent != null) {
         takeawayPercentage = percent;
-        resetEmployeesTableValues();
+        _listenToGeneralSalesOrders();
       }
     });
     super.onReady();
   }
 
-  Future<void> fetchTakeawayEmployeesData({
-    int start = 0,
-    int limit = 8,
-  }) async {
+  void _listenToGeneralSalesOrders() {
     try {
-      Map<String, dynamic> employeeMetrics = {};
-      Query query = _firestore
-          .collection('orders')
-          .where('timestamp', isGreaterThanOrEqualTo: dateFrom)
-          .where('timestamp', isLessThanOrEqualTo: dateTo)
-          .where('status', isNotEqualTo: 'active')
-          .where('takeawayEmployeeId', isNotEqualTo: null);
+      loadingSales.value = true;
+      ordersList.clear();
+      ordersListener?.cancel();
+      resetItemsTableValues();
+      resetProductsTableValues();
+      resetEmployeesTableValues();
+      final CollectionReference ordersRef =
+          FirebaseFirestore.instance.collection('orders');
+      Query query = ordersRef;
 
-      if (start == 0) {
-        final countSnapshot = await query.count().get();
-        totalEmployeesCount = countSnapshot.count ?? 0;
-        employeesLastDocument = null;
-      } else if (employeesLastDocument != null) {
-        query = query.startAfterDocument(employeesLastDocument!);
-      } else {
-        return;
+      if (dateFrom != null) {
+        query = query.where('timestamp', isGreaterThanOrEqualTo: dateFrom);
       }
 
-      final querySnapshot = await query.limit(limit).get();
-      if (querySnapshot.docs.isEmpty) {
-        if (start == 0) {
-          employeesList.clear();
+      if (dateTo != null) {
+        query = query.where('timestamp', isLessThanOrEqualTo: dateTo);
+      }
+      query = query.where('status', isNotEqualTo: 'active');
+      ordersListener = query.snapshots().listen((snapshot) async {
+        double revenue = 0.0;
+        double costPrice = 0.0;
+        double taxAmount = 0.0;
+        int ordersCount = snapshot.docs.length;
+        int customers = 0;
+        int dineInCount = 0;
+        int takeawayCount = 0;
+        final statusCounts = {
+          'complete': 0,
+          'returned': 0,
+          'canceled': 0,
+        };
+
+        ordersList = snapshot.docs.map((doc) {
+          final data = doc.data();
+          final order =
+              OrderModel.fromFirestore(data as Map<String, dynamic>, doc.id);
+
+          if (statusCounts.containsKey(order.status.name)) {
+            statusCounts[order.status.name] =
+                (statusCounts[order.status.name] ?? 0) + 1;
+          }
+
+          if (order.isTakeaway) {
+            takeawayCount++;
+          } else {
+            dineInCount++;
+          }
+          if (order.customerId != null) {
+            customers++;
+          }
+          if (order.status.name == 'complete') {
+            revenue += order.totalAmount;
+            taxAmount += order.taxTotalAmount;
+            for (var item in order.items) {
+              costPrice += (item.costPrice) * item.quantity;
+            }
+          } else if (order.status.name == 'returned') {
+            for (var item in order.items) {
+              costPrice += (item.costPrice) * item.quantity;
+            }
+          }
+          return order;
+        }).toList();
+
+        // Fetch additional reports
+        fetchMostOrderedItems();
+        fetchTakeawayEmployeesData();
+        fetchTopUsedInventoryProducts();
+
+        // Compute metrics
+        final double profit = revenue - costPrice - taxAmount;
+        final double completePercentage = ordersCount > 0
+            ? ((statusCounts['complete'] ?? 0) / ordersCount) * 100
+            : 0.0;
+        final double returnedPercentage = ordersCount > 0
+            ? ((statusCounts['returned'] ?? 0) / ordersCount) * 100
+            : 0.0;
+        final double canceledPercentage = ordersCount > 0
+            ? ((statusCounts['canceled'] ?? 0) / ordersCount) * 100
+            : 0.0;
+
+        final double dineInPercentage =
+            ordersCount > 0 ? (dineInCount / ordersCount) * 100 : 0.0;
+        final double takeawayPercentage =
+            ordersCount > 0 ? (takeawayCount / ordersCount) * 100 : 0.0;
+
+        // Update UI values
+        totalCostPrice.value = roundToNearestHalfOrWhole(costPrice);
+        totalRevenue.value = roundToNearestHalfOrWhole(revenue);
+        totalOrders.value = ordersCount;
+        totalRegularCustomerOrders.value = customers;
+        totalTaxAmount.value = roundToNearestHalfOrWhole(taxAmount);
+        totalProfit.value = roundToNearestHalfOrWhole(profit);
+        completeOrderPercentage.value =
+            roundToNearestHalfOrWhole(completePercentage);
+        returnedOrderPercentage.value =
+            roundToNearestHalfOrWhole(returnedPercentage);
+        canceledOrderPercentage.value =
+            roundToNearestHalfOrWhole(canceledPercentage);
+        dineInOrdersPercentage.value =
+            roundToNearestHalfOrWhole(dineInPercentage);
+        takeawayOrdersPercentage.value =
+            roundToNearestHalfOrWhole(takeawayPercentage);
+
+        // Update comparison metrics with previous period
+        final previousRange = _getPreviousDateRange(dateFrom!, dateTo!);
+        final previousQuery = await _fetchMetricsForDateRange(
+            previousRange['from'], previousRange['to']);
+        final previousRevenue = previousQuery['revenue'];
+        final previousOrders = previousQuery['orders'];
+        final previousCustomers = previousQuery['customers'];
+        final previousCostPrice = previousQuery['costPrice'];
+        final previousProfit = previousRevenue - previousCostPrice;
+
+        revenueChangePercentage.value =
+            _calculatePercentageChange(previousRevenue, revenue);
+        ordersChangePercentage.value = _calculatePercentageChange(
+            previousOrders.toDouble(), ordersCount.toDouble());
+        customersChangePercentage.value = _calculatePercentageChange(
+            previousCustomers.toDouble(), customers.toDouble());
+        profitChangePercentage.value =
+            _calculatePercentageChange(previousProfit, profit);
+
+        lastPeriodString.value = getFromLastPeriodString(dateFrom!, dateTo!);
+
+        loadingSales.value = false;
+      }, onError: (error) {
+        if (kDebugMode) {
+          AppInit.logger.e(error.toString());
         }
-        return;
-      }
-      employeesLastDocument = querySnapshot.docs.last;
-
-      for (var doc in querySnapshot.docs) {
-        final order = OrderModel.fromFirestore(
-            doc.data() as Map<String, dynamic>, doc.id);
-
-        if (order.takeawayEmployeeId != null &&
-            order.takeawayEmployeeName != null &&
-            order.takeawayEmployeeName!.isNotEmpty) {
-          employeeMetrics.update(order.takeawayEmployeeId!, (value) {
-            value['totalOrders'] += 1;
-            value['totalRevenue'] += order.totalAmount;
-            value['employeeRevenue'] +=
-                (order.totalAmount * takeawayPercentage / 100);
-            return value;
-          }, ifAbsent: () {
-            return {
-              'employeeName': order.takeawayEmployeeName!,
-              'totalOrders': 1,
-              'totalRevenue': order.totalAmount,
-              'employeeRevenue': (order.totalAmount * takeawayPercentage / 100),
-            };
-          });
-        }
-      }
-
-      final sortedEmployees = employeeMetrics.values.toList()
-        ..sort((a, b) => b['totalRevenue'].compareTo(a['totalRevenue']));
-
-      final newEmployeesList = sortedEmployees.map((employee) {
-        return TakeawayEmployeeReport(
-          employeeName: employee['employeeName'],
-          totalOrders: employee['totalOrders'],
-          totalRevenue: employee['totalRevenue'],
-          employeeRevenue: employee['employeeRevenue'],
-        );
-      }).toList();
-
-      if (start == 0) {
-        employeesList.assignAll(newEmployeesList);
-      } else {
-        employeesList.addAll(newEmployeesList);
-      }
-    } catch (e) {
+      });
+    } catch (err) {
       if (kDebugMode) {
-        AppInit.logger.e(e.toString());
+        AppInit.logger.e(err.toString());
       }
     }
   }
@@ -175,231 +232,19 @@ class SalesScreenController extends GetxController {
     });
   }
 
-  Future<void> fetchTopUsedInventoryProducts({
-    int start = 0,
-    int limit = 8,
-  }) async {
-    try {
-      Map<String, dynamic> inventoryMetrics = {};
-      Query query = _firestore
-          .collection('orders')
-          .where('timestamp', isGreaterThanOrEqualTo: dateFrom)
-          .where('timestamp', isLessThanOrEqualTo: dateTo)
-          .where('status', isNotEqualTo: 'active');
-      if (start == 0) {
-        final countSnapshot = await query.count().get();
-        totalItemsCount = countSnapshot.count ?? 0;
-        itemsLastDocument = null;
-      } else if (itemsLastDocument != null) {
-        query = query.startAfterDocument(itemsLastDocument!);
-      } else {
-        return;
-      }
-      final querySnapshot = await query.limit(limit).get();
-      if (querySnapshot.docs.isEmpty) {
-        if (start == 0) {
-          productsList.clear();
-        }
-        return;
-      }
-      itemsLastDocument = querySnapshot.docs.last;
-
-      for (var doc in querySnapshot.docs) {
-        final order = OrderModel.fromFirestore(
-            doc.data() as Map<String, dynamic>, doc.id);
-        for (var item in order.items) {
-          for (var recipeItem in item.selectedSize.recipe) {
-            inventoryMetrics.update(recipeItem.productId, (value) {
-              value['totalQuantity'] += recipeItem.quantity * item.quantity;
-
-              return value;
-            }, ifAbsent: () {
-              return {
-                'productName': recipeItem.productName,
-                'totalQuantity': recipeItem.quantity * item.quantity,
-                'measuringUnit': recipeItem.measuringUnit.name,
-              };
-            });
-          }
-
-          for (var option in item.selectedOptions) {
-            for (var recipeItem in option.recipe) {
-              inventoryMetrics.update(recipeItem.productId, (value) {
-                value['totalQuantity'] += recipeItem.quantity * item.quantity;
-
-                return value;
-              }, ifAbsent: () {
-                return {
-                  'productName': recipeItem.productName,
-                  'totalQuantity': recipeItem.quantity * item.quantity,
-                  'measuringUnit': recipeItem.measuringUnit.name,
-                };
-              });
-            }
-          }
-        }
-      }
-
-      final sortedInventory = inventoryMetrics.values.toList()
-        ..sort((a, b) => b['totalQuantity'] - a['totalQuantity']);
-
-      final newInventoryList = sortedInventory.map((product) {
-        return InventoryReport(
-          productName: product['productName'],
-          totalQuantity: product['totalQuantity'],
-          measuringUnit: product['measuringUnit'],
-        );
-      }).toList();
-
-      if (start == 0) {
-        productsList.assignAll(newInventoryList);
-      } else {
-        productsList.addAll(newInventoryList);
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        AppInit.logger.e(e.toString());
-      }
-    }
-  }
-
-  Future<void> fetchMostOrderedItems({
-    int start = 0,
-    int limit = 8,
-  }) async {
-    try {
-      Map<String, dynamic> itemMetrics = {};
-      Query query = _firestore
-          .collection('orders')
-          .where('timestamp', isGreaterThanOrEqualTo: dateFrom)
-          .where('timestamp', isLessThanOrEqualTo: dateTo)
-          .where('status', isNotEqualTo: 'active');
-      if (start == 0) {
-        final countSnapshot = await query.count().get();
-        totalItemsCount = countSnapshot.count ?? 0;
-        itemsLastDocument = null;
-      } else if (itemsLastDocument != null) {
-        query = query.startAfterDocument(itemsLastDocument!);
-      } else {
-        return;
-      }
-      final querySnapshot = await query.limit(limit).get();
-      if (querySnapshot.docs.isEmpty) {
-        if (start == 0) {
-          itemsList.clear();
-        }
-        return;
-      }
-      itemsLastDocument = querySnapshot.docs.last;
-
-      for (var doc in querySnapshot.docs) {
-        final order = OrderModel.fromFirestore(
-            doc.data() as Map<String, dynamic>, doc.id);
-        for (var item in order.items) {
-          if (!itemMetrics.containsKey(item.itemId)) {
-            itemMetrics[item.itemId] = {
-              'itemId': item.itemId,
-              'name': item.name,
-              'totalOrders': 0,
-              'totalRevenue': 0.0,
-              'totalProfit': 0.0,
-              'totalCostPrice': 0.0,
-              'usedProducts': <String, dynamic>{}
-            };
-          }
-          itemMetrics[item.itemId]['totalOrders'] += item.quantity;
-          itemMetrics[item.itemId]['totalRevenue'] +=
-              item.price * item.quantity;
-          itemMetrics[item.itemId]['totalProfit'] +=
-              (item.price - item.costPrice) * item.quantity;
-          itemMetrics[item.itemId]['totalCostPrice'] +=
-              item.costPrice * item.quantity;
-
-          for (var recipeItem in item.selectedSize.recipe) {
-            itemMetrics[item.itemId]['usedProducts']
-                .update(recipeItem.productId, (value) {
-              value['quantity'] += recipeItem.quantity * item.quantity;
-              return value;
-            }, ifAbsent: () {
-              return {
-                'productName': recipeItem.productName,
-                'quantity': recipeItem.quantity * item.quantity,
-                'measuringUnit': recipeItem.measuringUnit.name,
-              };
-            });
-          }
-
-          for (var option in item.selectedOptions) {
-            for (var recipeItem in option.recipe) {
-              itemMetrics[item.itemId]['usedProducts']
-                  .update(recipeItem.productId, (value) {
-                value['quantity'] += recipeItem.quantity * item.quantity;
-                return value;
-              }, ifAbsent: () {
-                return {
-                  'productName': recipeItem.productName,
-                  'quantity': recipeItem.quantity * item.quantity,
-                  'measuringUnit': recipeItem.measuringUnit,
-                };
-              });
-            }
-          }
-        }
-      }
-      final sortedItems = itemMetrics.values.toList()
-        ..sort((a, b) => b['totalOrders'] - a['totalOrders']);
-
-      final newItemsList = sortedItems.map((item) {
-        return ItemReport(
-          itemId: item['itemId'],
-          name: item['name'],
-          totalOrders: item['totalOrders'],
-          totalRevenue: item['totalRevenue'],
-          totalProfit: item['totalProfit'],
-          totalCostPrice: item['totalCostPrice'],
-          usedProducts: (item['usedProducts'] as Map<String, dynamic>).map(
-            (key, value) => MapEntry(
-              key,
-              ProductUsage(
-                  productId: key,
-                  productName: value['productName'],
-                  quantity: value['quantity'],
-                  measuringUnit: value['measuringUnit']),
-            ),
-          ),
-        );
-      }).toList();
-      if (start == 0) {
-        itemsList.assignAll(newItemsList);
-      } else {
-        itemsList.addAll(newItemsList);
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        AppInit.logger.e(e.toString());
-      }
-    }
-  }
-
   void resetEmployeesTableValues() {
     employeesList.clear();
-    employeesLastDocument = null;
     totalEmployeesCount = 0;
-    employeesTableKey.currentState!.pageTo(0);
   }
 
   void resetItemsTableValues() {
     itemsList.clear();
-    itemsLastDocument = null;
     totalItemsCount = 0;
-    itemsTableKey.currentState!.pageTo(0);
   }
 
   void resetProductsTableValues() {
     productsList.clear();
-    productsLastDocument = null;
     totalProductsCount = 0;
-    productsTableKey.currentState!.pageTo(0);
   }
 
   void viewItemInventoryUsage(
@@ -587,10 +432,7 @@ class SalesScreenController extends GetxController {
 
   void updateNewDayDateFilters() {
     _initializeDateRangeOptions();
-    fetchGeneralSales();
-    resetItemsTableValues();
-    resetProductsTableValues();
-    resetEmployeesTableValues();
+    _listenToGeneralSalesOrders();
   }
 
   void _initializeDateRangeOptions() {
@@ -686,10 +528,7 @@ class SalesScreenController extends GetxController {
                 "to": dateTo!,
               };
               currentSelectedDate.value = dateRangeOptions.length - 1;
-              fetchGeneralSales();
-              resetItemsTableValues();
-              resetProductsTableValues();
-              resetEmployeesTableValues();
+              _listenToGeneralSalesOrders();
             }
           } else {
             resetDateFilter();
@@ -699,10 +538,7 @@ class SalesScreenController extends GetxController {
           if (selectedRange != null) {
             dateFrom = selectedRange["from"];
             dateTo = selectedRange["to"];
-            fetchGeneralSales();
-            resetItemsTableValues();
-            resetProductsTableValues();
-            resetEmployeesTableValues();
+            _listenToGeneralSalesOrders();
             final dateKey = dateRangeOptions.keys
                 .toList()
                 .elementAt(currentSelectedDate.value);
@@ -729,10 +565,7 @@ class SalesScreenController extends GetxController {
     dateFrom = DateTime(now.year, now.month, now.day);
     dateTo = DateTime(now.year, now.month, now.day, 23, 59, 59);
     currentSelectedDate.value = 0;
-    fetchGeneralSales();
-    resetItemsTableValues();
-    resetProductsTableValues();
-    resetEmployeesTableValues();
+    _listenToGeneralSalesOrders();
   }
 
   bool isDate(String input) {
@@ -745,149 +578,8 @@ class SalesScreenController extends GetxController {
   }
 
   void onRefresh() async {
-    fetchGeneralSales();
-    resetItemsTableValues();
-    resetProductsTableValues();
-    resetEmployeesTableValues();
+    _listenToGeneralSalesOrders();
     salesRefreshController.refreshCompleted();
-  }
-
-  void fetchGeneralSales() async {
-    try {
-      loadingSales.value = true;
-      final revenueQuery = await _fetchMetricsForDateRange(dateFrom, dateTo);
-      final revenue = revenueQuery['revenue'];
-      final orders = revenueQuery['orders'];
-      final customers = revenueQuery['customers'];
-      final costPrice = revenueQuery['costPrice'];
-      final statusCounts = revenueQuery['statusCounts'];
-      final dineInCount = revenueQuery['dineInCount'];
-      final takeawayCount = revenueQuery['takeawayCount'];
-      final profit = revenue - costPrice;
-      final completePercentage =
-          orders > 0 ? (statusCounts['complete'] / orders) * 100 : 0.0;
-      final returnedPercentage =
-          orders > 0 ? (statusCounts['returned'] / orders) * 100 : 0.0;
-      final canceledPercentage =
-          orders > 0 ? (statusCounts['canceled'] / orders) * 100 : 0.0;
-
-      final dineInPercentage = orders > 0 ? (dineInCount / orders) * 100 : 0.0;
-      final takeawayPercentage =
-          orders > 0 ? (takeawayCount / orders) * 100 : 0.0;
-
-      totalCostPrice.value = roundToNearestHalfOrWhole(costPrice);
-      totalRevenue.value = roundToNearestHalfOrWhole(revenue);
-      totalOrders.value = orders;
-      totalRegularCustomerOrders.value = customers;
-      totalProfit.value = roundToNearestHalfOrWhole(profit);
-      completeOrderPercentage.value =
-          roundToNearestHalfOrWhole(completePercentage);
-      returnedOrderPercentage.value =
-          roundToNearestHalfOrWhole(returnedPercentage);
-      canceledOrderPercentage.value =
-          roundToNearestHalfOrWhole(canceledPercentage);
-      dineInOrdersPercentage.value =
-          roundToNearestHalfOrWhole(dineInPercentage);
-      takeawayOrdersPercentage.value =
-          roundToNearestHalfOrWhole(takeawayPercentage);
-      final previousRange = _getPreviousDateRange(dateFrom!, dateTo!);
-      final previousQuery = await _fetchMetricsForDateRange(
-          previousRange['from'], previousRange['to']);
-      final previousRevenue = previousQuery['revenue'];
-      final previousOrders = previousQuery['orders'];
-      final previousCustomers = previousQuery['customers'];
-      final previousCostPrice = previousQuery['costPrice'];
-      final previousProfit = previousRevenue - previousCostPrice;
-
-      revenueChangePercentage.value =
-          _calculatePercentageChange(previousRevenue, revenue);
-      ordersChangePercentage.value = _calculatePercentageChange(
-          previousOrders.toDouble(), orders.toDouble());
-      customersChangePercentage.value = _calculatePercentageChange(
-          previousCustomers.toDouble(), customers.toDouble());
-      profitChangePercentage.value =
-          _calculatePercentageChange(previousProfit, profit);
-
-      lastPeriodString.value = getFromLastPeriodString(dateFrom!, dateTo!);
-    } catch (e) {
-      if (kDebugMode) AppInit.logger.e('Error fetching metrics: $e');
-    } finally {
-      loadingSales.value = false;
-    }
-  }
-
-  Future<Map<String, dynamic>> _fetchMetricsForDateRange(
-      DateTime? from, DateTime? to) async {
-    try {
-      final query = await _firestore
-          .collection('orders')
-          .where('timestamp', isGreaterThanOrEqualTo: from)
-          .where('timestamp', isLessThanOrEqualTo: to)
-          .where('status', isNotEqualTo: 'active')
-          .get();
-
-      double revenue = 0.0;
-      double totalCostPrice = 0.0;
-      int orders = query.docs.length;
-      int customers = 0;
-      int dineInCount = 0;
-      int takeawayCount = 0;
-      final statusCounts = {
-        'complete': 0,
-        'returned': 0,
-        'canceled': 0,
-      };
-
-      for (var doc in query.docs) {
-        final data = doc.data();
-        revenue += data['totalAmount'] ?? 0.0;
-
-        final items = data['items'] as List<dynamic>? ?? [];
-        for (var item in items) {
-          totalCostPrice += item['costPrice'] ?? 0.0;
-        }
-
-        final status = data['status'] ?? '';
-        if (statusCounts.containsKey(status)) {
-          statusCounts[status] = (statusCounts[status] ?? 0) + 1;
-        }
-
-        final isTakeaway = data['isTakeaway'] ?? false;
-        if (isTakeaway) {
-          takeawayCount++;
-        } else {
-          dineInCount++;
-        }
-        if (data['customerId'] != null) {
-          customers++;
-        }
-      }
-
-      return {
-        'revenue': revenue,
-        'costPrice': totalCostPrice,
-        'orders': orders,
-        'customers': customers,
-        'statusCounts': statusCounts,
-        'dineInCount': dineInCount,
-        'takeawayCount': takeawayCount,
-      };
-    } catch (e) {
-      if (kDebugMode) AppInit.logger.e('Error fetching metrics for range: $e');
-      return {
-        'revenue': 0.0,
-        'costPrice': 0.0,
-        'orders': 0,
-        'customers': 0,
-        'statusCounts': {
-          'complete': 0,
-          'returned': 0,
-          'canceled': 0,
-        },
-        'dineInCount': 0,
-        'takeawayCount': 0,
-      };
-    }
   }
 
   Map<String, DateTime> _getPreviousDateRange(DateTime from, DateTime to) {
@@ -923,10 +615,291 @@ class SalesScreenController extends GetxController {
     }
   }
 
+  Future<Map<String, dynamic>> _fetchMetricsForDateRange(
+      DateTime? from, DateTime? to) async {
+    try {
+      final query = await _firestore
+          .collection('orders')
+          .where('timestamp', isGreaterThanOrEqualTo: from)
+          .where('timestamp', isLessThanOrEqualTo: to)
+          .where('status', isNotEqualTo: 'active')
+          .get();
+
+      double revenue = 0.0;
+      double totalCostPrice = 0.0;
+      double taxAmount = 0.0;
+      int orders = query.docs.length;
+      int customers = 0;
+      int dineInCount = 0;
+      int takeawayCount = 0;
+      final statusCounts = {
+        'complete': 0,
+        'returned': 0,
+        'canceled': 0,
+      };
+
+      for (var doc in query.docs) {
+        final data = doc.data();
+
+        final status = data['status'] ?? '';
+
+        if (status != 'canceled') {
+          revenue += data['totalAmount'] ?? 0.0;
+
+          final items = data['items'] as List<dynamic>? ?? [];
+          for (var item in items) {
+            totalCostPrice += item['costPrice'] ?? 0.0;
+          }
+
+          taxAmount += data['taxTotalAmount'] ?? 0.0;
+        }
+
+        if (statusCounts.containsKey(status)) {
+          statusCounts[status] = (statusCounts[status] ?? 0) + 1;
+        }
+
+        final isTakeaway = data['isTakeaway'] ?? false;
+        if (isTakeaway) {
+          takeawayCount++;
+        } else {
+          dineInCount++;
+        }
+        if (data['customerId'] != null) {
+          customers++;
+        }
+      }
+
+      return {
+        'revenue': revenue,
+        'costPrice': totalCostPrice,
+        'taxAmount': taxAmount,
+        'orders': orders,
+        'customers': customers,
+        'statusCounts': statusCounts,
+        'dineInCount': dineInCount,
+        'takeawayCount': takeawayCount,
+      };
+    } catch (e) {
+      if (kDebugMode) AppInit.logger.e('Error fetching metrics for range: $e');
+      return {
+        'revenue': 0.0,
+        'costPrice': 0.0,
+        'taxAmount': 0.0,
+        'orders': 0,
+        'customers': 0,
+        'statusCounts': {
+          'complete': 0,
+          'returned': 0,
+          'canceled': 0,
+        },
+        'dineInCount': 0,
+        'takeawayCount': 0,
+      };
+    }
+  }
+
+  void fetchTakeawayEmployeesData() {
+    try {
+      Map<String, dynamic> employeeMetrics = {};
+
+      for (var order in ordersList) {
+        if (order.isTakeawayEmployee) {
+          employeeMetrics.update(order.employeeName, (value) {
+            value['totalOrders'] += 1;
+            value['totalRevenue'] += order.totalAmount;
+            value['employeeRevenue'] +=
+                (order.totalAmount * takeawayPercentage / 100);
+            return value;
+          }, ifAbsent: () {
+            return {
+              'employeeName': order.employeeName,
+              'totalOrders': 1,
+              'totalRevenue': order.totalAmount,
+              'employeeRevenue': (order.totalAmount * takeawayPercentage / 100),
+            };
+          });
+        }
+      }
+
+      final sortedEmployees = employeeMetrics.values.toList()
+        ..sort((a, b) => b['totalRevenue'].compareTo(a['totalRevenue']));
+
+      final newEmployeesList = sortedEmployees.map((employee) {
+        return TakeawayEmployeeReport(
+          employeeName: employee['employeeName'],
+          totalOrders: employee['totalOrders'],
+          totalRevenue: employee['totalRevenue'],
+          employeeRevenue: employee['employeeRevenue'],
+        );
+      }).toList();
+
+      employeesList.assignAll(newEmployeesList);
+      totalEmployeesCount = employeesList.length;
+      updateEmployeesTable.value++;
+    } catch (e) {
+      if (kDebugMode) {
+        AppInit.logger.e(e.toString());
+      }
+    }
+  }
+
+  void fetchMostOrderedItems() {
+    try {
+      Map<String, dynamic> itemMetrics = {};
+      // Process each order to calculate metrics for each item
+      for (var order in ordersList) {
+        for (var item in order.items) {
+          if (itemMetrics.containsKey(item.itemId)) {
+            itemMetrics[item.itemId]['totalOrders'] += item.quantity;
+            itemMetrics[item.itemId]['totalRevenue'] +=
+                item.price * item.quantity;
+            itemMetrics[item.itemId]['totalProfit'] +=
+                (item.price - item.costPrice) * item.quantity;
+            itemMetrics[item.itemId]['totalCostPrice'] +=
+                item.costPrice * item.quantity;
+          } else {
+            itemMetrics[item.itemId] = {
+              'itemId': item.itemId,
+              'name': item.name,
+              'totalOrders': item.quantity,
+              'totalRevenue': item.price * item.quantity,
+              'totalProfit': (item.price - item.costPrice) * item.quantity,
+              'totalCostPrice': item.costPrice * item.quantity,
+              'usedProducts': {},
+            };
+          }
+
+          // Update used products
+          for (var recipeItem in item.selectedSize.recipe) {
+            itemMetrics[item.itemId]['usedProducts']
+                .update(recipeItem.productId, (value) {
+              value['quantity'] += recipeItem.quantity * item.quantity;
+              return value;
+            }, ifAbsent: () {
+              return {
+                'productName': recipeItem.productName,
+                'quantity': recipeItem.quantity * item.quantity,
+                'measuringUnit': recipeItem.measuringUnit.name,
+              };
+            });
+          }
+
+          for (var option in item.selectedOptions) {
+            for (var recipeItem in option.recipe) {
+              itemMetrics[item.itemId]['usedProducts']
+                  .update(recipeItem.productId, (value) {
+                value['quantity'] += recipeItem.quantity * item.quantity;
+                return value;
+              }, ifAbsent: () {
+                return {
+                  'productName': recipeItem.productName,
+                  'quantity': recipeItem.quantity * item.quantity,
+                  'measuringUnit': recipeItem.measuringUnit.name,
+                };
+              });
+            }
+          }
+        }
+      }
+
+      // Sort the items by totalOrders in descending order
+      final sortedItems = itemMetrics.values.toList()
+        ..sort((a, b) => b['totalOrders'] - a['totalOrders']);
+
+      final newItemsList = sortedItems.map((item) {
+        return ItemReport(
+          itemId: item['itemId'],
+          name: item['name'],
+          totalOrders: item['totalOrders'],
+          totalRevenue: item['totalRevenue'],
+          totalProfit: item['totalProfit'],
+          totalCostPrice: item['totalCostPrice'],
+          usedProducts:
+              (Map<String, dynamic>.from(item['usedProducts'] as Map)).map(
+            (key, value) => MapEntry(
+              key,
+              ProductUsage(
+                productId: key,
+                productName: value['productName'],
+                quantity: value['quantity'],
+                measuringUnit: value['measuringUnit'],
+              ),
+            ),
+          ),
+        );
+      }).toList();
+
+      itemsList.assignAll(newItemsList);
+      totalItemsCount = itemsList.length;
+      updateItemsTable.value++;
+    } catch (e) {
+      if (kDebugMode) {
+        AppInit.logger.e(e.toString());
+      }
+    }
+  }
+
+  void fetchTopUsedInventoryProducts() {
+    try {
+      Map<String, dynamic> inventoryMetrics = {};
+
+      for (var order in ordersList) {
+        for (var item in order.items) {
+          for (var recipeItem in item.selectedSize.recipe) {
+            inventoryMetrics.update(recipeItem.productId, (value) {
+              value['totalQuantity'] += recipeItem.quantity * item.quantity;
+              return value;
+            }, ifAbsent: () {
+              return {
+                'productName': recipeItem.productName,
+                'totalQuantity': recipeItem.quantity * item.quantity,
+                'measuringUnit': recipeItem.measuringUnit.name,
+              };
+            });
+          }
+          for (var option in item.selectedOptions) {
+            for (var recipeItem in option.recipe) {
+              inventoryMetrics.update(recipeItem.productId, (value) {
+                value['totalQuantity'] += recipeItem.quantity * item.quantity;
+                return value;
+              }, ifAbsent: () {
+                return {
+                  'productName': recipeItem.productName,
+                  'totalQuantity': recipeItem.quantity * item.quantity,
+                  'measuringUnit': recipeItem.measuringUnit.name,
+                };
+              });
+            }
+          }
+        }
+      }
+
+      final sortedInventory = inventoryMetrics.values.toList()
+        ..sort((a, b) => b['totalQuantity'] - a['totalQuantity']);
+
+      final newInventoryList = sortedInventory.map((product) {
+        return InventoryReport(
+          productName: product['productName'],
+          totalQuantity: product['totalQuantity'],
+          measuringUnit: product['measuringUnit'],
+        );
+      }).toList();
+
+      productsList.assignAll(newInventoryList);
+      totalProductsCount = productsList.length;
+      updateProductsTable.value++;
+    } catch (e) {
+      if (kDebugMode) {
+        AppInit.logger.e(e.toString());
+      }
+    }
+  }
+
   @override
   void onClose() {
     salesRefreshController.dispose();
     takeawayPercentListener.cancel();
+    ordersListener?.cancel();
     super.onClose();
   }
 }

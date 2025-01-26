@@ -37,6 +37,7 @@ class OrderModel {
   final String orderId;
   final String shiftId;
   final bool isTakeaway;
+  final bool isTakeawayEmployee;
   final int orderNumber;
   List<int>? tableNumbers;
   List<OrderItemModel> items;
@@ -47,8 +48,6 @@ class OrderModel {
   String? customerId;
   final String employeeId;
   final String employeeName;
-  String? takeawayEmployeeId;
-  String? takeawayEmployeeName;
   String? customerName;
   double totalAmount;
   double discountAmount;
@@ -59,9 +58,8 @@ class OrderModel {
     required this.orderId,
     required this.employeeId,
     required this.employeeName,
-    this.takeawayEmployeeId,
-    this.takeawayEmployeeName,
     required this.isTakeaway,
+    required this.isTakeawayEmployee,
     required this.orderNumber,
     required this.shiftId,
     this.tableNumbers,
@@ -86,8 +84,7 @@ class OrderModel {
       'shiftId': shiftId,
       'employeeId': employeeId,
       'employeeName': employeeName,
-      'takeawayEmployeeId': takeawayEmployeeId,
-      'takeawayEmployeeName': takeawayEmployeeName,
+      'isTakeawayEmployee': isTakeawayEmployee,
       'items': items.map((item) => item.toFirestore()).toList(),
       'status': status.name,
       'timestamp': timestamp,
@@ -106,6 +103,7 @@ class OrderModel {
     return OrderModel(
       orderId: id,
       isTakeaway: map['isTakeaway'],
+      isTakeawayEmployee: map['isTakeawayEmployee'],
       tableNumbers: List<int>.from(map['tableNumbers']),
       items: (map['items'] as List)
           .map((itemMap) => OrderItemModel.fromFirestore(itemMap))

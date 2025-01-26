@@ -49,6 +49,8 @@ class SingleEntryScreen extends StatelessWidget {
             : const CircleBackButton(padding: 5),
         elevation: 0,
         backgroundColor: Colors.white,
+        foregroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
       ),
       backgroundColor: Colors.white,
       body: SafeArea(

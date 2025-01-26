@@ -472,8 +472,7 @@ class TablesPageController extends GetxController {
     }
   }
 
-  Future<OrderModel?> addTableOrder(
-      {required List<int> orderTables, bool isTakeaway = false}) async {
+  Future<OrderModel?> addTableOrder({required List<int> orderTables}) async {
     try {
       final orderNumber = await generateOrderNumber();
       if (orderNumber != null) {
@@ -491,7 +490,8 @@ class TablesPageController extends GetxController {
           discountAmount: 0.0,
           subtotalAmount: 0.0,
           taxTotalAmount: 0.0,
-          isTakeaway: isTakeaway,
+          isTakeaway: false,
+          isTakeawayEmployee: false,
           employeeId: employeeInfo.id,
           employeeName: employeeInfo.name,
           shiftId: MainScreenController.instance.currentActiveShiftId.value!,
@@ -544,14 +544,14 @@ class TablesPageController extends GetxController {
       final todayOrders = await ordersRef
           .where('shiftId',
               isEqualTo:
-                  MainScreenController.instance.currentActiveShiftId.value)
+                  MainScreenController.instance.currentActiveShiftId.value!)
           .count()
           .get();
 
-      final int orderCount = todayOrders.count != null && todayOrders.count != 0
-          ? todayOrders.count!
-          : 1;
-      return orderCount;
+      if (todayOrders.count != null) {
+        final int orderCount = todayOrders.count! + 1;
+        return orderCount;
+      }
     } on FirebaseException catch (error) {
       if (kDebugMode) {
         AppInit.logger.e(error.toString());

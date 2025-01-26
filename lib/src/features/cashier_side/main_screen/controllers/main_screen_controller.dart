@@ -722,7 +722,7 @@ class MainScreenController extends GetxController {
       if (orderNumber != null) {
         final orderDoc = firestore.collection('orders').doc();
         final employeeInfo = AuthenticationRepository.instance.employeeInfo!;
-        final isEmployeeTakeaway = employeeInfo.role == Role.takeaway;
+        final isTakeawayEmployee = employeeInfo.role == Role.takeaway;
         final takeawayOrder = OrderModel(
           orderNumber: orderNumber,
           orderId: orderDoc.id,
@@ -737,8 +737,7 @@ class MainScreenController extends GetxController {
           isTakeaway: true,
           employeeId: employeeInfo.id,
           employeeName: employeeInfo.name,
-          takeawayEmployeeId: isEmployeeTakeaway ? employeeInfo.id : null,
-          takeawayEmployeeName: isEmployeeTakeaway ? employeeInfo.name : null,
+          isTakeawayEmployee: isTakeawayEmployee,
           shiftId: currentActiveShiftId.value!,
         );
         await orderDoc.set(takeawayOrder.toFirestore());
@@ -769,11 +768,10 @@ class MainScreenController extends GetxController {
           .where('shiftId', isEqualTo: currentActiveShiftId.value)
           .count()
           .get();
-
-      final int orderCount = todayOrders.count != null && todayOrders.count != 0
-          ? todayOrders.count!
-          : 1;
-      return orderCount;
+      if (todayOrders.count != null) {
+        final int orderCount = todayOrders.count! + 1;
+        return orderCount;
+      }
     } on FirebaseException catch (error) {
       if (kDebugMode) {
         AppInit.logger.e(error.toString());

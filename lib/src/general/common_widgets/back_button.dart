@@ -49,6 +49,7 @@ class CircleBackButton extends StatelessWidget {
             padding: EdgeInsets.all(10),
             child: Icon(
               Icons.arrow_back_ios_sharp,
+              color: Colors.black,
               size: 20,
             ),
           ),
