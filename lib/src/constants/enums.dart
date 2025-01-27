@@ -12,7 +12,7 @@ enum FunctionStatus { success, failure }
 
 enum SnackBarType { success, error, info, warning }
 
-enum Role { allRoles, admin, cashier, waiter, takeaway }
+enum Role { allRoles, owner, admin, cashier, waiter, takeaway }
 
 enum AuthType { emailLogin, emailRegister, facebook, google, phone }
 
@@ -20,4 +20,9 @@ enum TableStatus { available, occupied, unavailable }
 
 enum OrderStatus { active, complete, canceled, returned }
 
-enum NotificationType { newTakeawayOrder, takeawayOrderReady }
+enum NotificationType {
+  newTakeawayOrder,
+  takeawayOrderReady,
+  orderCanceled,
+  orderReturned,
+}

@@ -756,6 +756,11 @@ class CustomersScreenController extends GetxController {
               text: 'orderReturnedSuccess'.tr,
               snackBarType: SnackBarType.success,
             );
+            sendNotification(
+              employeeId: 'empty',
+              notificationType: NotificationType.orderReturned,
+              orderNumber: order.orderNumber.toString(),
+            );
           } else {
             showSnackBar(
               text: 'errorOccurred'.tr,

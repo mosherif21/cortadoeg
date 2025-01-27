@@ -1056,6 +1056,11 @@ class OrderController extends GetxController {
         text: 'orderCanceledSuccess'.tr,
         snackBarType: SnackBarType.success,
       );
+      sendNotification(
+        employeeId: 'empty',
+        notificationType: NotificationType.orderCanceled,
+        orderNumber: orderModel.orderNumber.toString(),
+      );
     } else {
       showSnackBar(
         text: 'errorOccurred'.tr,

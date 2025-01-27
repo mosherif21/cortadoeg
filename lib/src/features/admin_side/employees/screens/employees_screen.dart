@@ -1,9 +1,12 @@
 import 'package:anim_search_app_bar/anim_search_app_bar.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cortadoeg/src/features/admin_side/admin_main_screen/controllers/admin_main_screen_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 
+import '../../../../constants/assets_strings.dart';
 import '../../../../general/common_widgets/icon_text_elevated_button.dart';
 import '../../../../general/general_functions.dart';
 import '../../../cashier_side/account/components/models.dart';
@@ -110,61 +113,69 @@ class EmployeesScreen extends StatelessWidget {
               Obx(
                 () => Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: AnimationLimiter(
-                    child: GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: screenType.isPhone ? 2 : 4,
-                        mainAxisSpacing: 20,
-                        crossAxisSpacing: 20,
-                        childAspectRatio: screenType.isPhone
-                            ? 0.8
-                            : AdminMainScreenController
-                                    .instance.navBarExtended.value
-                                ? 0.95
-                                : 1.05,
-                      ),
-                      itemCount: controller.loadingEmployees.value
-                          ? 10
-                          : controller.filteredEmployeesList.length,
-                      physics: const ScrollPhysics(),
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) {
-                        return AnimationConfiguration.staggeredGrid(
-                          position: index,
-                          duration: const Duration(milliseconds: 300),
-                          columnCount: screenType.isPhone ? 2 : 4,
-                          child: ScaleAnimation(
-                            child: FadeInAnimation(
-                              child: SizedBox(
-                                width: 200,
-                                height: 185,
-                                child: controller.loadingEmployees.value
-                                    ? const LoadingEmployee()
-                                    : EmployeeCard(
-                                        profileImageUrl: controller
-                                            .filteredEmployeesList[index]
-                                            .profileImageUrl,
-                                        name: controller
-                                            .filteredEmployeesList[index].name,
-                                        role: getRoleName(controller
-                                            .filteredEmployeesList[index].role),
-                                        gender: controller
-                                            .filteredEmployeesList[index]
-                                            .gender,
-                                        onSelected: () =>
-                                            controller.onEmployeeTap(
-                                                index: index,
-                                                isPhone: screenType.isPhone),
-                                        onDelete: () => controller
-                                            .onDeleteEmployeeTap(index: index),
-                                      ),
-                              ),
+                  child: !controller.loadingEmployees.value &&
+                          controller.filteredEmployeesList.isEmpty
+                      ? const SingleChildScrollView(child: NoEmployeesFound())
+                      : AnimationLimiter(
+                          child: GridView.builder(
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: screenType.isPhone ? 2 : 4,
+                              mainAxisSpacing: 20,
+                              crossAxisSpacing: 20,
+                              childAspectRatio: screenType.isPhone
+                                  ? 0.8
+                                  : AdminMainScreenController
+                                          .instance.navBarExtended.value
+                                      ? 0.95
+                                      : 1.05,
                             ),
+                            itemCount: controller.loadingEmployees.value
+                                ? 10
+                                : controller.filteredEmployeesList.length,
+                            physics: const ScrollPhysics(),
+                            shrinkWrap: true,
+                            itemBuilder: (context, index) {
+                              return AnimationConfiguration.staggeredGrid(
+                                position: index,
+                                duration: const Duration(milliseconds: 300),
+                                columnCount: screenType.isPhone ? 2 : 4,
+                                child: ScaleAnimation(
+                                  child: FadeInAnimation(
+                                    child: SizedBox(
+                                      width: 200,
+                                      height: 185,
+                                      child: controller.loadingEmployees.value
+                                          ? const LoadingEmployee()
+                                          : EmployeeCard(
+                                              profileImageUrl: controller
+                                                  .filteredEmployeesList[index]
+                                                  .profileImageUrl,
+                                              name: controller
+                                                  .filteredEmployeesList[index]
+                                                  .name,
+                                              role: getRoleName(controller
+                                                  .filteredEmployeesList[index]
+                                                  .role),
+                                              gender: controller
+                                                  .filteredEmployeesList[index]
+                                                  .gender,
+                                              onSelected: () =>
+                                                  controller.onEmployeeTap(
+                                                      index: index,
+                                                      isPhone:
+                                                          screenType.isPhone),
+                                              onDelete: () => controller
+                                                  .onDeleteEmployeeTap(
+                                                      index: index),
+                                            ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
-                  ),
+                        ),
                 ),
               ),
               if (screenType.isPhone) const SizedBox(height: 150),
@@ -172,6 +183,39 @@ class EmployeesScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class NoEmployeesFound extends StatelessWidget {
+  const NoEmployeesFound({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final screenHeight = getScreenHeight(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Lottie.asset(
+          kNoCustomersAnim,
+          fit: BoxFit.contain,
+          height: screenHeight * 0.3,
+        ),
+        AutoSizeText(
+          'noEmployeesFoundTitle'.tr,
+          style: const TextStyle(
+              color: Colors.black, fontSize: 30, fontWeight: FontWeight.w600),
+          maxLines: 1,
+        ),
+        const SizedBox(height: 5.0),
+        AutoSizeText(
+          'noEmployeesFoundBody'.tr,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+              color: Colors.grey, fontSize: 22, fontWeight: FontWeight.w500),
+          maxLines: 2,
+        ),
+      ],
     );
   }
 }

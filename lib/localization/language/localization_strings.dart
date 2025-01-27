@@ -1317,6 +1317,10 @@ class Languages extends Translations {
           "takeawayPercentage": "Takeaway Percentage",
           "employeeRevenue": "Employee Revenue",
           "taxAmount": "Tax Amount",
+          "owner": "Owner",
+          "manageAdminAccounts": "Manage Admin Accounts",
+          'noEmployeesFoundTitle': 'No Employees found',
+          'noEmployeesFoundBody': 'No Employee accounts found',
         },
       };
 }

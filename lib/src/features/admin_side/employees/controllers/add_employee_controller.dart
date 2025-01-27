@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:cortadoeg/src/authentication/models.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -44,10 +43,13 @@ class AddEmployeeController extends GetxController {
   List<UserPermission> getAvailablePermissions(Role role) {
     if (role == Role.admin) {
       return rolePermissions[Role.admin]!;
+    } else if (role == Role.owner) {
+      return rolePermissions[Role.owner]!;
     } else {
       return UserPermission.values
           .where((permission) =>
-              !rolePermissions[Role.admin]!.contains(permission) ||
+              !rolePermissions[Role.admin]!.contains(permission) &&
+                  !rolePermissions[Role.owner]!.contains(permission) ||
               rolePermissions[selectedRole.value]!.contains(permission))
           .toList();
     }
@@ -123,7 +125,6 @@ class AddEmployeeController extends GetxController {
 
     try {
       showLoadingScreen();
-      final callable = FirebaseFunctions.instance.httpsCallable('addEmployee');
       final url = Uri.parse('https://addemployee-e7icdbybjq-uc.a.run.app');
       final headers = {'Content-Type': 'application/json'};
       final body = json.encode({

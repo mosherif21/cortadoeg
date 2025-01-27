@@ -54,18 +54,41 @@ class EmployeesScreenController extends GetxController {
 
   void onRoleSelect(int selectedCatIndex) {
     if (!loadingEmployees.value) {
-      selectedRole.value = selectedCatIndex;
-      roleFilteredEmployees = selectedCatIndex == 0
-          ? employeesList
-          : employeesList
-              .where(
-                  (employee) => employee.role == Role.values[selectedCatIndex])
-              .toList();
-      filteredEmployeesList.value = searchText.isEmpty
-          ? roleFilteredEmployees
-          : roleFilteredEmployees
-              .where((item) => item.name.toUpperCase().contains(searchText))
-              .toList();
+      if (selectedCatIndex == 1 || selectedCatIndex == 2) {
+        if (hasPermission(AuthenticationRepository.instance.employeeInfo!,
+            UserPermission.manageAdminAccounts)) {
+          selectedRole.value = selectedCatIndex;
+          final roleFilteredEmployees = selectedCatIndex == 0
+              ? employeesList
+              : employeesList
+                  .where((employee) =>
+                      employee.role == Role.values[selectedCatIndex])
+                  .toList();
+          filteredEmployeesList.value = searchText.isEmpty
+              ? roleFilteredEmployees
+              : roleFilteredEmployees
+                  .where((item) => item.name.toUpperCase().contains(searchText))
+                  .toList();
+        } else {
+          showSnackBar(
+            text: 'functionNotAllowed'.tr,
+            snackBarType: SnackBarType.error,
+          );
+        }
+      } else {
+        selectedRole.value = selectedCatIndex;
+        final roleFilteredEmployees = selectedCatIndex == 0
+            ? employeesList
+            : employeesList
+                .where((employee) =>
+                    employee.role == Role.values[selectedCatIndex])
+                .toList();
+        filteredEmployeesList.value = searchText.isEmpty
+            ? roleFilteredEmployees
+            : roleFilteredEmployees
+                .where((item) => item.name.toUpperCase().contains(searchText))
+                .toList();
+      }
     }
   }
 
@@ -75,14 +98,20 @@ class EmployeesScreenController extends GetxController {
     _employeesListener =
         firestore.collection('employees').snapshots().listen((querySnapshot) {
       try {
-        final currentUserEmail =
-            AuthenticationRepository.instance.userEmail.value;
-
+        final authRep = AuthenticationRepository.instance;
+        final currentUserEmail = authRep.userEmail.value;
         employeesList = querySnapshot.docs
             .where((doc) => doc.id != 'employeeVariables')
             .map((doc) => EmployeeModel.fromFirestore(doc.data(), doc.id))
             .where((employee) => employee.email != currentUserEmail)
-            .toList();
+            .where((employee) {
+          if (employee.role == Role.admin || employee.role == Role.owner) {
+            return hasPermission(
+                authRep.employeeInfo!, UserPermission.manageAdminAccounts);
+          } else {
+            return true;
+          }
+        }).toList();
 
         roleFilteredEmployees = employeesList;
         filteredEmployeesList.value = employeesList;
@@ -177,8 +206,9 @@ class EmployeesScreenController extends GetxController {
         positiveButtonOnPressed: () async {
           showLoadingScreen();
           final employeeId = filteredEmployeesList[index].id;
-          final functionStatus =
-              await deleteEmployeeFunctionCall(employeeId: employeeId);
+          final employeeRole = filteredEmployeesList[index].role.name;
+          final functionStatus = await deleteEmployeeFunctionCall(
+              employeeId: employeeId, employeeRole: employeeRole);
           hideLoadingScreen();
           if (functionStatus == FunctionStatus.success) {
             Get.back();
@@ -200,12 +230,13 @@ class EmployeesScreenController extends GetxController {
       );
 
   Future<FunctionStatus> deleteEmployeeFunctionCall(
-      {required String employeeId}) async {
+      {required String employeeId, required String employeeRole}) async {
     final url =
         Uri.parse('https://deleteuserwithresources-e7icdbybjq-uc.a.run.app');
     final headers = {'Content-Type': 'application/json'};
     final body = json.encode({
       'employeeId': employeeId,
+      'role': employeeRole,
     });
     try {
       final response = await post(url, headers: headers, body: body);

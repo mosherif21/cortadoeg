@@ -176,70 +176,6 @@ class AuthenticationRepository extends GetxController {
     }
   }
 
-  Future<FunctionStatus> setNotificationsLanguage() async {
-    try {
-      if (fireUser.value != null) {
-        if (AppInit.notificationToken.isNotEmpty) {
-          final batch = _firestore.batch();
-          batch.set(
-              _firestore.collection('fcmTokens').doc(fireUser.value!.uid), {
-            'fcmToken': AppInit.notificationToken,
-            'notificationsLang': isLangEnglish() ? 'en' : 'ar',
-          });
-          if (userRole == Role.cashier) {
-            batch.set(
-                _firestore.collection('fcmTokens').doc('cashierFcmToken'), {
-              'fcmToken': AppInit.notificationToken,
-              'notificationsLang': isLangEnglish() ? 'en' : 'ar',
-              'cashierEmployeeId': employeeInfo!.id,
-            });
-          } else if (userRole == Role.admin) {
-            batch.update(
-              _firestore.collection('fcmTokens').doc('adminsFcmTokens'),
-              {
-                'tokens': FieldValue.arrayRemove(
-                  [
-                    {
-                      'fcmToken': AppInit.notificationToken,
-                      'notificationsLang': isLangEnglish() ? 'ar' : 'en',
-                      'adminId': employeeInfo!.id,
-                    }
-                  ],
-                ),
-              },
-            );
-            batch.update(
-              _firestore.collection('fcmTokens').doc('adminsFcmTokens'),
-              {
-                'tokens': FieldValue.arrayUnion(
-                  [
-                    {
-                      'fcmToken': AppInit.notificationToken,
-                      'notificationsLang': isLangEnglish() ? 'en' : 'ar',
-                      'adminId': employeeInfo!.id,
-                    }
-                  ],
-                ),
-              },
-            );
-          }
-          await batch.commit();
-        }
-      }
-      return FunctionStatus.success;
-    } on FirebaseException catch (error) {
-      if (kDebugMode) {
-        AppInit.logger.i(error.toString());
-      }
-      return FunctionStatus.failure;
-    } catch (e) {
-      if (kDebugMode) {
-        AppInit.logger.e(e.toString());
-      }
-      return FunctionStatus.failure;
-    }
-  }
-
   Future<void> updateUserEmailFirestore({required String email}) async {
     final userId = fireUser.value!.uid;
     final firestoreUsersCollRef = _firestore.collection('employees');
@@ -561,107 +497,138 @@ class AuthenticationRepository extends GetxController {
     return returnMessage;
   }
 
-  // Future<String> signInWithFacebook() async {
-  //   try {
-  //     final facebookAuthCredential = await getFacebookAuthCredential();
-  //     if (facebookAuthCredential != null) {
-  //       await _auth.signInWithCredential(facebookAuthCredential);
-  //       if (fireUser.value != null) {
-  //         isUserLoggedIn = true;
-  //         AppInit.currentAuthType.value = AuthType.facebook;
-  //         AppInit.goToInitPage();
-  //         return 'success';
-  //       }
-  //     }
-  //   } catch (e) {
-  //     if (kDebugMode) {
-  //       AppInit.logger.e(e.toString());
-  //     }
-  //   }
-  //   return 'failedFacebookAuth'.tr;
-  // }
+  Future<FunctionStatus> setNotificationsLanguage() async {
+    try {
+      if (employeeInfo == null || AppInit.notificationToken.isEmpty) {
+        return FunctionStatus.failure;
+      }
 
-  // Future<void> linkWithFacebook() async {
-  //   try {
-  //     showLoadingScreen();
-  //     final facebookCredential = await getFacebookAuthCredential();
-  //     if (facebookCredential != null) {
-  //       await fireUser.value!.linkWithCredential(facebookCredential);
-  //       hideLoadingScreen();
-  //       showSnackBar(
-  //           text: 'successFacebookLink'.tr, snackBarType: SnackBarType.success);
-  //     }
-  //   } catch (e) {
-  //     hideLoadingScreen();
-  //     showSnackBar(
-  //         text: 'failedFacebookLink'.tr, snackBarType: SnackBarType.error);
-  //     if (kDebugMode) {
-  //       AppInit.logger.e(e.toString());
-  //     }
-  //   }
-  // }
+      final userId = employeeInfo!.id;
+      String newLang = isLangEnglish() ? 'en' : 'ar';
 
-  // Future<OAuthCredential?> getFacebookAuthCredential() async {
-  //   try {
-  //     if (AppInit.isWeb) {
-  //       await FacebookAuth.i.webAndDesktopInitialize(
-  //         appId: "474331258229503",
-  //         cookie: true,
-  //         xfbml: true,
-  //         version: "v14.0",
-  //       );
-  //     }
-  //     final result = await FacebookAuth.instance.login();
-  //     if (result.status == LoginStatus.success) {
-  //       final credential =
-  //           FacebookAuthProvider.credential(result.accessToken!.tokenString);
-  //       return credential;
-  //     }
-  //   } catch (e) {
-  //     if (kDebugMode) {
-  //       AppInit.logger.e(e.toString());
-  //     }
-  //   }
-  //   return null;
-  // }
+      // Handle other roles (if needed)
+      if (userRole != Role.admin &&
+          userRole != Role.owner &&
+          userRole != Role.cashier) {
+        await _firestore.collection('fcmTokens').doc(fireUser.value!.uid).set({
+          'fcmToken': AppInit.notificationToken,
+          'notificationsLang': newLang,
+        }, SetOptions(merge: true));
+        return FunctionStatus.success;
+      }
+      DocumentReference tokenDocRef;
+      String idFieldName;
+
+      switch (userRole) {
+        case Role.cashier:
+          tokenDocRef =
+              _firestore.collection('fcmTokens').doc('cashiersFcmTokens');
+          idFieldName = 'cashierId';
+          break;
+        case Role.owner:
+          tokenDocRef =
+              _firestore.collection('fcmTokens').doc('ownersFcmTokens');
+          idFieldName = 'ownerId';
+          break;
+        case Role.admin:
+          tokenDocRef =
+              _firestore.collection('fcmTokens').doc('adminsFcmTokens');
+          idFieldName = 'adminId';
+          break;
+        default:
+          return FunctionStatus.failure;
+      }
+
+      DocumentSnapshot tokenDocSnapshot = await tokenDocRef.get();
+      List<Map<String, dynamic>> existingTokens = [];
+
+      if (tokenDocSnapshot.exists) {
+        final data = tokenDocSnapshot.data() as Map<String, dynamic>;
+        final tokensList = data['tokens'];
+        if (tokensList is List) {
+          existingTokens =
+              tokensList.whereType<Map<String, dynamic>>().toList();
+        }
+      }
+
+      // Remove existing tokens for this user
+      List<Map<String, dynamic>> updatedTokens = existingTokens.where((token) {
+        return token[idFieldName] != userId;
+      }).toList();
+
+      // Add new token
+
+      updatedTokens.add({
+        'fcmToken': AppInit.notificationToken,
+        'notificationsLang': newLang,
+        idFieldName: userId,
+      });
+
+      // Update Firestore with the modified tokens
+      await tokenDocRef.update({'tokens': updatedTokens});
+
+      return FunctionStatus.success;
+    } on FirebaseException catch (error) {
+      if (kDebugMode) AppInit.logger.i(error.toString());
+      return FunctionStatus.failure;
+    } catch (e) {
+      if (kDebugMode) AppInit.logger.e(e.toString());
+      return FunctionStatus.failure;
+    }
+  }
+
   Future<void> resetFcmTokens() async {
     try {
-      final batch = _firestore.batch();
-      batch.update(
-          FirebaseFirestore.instance
-              .collection('fcmTokens')
-              .doc(employeeInfo!.id),
-          {'fcmToken': null});
-      if (employeeInfo!.role == Role.cashier) {
-        batch.update(
-            FirebaseFirestore.instance
-                .collection('fcmTokens')
-                .doc('cashierFcmToken'),
-            {
-              'fcmToken': null,
-              'cashierEmployeeId': null,
-            });
-      } else if (userRole == Role.admin) {
-        batch.update(
-          _firestore.collection('fcmTokens').doc('adminsFcmTokens'),
-          {
-            'tokens': FieldValue.arrayRemove(
-              [
-                {
-                  'fcmToken': AppInit.notificationToken,
-                  'notificationsLang': isLangEnglish() ? 'en' : 'ar',
-                  'adminId': employeeInfo!.id,
-                }
-              ],
-            ),
-          },
-        );
+      if (employeeInfo == null) return;
+
+      if (employeeInfo!.role != Role.admin &&
+          employeeInfo!.role != Role.owner &&
+          employeeInfo!.role != Role.cashier) {
+        await _firestore.collection('fcmTokens').doc(employeeInfo!.id).delete();
+        return;
       }
-      await batch.commit();
-    } on FirebaseException catch (error) {
-      if (kDebugMode) print(error.toString());
+      String documentId;
+      String idFieldName;
+
+      switch (employeeInfo!.role) {
+        case Role.cashier:
+          documentId = 'cashiersFcmTokens';
+          idFieldName = 'cashierId';
+          break;
+        case Role.owner:
+          documentId = 'ownersFcmTokens';
+          idFieldName = 'ownerId';
+          break;
+        case Role.admin:
+          documentId = 'adminsFcmTokens';
+          idFieldName = 'adminId';
+          break;
+        default:
+          return;
+      }
+
+      DocumentReference tokenDocRef =
+          _firestore.collection('fcmTokens').doc(documentId);
+      DocumentSnapshot tokenDocSnapshot = await tokenDocRef.get();
+      List<Map<String, dynamic>> existingTokens = [];
+
+      if (tokenDocSnapshot.exists) {
+        final data = tokenDocSnapshot.data() as Map<String, dynamic>;
+        final tokensList = data['tokens'];
+        if (tokensList is List) {
+          existingTokens =
+              tokensList.whereType<Map<String, dynamic>>().toList();
+        }
+      }
+
+      // Remove user's tokens
+      List<Map<String, dynamic>> updatedTokens = existingTokens.where((token) {
+        return token[idFieldName] != employeeInfo!.id;
+      }).toList();
+
+      await tokenDocRef.update({'tokens': updatedTokens});
     } catch (e) {
-      if (kDebugMode) print(e.toString());
+      if (kDebugMode) print('Error resetting FCM tokens: $e');
     }
   }
 
@@ -671,9 +638,9 @@ class AuthenticationRepository extends GetxController {
 
   Future<FunctionStatus> logoutAuthUser() async {
     try {
+      await resetFcmTokens();
       await logoutAuth();
       await signOutGoogle();
-      resetFcmTokens();
       isUserRegistered = false;
       isUserLoggedIn = false;
       isGoogleLinked.value = false;
@@ -704,3 +671,66 @@ class GoogleUserModel {
     required this.email,
   });
 }
+// Future<String> signInWithFacebook() async {
+//   try {
+//     final facebookAuthCredential = await getFacebookAuthCredential();
+//     if (facebookAuthCredential != null) {
+//       await _auth.signInWithCredential(facebookAuthCredential);
+//       if (fireUser.value != null) {
+//         isUserLoggedIn = true;
+//         AppInit.currentAuthType.value = AuthType.facebook;
+//         AppInit.goToInitPage();
+//         return 'success';
+//       }
+//     }
+//   } catch (e) {
+//     if (kDebugMode) {
+//       AppInit.logger.e(e.toString());
+//     }
+//   }
+//   return 'failedFacebookAuth'.tr;
+// }
+
+// Future<void> linkWithFacebook() async {
+//   try {
+//     showLoadingScreen();
+//     final facebookCredential = await getFacebookAuthCredential();
+//     if (facebookCredential != null) {
+//       await fireUser.value!.linkWithCredential(facebookCredential);
+//       hideLoadingScreen();
+//       showSnackBar(
+//           text: 'successFacebookLink'.tr, snackBarType: SnackBarType.success);
+//     }
+//   } catch (e) {
+//     hideLoadingScreen();
+//     showSnackBar(
+//         text: 'failedFacebookLink'.tr, snackBarType: SnackBarType.error);
+//     if (kDebugMode) {
+//       AppInit.logger.e(e.toString());
+//     }
+//   }
+// }
+
+// Future<OAuthCredential?> getFacebookAuthCredential() async {
+//   try {
+//     if (AppInit.isWeb) {
+//       await FacebookAuth.i.webAndDesktopInitialize(
+//         appId: "474331258229503",
+//         cookie: true,
+//         xfbml: true,
+//         version: "v14.0",
+//       );
+//     }
+//     final result = await FacebookAuth.instance.login();
+//     if (result.status == LoginStatus.success) {
+//       final credential =
+//           FacebookAuthProvider.credential(result.accessToken!.tokenString);
+//       return credential;
+//     }
+//   } catch (e) {
+//     if (kDebugMode) {
+//       AppInit.logger.e(e.toString());
+//     }
+//   }
+//   return null;
+// }

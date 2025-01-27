@@ -407,14 +407,14 @@ class LoginPasswordForm extends StatelessWidget {
                       const SizedBox(height: 10),
                       //    Obx(
                       // () =>
-                      controller.authRep.isFacebookLinked.value
-                          ? const SizedBox.shrink()
-                          : LinkAccountButton(
-                              buttonText: 'linkFacebookAccount'.tr,
-                              imagePath: kFacebookImage,
-                              onPressed:
-                                  () {} //=> controller. authRep.linkWithFacebook(),
-                              ),
+                      // controller.authRep.isFacebookLinked.value
+                      //     ? const SizedBox.shrink()
+                      //     : LinkAccountButton(
+                      //         buttonText: 'linkFacebookAccount'.tr,
+                      //         imagePath: kFacebookImage,
+                      //         onPressed:
+                      //             () {} //=> controller. authRep.linkWithFacebook(),
+                      //         ),
                       //  ),
                     ],
                   )
@@ -433,14 +433,14 @@ class LoginPasswordForm extends StatelessWidget {
                       const SizedBox(width: 10),
                       //    Obx(
                       // () =>
-                      controller.authRep.isFacebookLinked.value
-                          ? const SizedBox.shrink()
-                          : LinkAccountButton(
-                              buttonText: 'linkFacebookAccount'.tr,
-                              imagePath: kFacebookImage,
-                              onPressed:
-                                  () {} //=> controller. authRep.linkWithFacebook(),
-                              ),
+                      // controller.authRep.isFacebookLinked.value
+                      //     ? const SizedBox.shrink()
+                      //     : LinkAccountButton(
+                      //         buttonText: 'linkFacebookAccount'.tr,
+                      //         imagePath: kFacebookImage,
+                      //         onPressed:
+                      //             () {} //=> controller. authRep.linkWithFacebook(),
+                      //         ),
                       //  ),
                     ],
                   ),

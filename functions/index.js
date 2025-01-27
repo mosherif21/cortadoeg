@@ -109,11 +109,206 @@ exports.checkProductInventory = onSchedule("every 1 minutes", async (event) => {
   }
 });
 
+exports.sendNotification = onRequest(async (request, response) => {
+  const notificationType = request.body.notificationType;
+  const orderNumber = request.body.orderNumber;
+
+  if (!notificationType || !orderNumber) {
+    console.error("Missing parameters notificationType or orderNumber");
+    response.status(400).send("Missing parameters notificationType or orderNumber");
+    return;
+  }
+
+  let employeeId = request.body.employeeId;
+  if (notificationType !== 'newTakeawayOrder' &&
+      notificationType !== 'orderCanceled' &&
+      notificationType !== 'orderReturned') {
+    if (!employeeId) {
+      console.error("Missing employeeId for this notificationType");
+      response.status(400).send("Missing employeeId for this notificationType");
+      return;
+    }
+  }
+
+  let notificationsLang = "en";
+  let tokens = [];
+  let notificationsRefId;
+
+  // Determine FCM tokens document and notifications reference
+  switch(notificationType) {
+    case 'newTakeawayOrder':
+      const cashiersDoc = await firestore.collection("fcmTokens").doc("cashiersFcmTokens").get();
+      if (!cashiersDoc.exists) {
+        console.error("Cashiers FCM tokens document does not exist");
+        response.status(500).send("Cashiers FCM document not found");
+        return;
+      }
+      const cashiersData = cashiersDoc.data();
+      tokens = cashiersData.tokens || [];
+      notificationsLang = cashiersData.notificationsLang || "en";
+      notificationsRefId = cashiersData.cashierNotificationsId || "cashierNotifications";
+      break;
+
+    case 'orderCanceled':
+    case 'orderReturned':
+      const ownersDoc = await firestore.collection("fcmTokens").doc("ownersFcmTokens").get();
+      if (!ownersDoc.exists) {
+        console.error("Owners FCM tokens document does not exist");
+        response.status(500).send("Owners FCM document not found");
+        return;
+      }
+      const ownersData = ownersDoc.data();
+      tokens = ownersData.tokens || [];
+      notificationsLang = ownersData.notificationsLang || "en";
+      notificationsRefId = ownersData.notificationsRefId || "ownerNotifications";
+      break;
+
+    default:
+      const employeeDoc = await firestore.collection("fcmTokens").doc(employeeId).get();
+      if (!employeeDoc.exists) {
+        console.error("Employee FCM tokens document does not exist");
+        response.status(500).send("Employee FCM document not found");
+        return;
+      }
+      const employeeData = employeeDoc.data();
+      tokens.push(employeeData.fcmToken);
+      notificationsLang = employeeData.notificationsLang || "en";
+      notificationsRefId = employeeId;
+  }
+
+  if (tokens.length === 0) {
+    console.error("No tokens available to send notifications to");
+    response.status(200).send("No tokens available to send notifications to");
+    return;
+  }
+
+  // Prepare notification content
+  let notificationTitle, notificationBody;
+  switch(notificationType) {
+    case "newTakeawayOrder":
+      notificationTitle = notificationsLang === "en" ?
+        "New Takeaway order" : "طلب تيك اواي جديد";
+      notificationBody = notificationsLang === "en" ?
+        "A new takeaway order was created" : "تم إنشاء طلب تيك اواي جديد";
+      break;
+    case "takeawayOrderReady":
+      notificationTitle = notificationsLang === "en" ?
+        "Takeaway order ready" : "طلب التيك اواي جاهز";
+      notificationBody = notificationsLang === "en" ?
+        `Takeaway order number ${orderNumber} is ready for pickup` :
+        `طلب التيك اواي رقم ${orderNumber} جاهز للاستلام`;
+      break;
+    case "orderCanceled":
+      notificationTitle = notificationsLang === "en" ?
+        "Order Canceled" : "تم إلغاء الطلب";
+      notificationBody = notificationsLang === "en" ?
+        `Order ${orderNumber} has been canceled.` :
+        `تم إلغاء الطلب رقم ${orderNumber}.`;
+      break;
+    case "orderReturned":
+      notificationTitle = notificationsLang === "en" ?
+        "Order Returned" : "تم إرجاع الطلب";
+      notificationBody = notificationsLang === "en" ?
+        `Order ${orderNumber} has been returned.` :
+        `تم إرجاع الطلب رقم ${orderNumber}.`;
+      break;
+    default:
+      console.error("Invalid notification type");
+      response.status(400).send("Invalid notification type");
+      return;
+  }
+
+  // Save notification to Firestore
+  const batch = firestore.batch();
+  const notificationsRef = firestore.collection("notifications").doc(notificationsRefId);
+
+  const notificationsDoc = await notificationsRef.get();
+  if (notificationsDoc.exists) {
+    batch.update(notificationsRef, {
+      unseenCount: admin.firestore.FieldValue.increment(1),
+    });
+  } else {
+    batch.set(notificationsRef, {
+      unseenCount: 1,
+    });
+  }
+
+  const messagesRef = notificationsRef.collection("messages").doc();
+  batch.set(messagesRef, {
+    title: notificationTitle,
+    body: notificationBody,
+    timestamp: admin.firestore.Timestamp.now(),
+  });
+
+  await batch.commit();
+
+  // Send FCM notifications
+  const messaging = admin.messaging();
+  const messagingPromises = tokens.map(async (token) => {
+    const message = {
+      token,
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+      },
+    };
+    await messaging.send(message);
+  });
+
+  try {
+    await Promise.all(messagingPromises);
+    response.status(200).send("Notifications sent and saved successfully");
+  } catch (error) {
+    console.error("Error sending notifications:", error);
+    response.status(500).send("Error sending notifications");
+  }
+});
+
+exports.addEmployee = onRequest(async (data, context) => {
+  try {
+    const email = data.body.email;
+    const password = data.body.password;
+    const name = data.body.name;
+    const phone = data.body.phone;
+    const birthDate = data.body.birthDate;
+    const gender = data.body.gender;
+    const role = data.body.role;
+    const permissions = data.body.permissions;
+    // Ensure all required fields are present
+    if (!email || !password || !name || !phone || !birthDate || !gender || !role || !permissions) {
+      throw new functions.https.HttpsError("invalid-argument", "Missing required fields");
+ }
+    // Create the user in Firebase Authentication
+    const user = await admin.auth().createUser({
+      email,
+      password,
+ });
+   // Save employee data in Firestore
+    await admin.firestore().collection("employees").doc(user.uid).set({
+      name,
+      email,
+      phone,
+      birthDate: admin.firestore.Timestamp.fromDate(new Date(birthDate)),
+      gender,
+      role,
+      permissions,
+      profileImageUrl: '',
+   });
+
+    console.log("Employee added successfully");
+    context.status(200).send("Employee added successfully.");
+  } catch (error) {
+    console.error("Error adding employee:", error);
+    throw new functions.https.HttpsError("internal", error.message || "Failed to add employee");
+  }
+});
+
 exports.deleteUserWithResources = functions.https.onRequest(async (req, res) => {
   const userId = req.body.userId;
+  const role = req.body.role;
 
-  if (!userId) {
-    res.status(400).send('The function must be called with a valid userId.');
+  if (!userId || !role) {
+    res.status(400).send('The function must be called with a valid userId and role.');
     return;
   }
 
@@ -128,14 +323,38 @@ exports.deleteUserWithResources = functions.https.onRequest(async (req, res) => 
     const employeeDocRef = firestore.collection(employeesCollection).doc(userId);
     await employeeDocRef.delete();
     console.log(`Firestore document deleted from '${employeesCollection}' for userId: ${userId}`);
-    const fcmTokensSnapshot = await firestore.collection(fcmTokensCollection).where('userId', '==', userId).get();
-    if (!fcmTokensSnapshot.empty) {
-      const deleteFcmTokensPromises = fcmTokensSnapshot.docs.map((doc) => doc.ref.delete());
-      await Promise.all(deleteFcmTokensPromises);
-      console.log(`FCM tokens deleted for userId: ${userId}`);
-    } else {
-      console.log(`No FCM tokens found for userId: ${userId}`);
+
+    let fcmTokensDocId;
+
+    switch (role) {
+      case 'owner':
+        fcmTokensDocId = 'ownersFcmTokens';
+        break;
+      case 'admin':
+        fcmTokensDocId = 'adminsFcmTokens';
+        break;
+      case 'cashier':
+        fcmTokensDocId = 'cashiersFcmTokens';
+        break;
+      default:
+        fcmTokensDocId = userId;
+        break;
     }
+
+    const tokenDocRef = firestore.collection(fcmTokensCollection).doc(fcmTokensDocId);
+    const tokenDocSnapshot = await tokenDocRef.get();
+
+    if (tokenDocSnapshot.exists) {
+      const data = tokenDocSnapshot.data();
+      const tokensList = data.tokens || [];
+      const updatedTokens = tokensList.filter(token => token.userId !== userId);
+
+      await tokenDocRef.update({ tokens: updatedTokens });
+      console.log(`FCM tokens updated for userId: ${userId}`);
+    } else {
+      console.log(`No FCM tokens document found for userId: ${userId}`);
+    }
+
     const notificationsSnapshot = await firestore.collection(notificationsCollection).where('userId', '==', userId).get();
     if (!notificationsSnapshot.empty) {
       const deleteNotificationsPromises = notificationsSnapshot.docs.map((doc) => doc.ref.delete());
@@ -144,6 +363,7 @@ exports.deleteUserWithResources = functions.https.onRequest(async (req, res) => 
     } else {
       console.log(`No notifications found for userId: ${userId}`);
     }
+
     try {
       const [files] = await storage.getFiles({ prefix: storageFolder });
       if (files.length > 0) {
@@ -164,119 +384,6 @@ exports.deleteUserWithResources = functions.https.onRequest(async (req, res) => 
     res.status(500).send(`Failed to delete user and resources: ${error.message}`);
   }
 });
-
-exports.sendNotification = onRequest(async (request, response) => {
-  const employeeId = request.body.employeeId;
-  const notificationType = request.body.notificationType;
-  const orderNumber = request.body.orderNumber;
-
-  if (!notificationType || !employeeId || !orderNumber) {
-    console.error("Missing parameters employeeId, notificationType, orderNumber");
-    response.status(400).send("Missing parameters");
-    return;
-  }
-
-  let notificationsLang = "en";
-  let notificationTitle;
-  let notificationBody;
-
-  const fcmTokenRef = notificationType == "newTakeawayOrder" ? firestore.collection("fcmTokens").doc("cashierFcmToken") : firestore.collection("fcmTokens").doc(employeeId);
-  const fcmTokenDoc = await fcmTokenRef.get();
-
-  if (fcmTokenDoc.exists) {
-    const fcmTokenData = fcmTokenDoc.data();
-    if (fcmTokenData && fcmTokenData.notificationsLang) {
-      notificationsLang = fcmTokenData.notificationsLang;
-    }
-  } else if (!fcmTokenDoc.exists && notificationType == "newTakeawayOrder") {
-    console.log("FCM token doc not found");
-    response.status(200).send("Cashier FCM token doc not found and notification not saved");
-    return;
-  }
-  const batch = firestore.batch();
-  const notificationsRef = firestore.collection("notifications").doc(notificationType == "newTakeawayOrder" ? fcmTokenDoc.data().cashierEmployeeId : employeeId);
-  const notificationsDoc = await notificationsRef.get();
-
-  if (notificationsDoc.exists) {
-    batch.update(notificationsRef, {
-      unseenCount: admin.firestore.FieldValue.increment(1),
-    });
-  } else {
-    batch.set(notificationsRef, {
-      unseenCount: 1,
-    });
-  }
-
-
-  switch (notificationType) {
-    case "newTakeawayOrder":
-      notificationTitle =
-        notificationsLang === "en" ?
-        "New Takeaway order" :
-        "طلب تيك اواي جديد";
-      notificationBody =
-        notificationsLang === "en" ?
-        "A new takeaway order was created" :
-        "تم إنشاء طلب تيك اواي جديد";
-      break;
-    case "takeawayOrderReady":
-      notificationTitle =
-        notificationsLang === "en" ?
-        "Takeaway order ready" :
-        "طلب التيك اواي جاهز";
-      notificationBody =
-        notificationsLang === "en" ?
-        `Takeaway order number ${orderNumber} is ready for pickup` :
-        `طلب التيك اواي رقم ${orderNumber} جاهز للاستلام`;
-      break;
-    default:
-      console.error("Invalid notification type");
-      response.status(400).send("Invalid notification type");
-      return;
-  }
-
-  const messagesRef = notificationsRef.collection("messages").doc();
-  batch.set(messagesRef, {
-    title: notificationTitle,
-    body: notificationBody,
-    timestamp: admin.firestore.Timestamp.now(),
-  });
-
-  await batch.commit();
-
-  if (!fcmTokenDoc.exists) {
-    console.log("FCM token doc not found");
-    response.status(200).send("FCM token doc not found but notification saved");
-    return;
-  }
-
-  const fcmTokenData = fcmTokenDoc.data();
-  const tokens = [];
-
-  if (fcmTokenData.fcmToken) {
-    tokens.push(fcmTokenData.fcmToken);
-  }
-
-  if (tokens.length === 0) {
-    console.log("No tokens to send notification to");
-    response.status(200).send("No tokens to send notification to but notification saved");
-    return;
-  }
-
-  const message = admin.messaging.MessagingPayload = {
-    token: tokens[0],
-    notification: {
-      title: notificationTitle,
-      body: notificationBody,
-    },
-  };
-
-  const messaging = admin.messaging();
-  await messaging.send(message);
-
-  response.status(200).send("Notifications sent and saved successfully");
-});
-
 
 //  // Check for admin privileges
 //  if (!context.auth || !context.auth.token.admin) {

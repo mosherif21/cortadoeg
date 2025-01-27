@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+import '../../../../authentication/authentication_repository.dart';
+import '../../../../authentication/models.dart';
 import '../../../../constants/enums.dart';
 import '../../../../general/common_widgets/rounded_elevated_button.dart';
 import '../../../../general/validation_functions.dart';
@@ -450,6 +452,18 @@ class AddEmployeeWidget extends StatelessWidget {
                                     ),
                                     items: Role.values
                                         .where((role) => role != Role.allRoles)
+                                        .where((role) {
+                                          if (role == Role.admin ||
+                                              role == Role.owner) {
+                                            return hasPermission(
+                                                AuthenticationRepository
+                                                    .instance.employeeInfo!,
+                                                UserPermission
+                                                    .manageAdminAccounts);
+                                          } else {
+                                            return true;
+                                          }
+                                        })
                                         .map(
                                           (Role role) => DropdownMenuItem<Role>(
                                             value: role,

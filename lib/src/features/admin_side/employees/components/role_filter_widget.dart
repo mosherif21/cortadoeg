@@ -40,6 +40,7 @@ class EmployeeRoleWidget extends StatelessWidget {
 
 final rolesIconList = [
   Icons.select_all,
+  Icons.person_4_rounded,
   Icons.admin_panel_settings_rounded,
   FontAwesomeIcons.cashRegister,
   Icons.table_bar_rounded,

@@ -154,7 +154,8 @@ class AppInit {
       final functionStatus = await authRepo.userInit();
       removeSplashScreen();
       if (functionStatus == FunctionStatus.success) {
-        if (authRepo.userRole == Role.admin) {
+        if (authRepo.userRole == Role.admin ||
+            authRepo.userRole == Role.owner) {
           Get.offAll(
             () => const AdminMainScreen(),
             transition:

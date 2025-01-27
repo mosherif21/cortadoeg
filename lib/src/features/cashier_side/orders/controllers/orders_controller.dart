@@ -623,6 +623,11 @@ class OrdersController extends GetxController {
               text: 'orderReturnedSuccess'.tr,
               snackBarType: SnackBarType.success,
             );
+            sendNotification(
+              employeeId: 'empty',
+              notificationType: NotificationType.orderReturned,
+              orderNumber: order.orderNumber.toString(),
+            );
           } else {
             showSnackBar(
               text: 'errorOccurred'.tr,
@@ -651,6 +656,7 @@ class OrdersController extends GetxController {
           shiftId: orderModel.shiftId);
       batch.update(orderReference, {'status': OrderStatus.returned.name});
       await batch.commit();
+
       return FunctionStatus.success;
     } on FirebaseException catch (error) {
       if (kDebugMode) {

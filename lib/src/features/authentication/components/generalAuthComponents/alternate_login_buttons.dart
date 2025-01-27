@@ -36,21 +36,21 @@ class AlternateLoginButtons extends StatelessWidget {
                 }
               },
             ),
-            SignInButton.mini(
-              buttonType: ButtonType.facebook,
-              onPressed: () {
-                // showLoadingScreen();
-                // var returnMessage =
-                //     await AuthenticationRepository.instance.signInWithFacebook();
-                // if (returnMessage != 'success') {
-                //   hideLoadingScreen();
-                //   showSnackBar(
-                //     text: returnMessage,
-                //     snackBarType: SnackBarType.error,
-                //   );
-                // }
-              },
-            ),
+            // SignInButton.mini(
+            //   buttonType: ButtonType.facebook,
+            //   onPressed: () {
+            //     // showLoadingScreen();
+            //     // var returnMessage =
+            //     //     await AuthenticationRepository.instance.signInWithFacebook();
+            //     // if (returnMessage != 'success') {
+            //     //   hideLoadingScreen();
+            //     //   showSnackBar(
+            //     //     text: returnMessage,
+            //     //     snackBarType: SnackBarType.error,
+            //     //   );
+            //     // }
+            //   },
+            // ),
           ],
         )
       ],

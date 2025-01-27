@@ -19,6 +19,8 @@ String getRoleName(Role role) {
       return 'waiter'.tr;
     case Role.admin:
       return 'admin'.tr;
+    case Role.owner:
+      return 'owner'.tr;
     case Role.allRoles:
       return 'allRoles'.tr;
   }
