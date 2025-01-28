@@ -31,7 +31,7 @@ class AuthenticationRepository extends GetxController {
   Role userRole = Role.cashier;
   late EmployeeModel? employeeInfo;
   final userEmail = ''.obs;
-
+  late StreamSubscription? employeesListener;
   @override
   void onInit() async {
     fireUser = Rx<User?>(_auth.currentUser);
@@ -132,6 +132,7 @@ class AuthenticationRepository extends GetxController {
   Future<FunctionStatus> userInit() async {
     final String userId = fireUser.value!.uid;
     final firestoreEmployeesCollRef = _firestore.collection('employees');
+
     try {
       final snapshot = await firestoreEmployeesCollRef.doc(userId).get();
       if (snapshot.exists) {
@@ -154,6 +155,18 @@ class AuthenticationRepository extends GetxController {
               }
             }
           }
+          employeesListener = firestoreEmployeesCollRef
+              .doc(userId)
+              .snapshots()
+              .listen((snapshot) {
+            if (snapshot.exists) {
+              final userDoc = snapshot.data()!;
+              employeeInfo = EmployeeModel.fromFirestore(userDoc, snapshot.id);
+              if (kDebugMode) {
+                AppInit.logger.i('Employee info updated');
+              }
+            }
+          });
           return FunctionStatus.success;
         }
       } else {
@@ -638,6 +651,7 @@ class AuthenticationRepository extends GetxController {
 
   Future<FunctionStatus> logoutAuthUser() async {
     try {
+      await employeesListener?.cancel();
       await resetFcmTokens();
       await logoutAuth();
       await signOutGoogle();

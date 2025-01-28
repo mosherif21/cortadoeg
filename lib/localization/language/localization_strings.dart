@@ -651,7 +651,11 @@ class Languages extends Translations {
           "employeeName": "اسم الموظف",
           "takeawayPercentage": "نسبة التوصيل",
           "employeeRevenue": "إيرادات الموظف",
-          "taxAmount": "مبلغ الضريبة"
+          "taxAmount": "مبلغ الضريبة",
+          "owner": "مالك",
+          "manageAdminAccounts": "إدارة حسابات المديرين",
+          "noEmployeesFoundTitle": "لم يتم العثور على موظفين",
+          "noEmployeesFoundBody": "لم يتم العثور على حسابات موظفين"
         },
         'en_US': {
           'skip': 'Skip',
