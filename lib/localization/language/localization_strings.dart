@@ -652,10 +652,13 @@ class Languages extends Translations {
           "takeawayPercentage": "نسبة التوصيل",
           "employeeRevenue": "إيرادات الموظف",
           "taxAmount": "مبلغ الضريبة",
+          "discountAmount": "إجمالي الخصومات",
           "owner": "مالك",
           "manageAdminAccounts": "إدارة حسابات المديرين",
           "noEmployeesFoundTitle": "لم يتم العثور على موظفين",
-          "noEmployeesFoundBody": "لم يتم العثور على حسابات موظفين"
+          "noEmployeesFoundBody": "لم يتم العثور على حسابات موظفين",
+          "revenueAfterDiscounts": "الإيرادات بعد الخصومات",
+          "profitAfterDiscounts": "الربح بعد الخصومات"
         },
         'en_US': {
           'skip': 'Skip',
@@ -1325,6 +1328,9 @@ class Languages extends Translations {
           "manageAdminAccounts": "Manage Admin Accounts",
           'noEmployeesFoundTitle': 'No Employees found',
           'noEmployeesFoundBody': 'No Employee accounts found',
+          "discountAmount": "Discount Amount",
+          'revenueAfterDiscounts': 'Revenue After Discounts',
+          'profitAfterDiscounts': 'Profit After Discounts',
         },
       };
 }

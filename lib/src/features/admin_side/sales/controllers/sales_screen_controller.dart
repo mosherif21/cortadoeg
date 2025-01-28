@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
+import '../../../../constants/enums.dart';
 import '../../../../general/app_init.dart';
 import '../../../../general/general_functions.dart';
 import '../../../cashier_side/orders/components/models.dart';
@@ -34,6 +35,7 @@ class SalesScreenController extends GetxController {
   final totalProfit = 0.0.obs;
   final totalCostPrice = 0.0.obs;
   final totalTaxAmount = 0.0.obs;
+  final totalDiscountAmount = 0.0.obs;
   final profitChangePercentage = 0.0.obs;
   final completeOrderPercentage = 0.0.obs;
   final returnedOrderPercentage = 0.0.obs;
@@ -102,6 +104,7 @@ class SalesScreenController extends GetxController {
         double revenue = 0.0;
         double costPrice = 0.0;
         double taxAmount = 0.0;
+        double discountAmount = 0.0;
         int ordersCount = snapshot.docs.length;
         int customers = 0;
         int dineInCount = 0;
@@ -133,6 +136,7 @@ class SalesScreenController extends GetxController {
           if (order.status.name == 'complete') {
             revenue += order.totalAmount;
             taxAmount += order.taxTotalAmount;
+            discountAmount += order.discountAmount;
             for (var item in order.items) {
               costPrice += (item.costPrice) * item.quantity;
             }
@@ -144,13 +148,11 @@ class SalesScreenController extends GetxController {
           return order;
         }).toList();
 
-        // Fetch additional reports
         fetchMostOrderedItems();
         fetchTakeawayEmployeesData();
         fetchTopUsedInventoryProducts();
 
-        // Compute metrics
-        final double profit = revenue - costPrice - taxAmount;
+        final double profit = revenue - costPrice - taxAmount - discountAmount;
         final double completePercentage = ordersCount > 0
             ? ((statusCounts['complete'] ?? 0) / ordersCount) * 100
             : 0.0;
@@ -166,12 +168,12 @@ class SalesScreenController extends GetxController {
         final double takeawayPercentage =
             ordersCount > 0 ? (takeawayCount / ordersCount) * 100 : 0.0;
 
-        // Update UI values
         totalCostPrice.value = roundToNearestHalfOrWhole(costPrice);
         totalRevenue.value = roundToNearestHalfOrWhole(revenue);
         totalOrders.value = ordersCount;
         totalRegularCustomerOrders.value = customers;
         totalTaxAmount.value = roundToNearestHalfOrWhole(taxAmount);
+        totalDiscountAmount.value = roundToNearestHalfOrWhole(discountAmount);
         totalProfit.value = roundToNearestHalfOrWhole(profit);
         completeOrderPercentage.value =
             roundToNearestHalfOrWhole(completePercentage);
@@ -184,7 +186,6 @@ class SalesScreenController extends GetxController {
         takeawayOrdersPercentage.value =
             roundToNearestHalfOrWhole(takeawayPercentage);
 
-        // Update comparison metrics with previous period
         final previousRange = _getPreviousDateRange(dateFrom!, dateTo!);
         final previousQuery = await _fetchMetricsForDateRange(
             previousRange['from'], previousRange['to']);
@@ -746,30 +747,58 @@ class SalesScreenController extends GetxController {
   void fetchMostOrderedItems() {
     try {
       Map<String, dynamic> itemMetrics = {};
-      // Process each order to calculate metrics for each item
+
       for (var order in ordersList) {
+        if (order.status == OrderStatus.active ||
+            order.status == OrderStatus.canceled) {
+          continue;
+        }
+
+        final totalSubtotal = order.subtotalAmount;
+        if (totalSubtotal == 0) continue;
+
         for (var item in order.items) {
+          final itemSubtotal = item.price * item.quantity;
+
+          // Calculate original values
+          double originalRevenue = itemSubtotal;
+          double originalProfit = (item.price - item.costPrice) * item.quantity;
+
+          // Calculate adjusted values after discount
+          double itemDiscountShare = 0.0;
+          if (order.discountAmount > 0) {
+            itemDiscountShare =
+                (itemSubtotal / totalSubtotal) * order.discountAmount;
+          }
+
+          final adjustedRevenue = itemSubtotal - itemDiscountShare;
+          final adjustedPricePerItem = adjustedRevenue / item.quantity;
+          final adjustedProfit =
+              (adjustedPricePerItem - item.costPrice) * item.quantity;
+          final costPriceTotal = item.costPrice * item.quantity;
+
           if (itemMetrics.containsKey(item.itemId)) {
             itemMetrics[item.itemId]['totalOrders'] += item.quantity;
-            itemMetrics[item.itemId]['totalRevenue'] +=
-                item.price * item.quantity;
-            itemMetrics[item.itemId]['totalProfit'] +=
-                (item.price - item.costPrice) * item.quantity;
-            itemMetrics[item.itemId]['totalCostPrice'] +=
-                item.costPrice * item.quantity;
+            itemMetrics[item.itemId]['originalRevenue'] += originalRevenue;
+            itemMetrics[item.itemId]['originalProfit'] += originalProfit;
+            itemMetrics[item.itemId]['totalRevenue'] += adjustedRevenue;
+            itemMetrics[item.itemId]['totalProfit'] += adjustedProfit;
+            itemMetrics[item.itemId]['totalCostPrice'] += costPriceTotal;
           } else {
             itemMetrics[item.itemId] = {
               'itemId': item.itemId,
               'name': item.name,
               'totalOrders': item.quantity,
-              'totalRevenue': item.price * item.quantity,
-              'totalProfit': (item.price - item.costPrice) * item.quantity,
-              'totalCostPrice': item.costPrice * item.quantity,
+              'originalRevenue': originalRevenue,
+              'originalProfit': originalProfit,
+              'totalRevenue': adjustedRevenue,
+              'totalProfit': adjustedProfit,
+              'totalCostPrice': costPriceTotal,
               'usedProducts': {},
             };
           }
 
-          // Update used products
+          // Process recipe items
           for (var recipeItem in item.selectedSize.recipe) {
             itemMetrics[item.itemId]['usedProducts']
                 .update(recipeItem.productId, (value) {
@@ -802,7 +831,7 @@ class SalesScreenController extends GetxController {
         }
       }
 
-      // Sort the items by totalOrders in descending order
+      // Sorting and mapping to ItemReport
       final sortedItems = itemMetrics.values.toList()
         ..sort((a, b) => b['totalOrders'] - a['totalOrders']);
 
@@ -811,6 +840,8 @@ class SalesScreenController extends GetxController {
           itemId: item['itemId'],
           name: item['name'],
           totalOrders: item['totalOrders'],
+          originalRevenue: item['originalRevenue'],
+          originalProfit: item['originalProfit'],
           totalRevenue: item['totalRevenue'],
           totalProfit: item['totalProfit'],
           totalCostPrice: item['totalCostPrice'],
@@ -908,6 +939,8 @@ class ItemReport {
   final String itemId;
   final String name;
   final int totalOrders;
+  final double originalRevenue;
+  final double originalProfit;
   final double totalRevenue;
   final double totalProfit;
   final double totalCostPrice;
@@ -917,6 +950,8 @@ class ItemReport {
     required this.itemId,
     required this.name,
     required this.totalOrders,
+    required this.originalRevenue,
+    required this.originalProfit,
     required this.totalRevenue,
     required this.totalProfit,
     required this.totalCostPrice,

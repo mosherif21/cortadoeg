@@ -221,6 +221,8 @@ class SalesScreen extends StatelessWidget {
                                         '${controller.totalCostPrice.value.toStringAsFixed(2)} EGP',
                                     totalTaxAmount:
                                         '${controller.totalTaxAmount.value.toStringAsFixed(2)} EGP',
+                                    totalDiscountAmount:
+                                        '${controller.totalDiscountAmount.value.toStringAsFixed(2)} EGP',
                                     percentage:
                                         '${controller.customersChangePercentage.value.toStringAsFixed(1)}%',
                                     percentageTitle:
@@ -434,7 +436,7 @@ class SalesScreen extends StatelessWidget {
                                                       true,
                                                   onSelectAll: (_) {},
                                                   wrapInCard: true,
-                                                  minWidth: 1100,
+                                                  minWidth: 1500,
                                                   headingRowColor:
                                                       const WidgetStatePropertyAll(
                                                           Colors.white),
@@ -460,7 +462,7 @@ class SalesScreen extends StatelessWidget {
                                                                   style:
                                                                       textStyle)),
                                                       tooltip: 'orders'.tr,
-                                                      fixedWidth: 120,
+                                                      fixedWidth: 140,
                                                       size: ColumnSize.L,
                                                     ),
                                                     DataColumn2(
@@ -477,6 +479,19 @@ class SalesScreen extends StatelessWidget {
                                                       size: ColumnSize.L,
                                                     ),
                                                     DataColumn2(
+                                                      label: alignHorizontalWidget(
+                                                          child: Text(
+                                                              'revenueAfterDiscounts'
+                                                                  .tr,
+                                                              style:
+                                                                  textStyle)),
+                                                      tooltip:
+                                                          'revenueAfterDiscounts'
+                                                              .tr,
+                                                      fixedWidth: 240,
+                                                      size: ColumnSize.L,
+                                                    ),
+                                                    DataColumn2(
                                                       label:
                                                           alignHorizontalWidget(
                                                         child: Text(
@@ -485,6 +500,20 @@ class SalesScreen extends StatelessWidget {
                                                       ),
                                                       tooltip: 'totalProfit'.tr,
                                                       fixedWidth: 180,
+                                                      size: ColumnSize.L,
+                                                    ),
+                                                    DataColumn2(
+                                                      label:
+                                                          alignHorizontalWidget(
+                                                        child: Text(
+                                                            'profitAfterDiscounts'
+                                                                .tr,
+                                                            style: textStyle),
+                                                      ),
+                                                      tooltip:
+                                                          'profitAfterDiscounts'
+                                                              .tr,
+                                                      fixedWidth: 220,
                                                       size: ColumnSize.L,
                                                     ),
                                                     DataColumn2(
@@ -693,6 +722,8 @@ class SalesScreen extends StatelessWidget {
                                               '${controller.totalCostPrice.value.toStringAsFixed(2)} EGP',
                                           totalTaxAmount:
                                               '${controller.totalTaxAmount.value.toStringAsFixed(2)} EGP',
+                                          totalDiscountAmount:
+                                              '${controller.totalDiscountAmount.value.toStringAsFixed(2)} EGP',
                                           percentage:
                                               '${controller.customersChangePercentage.value.toStringAsFixed(1)}%',
                                           percentageTitle:
@@ -1032,7 +1063,7 @@ class SalesScreen extends StatelessWidget {
                                                             true,
                                                         onSelectAll: (_) {},
                                                         wrapInCard: true,
-                                                        minWidth: 1100,
+                                                        minWidth: 1500,
                                                         headingRowColor:
                                                             const WidgetStatePropertyAll(
                                                                 Colors.white),
@@ -1076,6 +1107,19 @@ class SalesScreen extends StatelessWidget {
                                                             size: ColumnSize.L,
                                                           ),
                                                           DataColumn2(
+                                                            label: alignHorizontalWidget(
+                                                                child: Text(
+                                                                    'revenueAfterDiscounts'
+                                                                        .tr,
+                                                                    style:
+                                                                        textStyle)),
+                                                            tooltip:
+                                                                'revenueAfterDiscounts'
+                                                                    .tr,
+                                                            fixedWidth: 240,
+                                                            size: ColumnSize.L,
+                                                          ),
+                                                          DataColumn2(
                                                             label:
                                                                 alignHorizontalWidget(
                                                               child: Text(
@@ -1088,6 +1132,21 @@ class SalesScreen extends StatelessWidget {
                                                                 'totalProfit'
                                                                     .tr,
                                                             fixedWidth: 180,
+                                                            size: ColumnSize.L,
+                                                          ),
+                                                          DataColumn2(
+                                                            label:
+                                                                alignHorizontalWidget(
+                                                              child: Text(
+                                                                  'profitAfterDiscounts'
+                                                                      .tr,
+                                                                  style:
+                                                                      textStyle),
+                                                            ),
+                                                            tooltip:
+                                                                'profitAfterDiscounts'
+                                                                    .tr,
+                                                            fixedWidth: 220,
                                                             size: ColumnSize.L,
                                                           ),
                                                           DataColumn2(
@@ -1173,7 +1232,27 @@ class _ItemsDataSource extends DataTableSource {
                 context: context),
             alignHorizontalWidget(
                 child: Text(
+              '${item.originalRevenue.toStringAsFixed(2)} EGP',
+              style: textStyle,
+            ))),
+        DataCell(
+            onTap: () => controller.viewItemInventoryUsage(
+                isPhone: isPhone,
+                productsUsage: item.usedProducts,
+                context: context),
+            alignHorizontalWidget(
+                child: Text(
               '${item.totalRevenue.toStringAsFixed(2)} EGP',
+              style: textStyle,
+            ))),
+        DataCell(
+            onTap: () => controller.viewItemInventoryUsage(
+                isPhone: isPhone,
+                productsUsage: item.usedProducts,
+                context: context),
+            alignHorizontalWidget(
+                child: Text(
+              '${item.originalProfit.toStringAsFixed(2)} EGP',
               style: textStyle,
             ))),
         DataCell(

@@ -10,6 +10,7 @@ class SalesProfitCard extends StatelessWidget {
     required this.totalProfit,
     required this.totalCostPrice,
     required this.totalTaxAmount,
+    required this.totalDiscountAmount,
     required this.percentage,
     required this.percentageTitle,
     required this.increase,
@@ -19,6 +20,7 @@ class SalesProfitCard extends StatelessWidget {
   final String totalProfit;
   final String totalCostPrice;
   final String totalTaxAmount;
+  final String totalDiscountAmount;
   final String percentage;
   final String percentageTitle;
   final bool increase;
@@ -215,26 +217,54 @@ class SalesProfitCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Row(
                   children: [
-                    Text(
-                      'taxAmount'.tr,
-                      style: const TextStyle(
-                        overflow: TextOverflow.ellipsis,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'discountAmount'.tr,
+                          style: const TextStyle(
+                            overflow: TextOverflow.ellipsis,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        AutoSizeText(
+                          totalDiscountAmount,
+                          maxLines: 1,
+                          style: TextStyle(
+                            overflow: TextOverflow.ellipsis,
+                            fontSize: 22,
+                            color: Colors.grey.shade800,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
                     ),
-                    AutoSizeText(
-                      totalTaxAmount,
-                      maxLines: 1,
-                      style: TextStyle(
-                        overflow: TextOverflow.ellipsis,
-                        fontSize: 22,
-                        color: Colors.grey.shade800,
-                        fontWeight: FontWeight.w800,
-                      ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'taxAmount'.tr,
+                          style: const TextStyle(
+                            overflow: TextOverflow.ellipsis,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        AutoSizeText(
+                          totalTaxAmount,
+                          maxLines: 1,
+                          style: TextStyle(
+                            overflow: TextOverflow.ellipsis,
+                            fontSize: 22,
+                            color: Colors.grey.shade800,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
