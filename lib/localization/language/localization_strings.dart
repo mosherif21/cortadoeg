@@ -1331,6 +1331,7 @@ class Languages extends Translations {
           "discountAmount": "Discount Amount",
           'revenueAfterDiscounts': 'Revenue After Discounts',
           'profitAfterDiscounts': 'Profit After Discounts',
+          'selectShift': 'Select Shift',
         },
       };
 }

@@ -70,6 +70,8 @@ class ItemDetailsPhone extends StatelessWidget {
                         InputQty.int(
                           initVal: orderItem != null ? orderItem!.quantity : 1,
                           minVal: 1,
+                          qtyFormProps:
+                              const QtyFormProps(cursorColor: Colors.black),
                           decoration: const QtyDecorationProps(
                             isBordered: false,
                             borderShape: BorderShapeBtn.circle,

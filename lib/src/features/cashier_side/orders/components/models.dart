@@ -36,6 +36,7 @@ class CategoryModel {
 class OrderModel {
   final String orderId;
   final String shiftId;
+  final Timestamp shiftOpeningTime;
   final bool isTakeaway;
   final bool isTakeawayEmployee;
   final int orderNumber;
@@ -62,6 +63,7 @@ class OrderModel {
     required this.isTakeawayEmployee,
     required this.orderNumber,
     required this.shiftId,
+    required this.shiftOpeningTime,
     this.tableNumbers,
     required this.items,
     required this.status,
@@ -82,6 +84,7 @@ class OrderModel {
       'tableNumbers': tableNumbers,
       'orderNumber': orderNumber,
       'shiftId': shiftId,
+      'shiftOpeningTime': shiftOpeningTime,
       'employeeId': employeeId,
       'employeeName': employeeName,
       'isTakeawayEmployee': isTakeawayEmployee,
@@ -113,6 +116,7 @@ class OrderModel {
       discountType: map['discountType'],
       orderNumber: map['orderNumber'],
       shiftId: map['shiftId'],
+      shiftOpeningTime: map['shiftOpeningTime'],
       customerId: map['customerId'],
       employeeId: map['employeeId'],
       employeeName: map['employeeName'],

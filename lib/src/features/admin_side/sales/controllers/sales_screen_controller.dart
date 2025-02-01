@@ -58,6 +58,8 @@ class SalesScreenController extends GetxController {
   List<TakeawayEmployeeReport> employeesList = [];
   late final StreamSubscription takeawayPercentListener;
   StreamSubscription? ordersListener;
+  final Rxn<String?> selectedShiftId = Rxn<String>(null);
+  List<AvailableShift> availableShifts = <AvailableShift>[];
   @override
   void onInit() {
     super.onInit();
@@ -147,7 +149,7 @@ class SalesScreenController extends GetxController {
           }
           return order;
         }).toList();
-
+        onOrdersListUpdate();
         fetchMostOrderedItems();
         fetchTakeawayEmployeesData();
         fetchTopUsedInventoryProducts();
@@ -699,11 +701,42 @@ class SalesScreenController extends GetxController {
     }
   }
 
+  void onOrdersListUpdate() {
+    generateAvailableShifts();
+    if (availableShifts.isNotEmpty) {
+      selectedShiftId.value = availableShifts.first.shiftId;
+    } else {
+      selectedShiftId.value = null;
+    }
+    fetchTakeawayEmployeesData();
+  }
+
+  void generateAvailableShifts() {
+    final Map<String, DateTime> shiftMap = {};
+    for (var order in ordersList) {
+      if (!shiftMap.containsKey(order.shiftId)) {
+        shiftMap[order.shiftId] = order.shiftOpeningTime.toDate();
+      }
+    }
+    availableShifts = shiftMap.entries.map((entry) {
+      return AvailableShift(
+        shiftId: entry.key,
+        openingTime: entry.value,
+      );
+    }).toList();
+    availableShifts.sort((a, b) => b.openingTime.compareTo(a.openingTime));
+  }
+
   void fetchTakeawayEmployeesData() {
     try {
       Map<String, dynamic> employeeMetrics = {};
 
       for (var order in ordersList) {
+        if (selectedShiftId.value != null &&
+            order.shiftId != selectedShiftId.value) {
+          continue;
+        }
+
         if (order.isTakeawayEmployee) {
           employeeMetrics.update(order.employeeName, (value) {
             value['totalOrders'] += 1;
@@ -760,11 +793,9 @@ class SalesScreenController extends GetxController {
         for (var item in order.items) {
           final itemSubtotal = item.price * item.quantity;
 
-          // Calculate original values
           double originalRevenue = itemSubtotal;
           double originalProfit = (item.price - item.costPrice) * item.quantity;
 
-          // Calculate adjusted values after discount
           double itemDiscountShare = 0.0;
           if (order.discountAmount > 0) {
             itemDiscountShare =
@@ -798,7 +829,6 @@ class SalesScreenController extends GetxController {
             };
           }
 
-          // Process recipe items
           for (var recipeItem in item.selectedSize.recipe) {
             itemMetrics[item.itemId]['usedProducts']
                 .update(recipeItem.productId, (value) {
@@ -831,7 +861,6 @@ class SalesScreenController extends GetxController {
         }
       }
 
-      // Sorting and mapping to ItemReport
       final sortedItems = itemMetrics.values.toList()
         ..sort((a, b) => b['totalOrders'] - a['totalOrders']);
 
@@ -859,7 +888,6 @@ class SalesScreenController extends GetxController {
           ),
         );
       }).toList();
-
       itemsList.assignAll(newItemsList);
       totalItemsCount = itemsList.length;
       updateItemsTable.value++;
@@ -932,6 +960,20 @@ class SalesScreenController extends GetxController {
     takeawayPercentListener.cancel();
     ordersListener?.cancel();
     super.onClose();
+  }
+}
+
+class AvailableShift {
+  final String shiftId;
+  final DateTime openingTime;
+
+  AvailableShift({required this.shiftId, required this.openingTime});
+
+  @override
+  String toString() {
+    return DateFormat(
+            'MMM dd, yyyy, hh:mm a', isLangEnglish() ? 'en_US' : 'ar_SA')
+        .format(openingTime);
   }
 }
 

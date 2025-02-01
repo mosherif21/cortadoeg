@@ -129,6 +129,7 @@ class CheckOutItemPhone extends StatelessWidget {
               child: InputQty.int(
                 initVal: orderItemModel.quantity,
                 minVal: 1,
+                qtyFormProps: const QtyFormProps(cursorColor: Colors.black),
                 decoration: const QtyDecorationProps(
                   isBordered: false,
                   borderShape: BorderShapeBtn.circle,

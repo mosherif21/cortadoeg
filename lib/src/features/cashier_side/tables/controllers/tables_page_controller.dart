@@ -495,6 +495,8 @@ class TablesPageController extends GetxController {
           employeeId: employeeInfo.id,
           employeeName: employeeInfo.name,
           shiftId: MainScreenController.instance.currentActiveShiftId.value!,
+          shiftOpeningTime: MainScreenController
+              .instance.currentActiveShiftOpeningTime.value!,
         );
         await firestore.runTransaction((transaction) async {
           transaction.set(orderDoc, newOrder.toFirestore());

@@ -48,6 +48,7 @@ class MainScreenController extends GetxController {
   late final StreamController<bool> verificationNotifier;
   final firestore = FirebaseFirestore.instance;
   final Rxn<String?> currentActiveShiftId = Rxn<String>(null);
+  final Rxn<Timestamp?> currentActiveShiftOpeningTime = Rxn<Timestamp>(null);
   final TextEditingController openingAmountTextController =
       TextEditingController();
   final TextEditingController closingAmountTextController =
@@ -80,11 +81,14 @@ class MainScreenController extends GetxController {
       pageController.jumpToPage(navBarIndex.value);
       barController.selectIndex(1);
     }
-    activeShiftListener = listenToActiveShiftId().listen((activeShiftId) {
-      if (activeShiftId != null) {
-        currentActiveShiftId.value = activeShiftId;
+    activeShiftListener = listenToActiveShiftId().listen((activeShiftData) {
+      if (activeShiftData != null) {
+        currentActiveShiftId.value = activeShiftData['shiftId'].toString();
+        currentActiveShiftOpeningTime.value =
+            activeShiftData['openingTime'] as Timestamp;
       } else {
         currentActiveShiftId.value = null;
+        currentActiveShiftOpeningTime.value = null;
       }
     });
     barController.addListener(() {
@@ -652,7 +656,7 @@ class MainScreenController extends GetxController {
     return null;
   }
 
-  Stream<String?> listenToActiveShiftId() {
+  Stream<Map<String, dynamic>?> listenToActiveShiftId() {
     final CollectionReference custodyReportsRef =
         FirebaseFirestore.instance.collection('custody_shifts');
     return custodyReportsRef
@@ -663,7 +667,13 @@ class MainScreenController extends GetxController {
         List<CustodyReport> custodyReports = snapshot.docs.map((doc) {
           return CustodyReport.fromFirestore(doc);
         }).toList();
-        return custodyReports.first.id;
+        final Map<String, dynamic> currentShiftData =
+            {}; // Now uses dynamic types
+        currentShiftData['shiftId'] = custodyReports.first.id;
+        currentShiftData['openingTime'] =
+            custodyReports.first.openingTime; // Store Timestamp as-is
+
+        return currentShiftData;
       }
       return null;
     });
@@ -739,6 +749,7 @@ class MainScreenController extends GetxController {
           employeeName: employeeInfo.name,
           isTakeawayEmployee: isTakeawayEmployee,
           shiftId: currentActiveShiftId.value!,
+          shiftOpeningTime: currentActiveShiftOpeningTime.value!,
         );
         await orderDoc.set(takeawayOrder.toFirestore());
         if (AuthenticationRepository.instance.userRole == Role.takeaway) {
