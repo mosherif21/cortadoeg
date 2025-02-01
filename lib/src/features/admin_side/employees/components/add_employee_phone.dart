@@ -444,7 +444,7 @@ class AddEmployeeWidgetPhone extends StatelessWidget {
                                       hint: Text(
                                         'selectStatus'.tr,
                                         style: TextStyle(
-                                          fontSize: 16,
+                                          fontSize: 18,
                                           fontWeight: FontWeight.w600,
                                           color: Theme.of(context).hintColor,
                                         ),
@@ -471,7 +471,7 @@ class AddEmployeeWidgetPhone extends StatelessWidget {
                                               child: Text(
                                                 getRoleName(role),
                                                 style: const TextStyle(
-                                                  fontSize: 16,
+                                                  fontSize: 18,
                                                   fontWeight: FontWeight.w600,
                                                   color: Colors.black,
                                                 ),

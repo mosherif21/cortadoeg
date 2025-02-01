@@ -131,7 +131,7 @@ class EmployeeEditDetailsPhone extends StatelessWidget {
                             hint: Text(
                               'selectStatus'.tr,
                               style: TextStyle(
-                                fontSize: 20,
+                                fontSize: 18,
                                 fontWeight: FontWeight.w500,
                                 color: Theme.of(context).hintColor,
                               ),
@@ -144,7 +144,7 @@ class EmployeeEditDetailsPhone extends StatelessWidget {
                                     child: Text(
                                       getRoleName(role),
                                       style: const TextStyle(
-                                        fontSize: 20,
+                                        fontSize: 18,
                                         fontWeight: FontWeight.w600,
                                         color: Colors.black,
                                       ),
