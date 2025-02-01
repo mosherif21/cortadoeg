@@ -1,4 +1,3 @@
-import 'package:anim_search_app_bar/anim_search_app_bar.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
@@ -185,16 +184,6 @@ class CustodyShiftsScreen extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-            AnimSearchAppBar(
-              keyboardType: TextInputType.text,
-              cancelButtonTextStyle: const TextStyle(color: Colors.black87),
-              cancelButtonText: 'cancel'.tr,
-              hintText: 'searchCustodyShiftsHint'.tr,
-              onChanged: controller.onCustodyShiftsSearch,
-              hintStyle: const TextStyle(fontWeight: FontWeight.w500),
-              backgroundColor: Colors.white,
-              appBar: const SizedBox.shrink(),
             ),
             const SizedBox(height: 10),
             Expanded(
@@ -498,14 +487,14 @@ class _CustodyDataSource extends AsyncDataTableSource {
       );
     }
 
-    return AsyncRowsResponse(controller.totalTransactionsCount, rows);
+    return AsyncRowsResponse(controller.totalShiftsCount, rows);
   }
 
   @override
   bool get isRowCountApproximate => false;
 
   @override
-  int get rowCount => controller.totalTransactionsCount;
+  int get rowCount => controller.totalShiftsCount;
 
   @override
   int get selectedRowCount => 0;

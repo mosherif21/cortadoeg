@@ -24,13 +24,11 @@ class CustodyReportsController extends GetxController {
   final RxInt sortColumnIndex = 0.obs;
   final RxBool sortAscending = false.obs;
   final RxList<CustodyReport> reports = <CustodyReport>[].obs;
-  int totalTransactionsCount = 0;
+  int totalShiftsCount = 0;
   final RxInt currentSelectedStatus = 0.obs;
   late final GlobalKey<AsyncPaginatedDataTable2State> tableKey;
   int selectedSortColumnIndex = 0;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  Timer? _searchDebounce;
-  String searchText = '';
   final RxMap<String, Map<String, DateTime>> dateRangeOptions =
       <String, Map<String, DateTime>>{}.obs;
   late DateTime? dateFrom;
@@ -61,7 +59,7 @@ class CustodyReportsController extends GetxController {
   void resetTableValues() {
     reports.clear();
     lastDocument = null;
-    totalTransactionsCount = 0;
+    totalShiftsCount = 0;
     tableKey.currentState!.pageTo(0);
   }
 
@@ -207,22 +205,6 @@ class CustodyReportsController extends GetxController {
     return yearRegex.hasMatch(normalizedInput);
   }
 
-  void onCustodyShiftsSearch(String value) {
-    if (value.trim().isEmpty) {
-      if (searchText.isNotEmpty) {
-        searchText = '';
-        if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
-        resetTableValues();
-      }
-    } else {
-      searchText = value;
-      if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
-      _searchDebounce = Timer(const Duration(milliseconds: 500), () {
-        resetTableValues();
-      });
-    }
-  }
-
   Future<void> fetchData({
     int start = 0,
     int limit = 10,
@@ -257,7 +239,7 @@ class CustodyReportsController extends GetxController {
       }
       if (start == 0) {
         final countSnapshot = await query.count().get();
-        totalTransactionsCount = countSnapshot.count ?? 0;
+        totalShiftsCount = countSnapshot.count ?? 0;
         lastDocument = null;
       }
       if (start != 0 && lastDocument != null) {

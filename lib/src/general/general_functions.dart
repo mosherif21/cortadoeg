@@ -1094,9 +1094,6 @@ Future<List<int>> generateCustodyReceiptBytes({
       styles: const PosStyles(align: PosAlign.center));
   bytes += generator.hr();
 
-  // Shift Information
-  bytes += generator.text('Custody Shift ID: ${custody.id}',
-      styles: const PosStyles(align: PosAlign.left));
   bytes += generator.text(
       'Opening: ${DateFormat('yyyy/MM/dd hh:mm:ss a').format(custody.openingTime.toDate())}',
       styles: const PosStyles(align: PosAlign.left));
