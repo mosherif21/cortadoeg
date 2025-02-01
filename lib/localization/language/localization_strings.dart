@@ -658,7 +658,8 @@ class Languages extends Translations {
           "noEmployeesFoundTitle": "لم يتم العثور على موظفين",
           "noEmployeesFoundBody": "لم يتم العثور على حسابات موظفين",
           "revenueAfterDiscounts": "الإيرادات بعد الخصومات",
-          "profitAfterDiscounts": "الربح بعد الخصومات"
+          "profitAfterDiscounts": "الربح بعد الخصومات",
+          'selectShift': 'اختر وردية العهدة',
         },
         'en_US': {
           'skip': 'Skip',
