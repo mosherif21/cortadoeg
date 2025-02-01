@@ -970,6 +970,111 @@ class SalesScreen extends StatelessWidget {
                                           ),
                                         ),
                                         const SizedBox(height: 12),
+                                        Align(
+                                          alignment: isLangEnglish()
+                                              ? Alignment.centerRight
+                                              : Alignment.centerLeft,
+                                          child: SizedBox(
+                                            width:
+                                                screenType.isPhone ? 260 : 280,
+                                            child: Obx(
+                                              () => DropdownButtonHideUnderline(
+                                                child: DropdownButton2<String>(
+                                                  isExpanded: true,
+                                                  hint: Text(
+                                                    'selectShift'.tr,
+                                                    style: TextStyle(
+                                                      fontSize: 20,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      color: Theme.of(context)
+                                                          .hintColor,
+                                                    ),
+                                                  ),
+                                                  items: controller
+                                                      .availableShifts
+                                                      .map(
+                                                        (AvailableShift
+                                                                shift) =>
+                                                            DropdownMenuItem<
+                                                                String>(
+                                                          value: shift.shiftId,
+                                                          child: Container(
+                                                            constraints: screenType
+                                                                        .isPhone &&
+                                                                    controller
+                                                                            .currentSelectedDate
+                                                                            .value ==
+                                                                        6
+                                                                ? const BoxConstraints(
+                                                                    maxWidth:
+                                                                        300)
+                                                                : null,
+                                                            child: Text(
+                                                              DateFormat(
+                                                                      'MMM dd, yyyy, hh:mm a',
+                                                                      isLangEnglish()
+                                                                          ? 'en_US'
+                                                                          : 'ar_SA')
+                                                                  .format(shift
+                                                                      .openingTime),
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
+                                                              style:
+                                                                  const TextStyle(
+                                                                fontSize: 18,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      )
+                                                      .toList(),
+                                                  dropdownStyleData:
+                                                      DropdownStyleData(
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10),
+                                                    ),
+                                                  ),
+                                                  value: controller
+                                                      .selectedShiftId.value,
+                                                  onChanged: (value) {
+                                                    if (value != null) {
+                                                      controller.selectedShiftId
+                                                          .value = value;
+                                                      controller
+                                                          .fetchTakeawayEmployeesData();
+                                                    }
+                                                  },
+                                                  buttonStyleData:
+                                                      ButtonStyleData(
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10),
+                                                    ),
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 16),
+                                                    height: 40,
+                                                    width: 300,
+                                                  ),
+                                                  menuItemStyleData:
+                                                      const MenuItemStyleData(
+                                                    height: 40,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
                                         SizedBox(
                                           height: screenHeight * 0.6,
                                           child: Obx(() => controller
