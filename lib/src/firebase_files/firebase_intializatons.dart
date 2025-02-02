@@ -15,7 +15,7 @@ Future<void> activateWebAppCheck() async {
   await FirebaseAppCheck.instance
       .activate(
     webProvider:
-        ReCaptchaV3Provider('6LeqGb8iAAAAAJKFulsS32nYgwxFYlQ9yqMPMrld'),
+        ReCaptchaV3Provider('6Ld7JcoqAAAAAPEJgTsYN3iSlvrABytso4Z2__Sw'),
   )
       .onError((error, stackTrace) {
     if (kDebugMode) {
