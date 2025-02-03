@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 
 import '../../../../constants/assets_strings.dart';
+import '../../../../general/app_init.dart';
 import '../../../../general/common_widgets/back_button.dart';
 import '../../../../general/common_widgets/icon_text_elevated_button.dart';
 import '../../../../general/general_functions.dart';
@@ -39,7 +40,7 @@ class ChargeScreenPhone extends StatelessWidget {
         barrierDismissible: false,
         useSafeArea: false,
         curve: Curves.easeIn,
-        maxExtent: screenHeight * 0.6,
+        maxExtent: AppInit.isWeb ? screenHeight * 0.66 : screenHeight * 0.6,
         barrierColor: Colors.transparent,
         duration: const Duration(milliseconds: 200),
         onDragging: (pos) {},
@@ -477,6 +478,7 @@ class ChargeScreenPhone extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
+              if (AppInit.isWeb) const SizedBox(height: 18)
             ],
           ),
         ),

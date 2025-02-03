@@ -12,7 +12,6 @@ import '../../../../general/common_widgets/regular_bottom_sheet.dart';
 import '../../../../general/general_functions.dart';
 import '../../../cashier_side/orders/components/models.dart';
 import '../../../cashier_side/orders/screens/order_details_screen_phone.dart';
-import '../../../cashier_side/orders/screens/order_screen.dart';
 import '../components/add_customer_widget.dart';
 import '../components/add_customer_widget_phone.dart';
 import '../screens/customer_orders_screen_phone.dart';
@@ -55,41 +54,30 @@ class AdminCustomersScreenController extends GetxController {
   void onOrderTap({required int chosenIndex, required bool isPhone}) async {
     final chosenOrder = customerOrders[chosenIndex];
     if (isPhone) {
-      bool changed = false;
       if (chosenOrder.status == OrderStatus.active) {
         showSnackBar(
           text: 'cashierAccess'.tr,
           snackBarType: SnackBarType.success,
         );
       } else {
-        final result = await Get.to(
+        Get.to(
           () => OrderDetailsScreenPhone(
             orderModel: chosenOrder,
+            adminView: true,
             controller: this,
           ),
           transition: getPageTransition(),
         );
-        if (result != null) {
-          changed = result;
-        }
-      }
-      if (changed) {
-        onCustomerOrdersRefresh();
       }
     } else {
       if (currentChosenOrder.value == chosenOrder) {
         currentChosenOrder.value = null;
       } else {
         if (chosenOrder.status == OrderStatus.active) {
-          final result = await Get.to(
-            () => OrderScreen(orderModel: chosenOrder),
-            transition: getPageTransition(),
+          showSnackBar(
+            text: 'cashierAccess'.tr,
+            snackBarType: SnackBarType.success,
           );
-          if (result != null) {
-            if (result) {
-              onCustomerOrdersRefresh();
-            }
-          }
         } else {
           currentChosenOrder.value = chosenOrder;
         }

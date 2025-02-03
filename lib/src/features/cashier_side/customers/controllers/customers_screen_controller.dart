@@ -73,6 +73,7 @@ class CustomersScreenController extends GetxController {
       } else {
         final result = await Get.to(
           () => OrderDetailsScreenPhone(
+            adminView: false,
             orderModel: chosenOrder,
             controller: this,
           ),

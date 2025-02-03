@@ -75,6 +75,7 @@ class OrdersController extends GetxController {
       } else {
         Get.to(
           () => OrderDetailsScreenPhone(
+            adminView: false,
             orderModel: chosenOrder,
             controller: this,
           ),

@@ -147,9 +147,9 @@ class InventoryScreenController extends GetxController {
       await showFlexibleBottomSheet(
         bottomSheetColor: Colors.transparent,
         minHeight: 0,
-        initHeight: 0.63,
+        initHeight: AppInit.isWeb ? 0.7 : 0.63,
         maxHeight: 1,
-        anchors: [0, 0.63, 1],
+        anchors: [0, AppInit.isWeb ? 0.7 : 0.63, 1],
         isSafeArea: true,
         context: Get.context!,
         builder: (
@@ -234,9 +234,9 @@ class InventoryScreenController extends GetxController {
       await showFlexibleBottomSheet(
         bottomSheetColor: Colors.transparent,
         minHeight: 0,
-        initHeight: 0.63,
+        initHeight: AppInit.isWeb ? 0.7 : 0.63,
         maxHeight: 1,
-        anchors: [0, 0.63, 1],
+        anchors: [0, AppInit.isWeb ? 0.7 : 0.63, 1],
         isSafeArea: true,
         context: Get.context!,
         builder: (

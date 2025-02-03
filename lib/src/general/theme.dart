@@ -67,6 +67,9 @@ class AppTheme {
       selectionHandleColor: Colors.black,
     ),
     appBarTheme: const AppBarTheme(
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
       iconTheme: IconThemeData(color: _iconColor),
     ),
     colorScheme: const ColorScheme.light(),

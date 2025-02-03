@@ -12,9 +12,13 @@ import '../components/orders_screen_item_widget.dart';
 
 class OrderDetailsScreenPhone extends StatelessWidget {
   const OrderDetailsScreenPhone(
-      {super.key, required this.orderModel, required this.controller});
+      {super.key,
+      required this.orderModel,
+      required this.controller,
+      required this.adminView});
   final OrderModel orderModel;
   final dynamic controller;
+  final bool adminView;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -202,118 +206,119 @@ class OrderDetailsScreenPhone extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            orderModel.status == OrderStatus.complete
-                ? Column(
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: IconTextElevatedButton(
-                              buttonColor: Colors.amber,
-                              textColor: Colors.white,
-                              borderRadius: 10,
-                              fontSize: 16,
-                              elevation: 0,
-                              icon: Icons.assignment_return,
-                              iconColor: Colors.white,
-                              text: 'return'.tr,
-                              onClick: () => controller.returnOrderTap(
-                                  isPhone: true,
-                                  orderModel: orderModel,
-                                  context: context),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: IconTextElevatedButton(
-                              buttonColor: Colors.deepOrange,
-                              textColor: Colors.white,
-                              borderRadius: 10,
-                              elevation: 0,
-                              fontSize: 16,
-                              icon: Icons.refresh,
-                              iconColor: Colors.white,
-                              text: 'reopen'.tr,
-                              onClick: () => controller.onReopenOrderTap(
-                                  isPhone: true,
-                                  context: context,
-                                  aOrderModel: orderModel),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      IconTextElevatedButton(
-                        buttonColor: Colors.green,
-                        textColor: Colors.white,
-                        borderRadius: 10,
-                        elevation: 0,
-                        fontSize: 16,
-                        icon: Icons.print_outlined,
-                        iconColor: Colors.white,
-                        text: 'printInvoice'.tr,
-                        onClick: () => controller.printOrderTap(
-                            isPhone: true, orderModel: orderModel),
-                      ),
-                    ],
-                  )
-                : orderModel.status == OrderStatus.returned
-                    ? Column(
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: IconTextElevatedButton(
-                                  buttonColor: Colors.grey,
-                                  textColor: Colors.white,
-                                  borderRadius: 10,
-                                  elevation: 0,
-                                  fontSize: 16,
-                                  icon: Icons.check_circle,
-                                  iconColor: Colors.white,
-                                  text: 'complete'.tr,
-                                  onClick: () => controller.completeOrderTap(
-                                      isPhone: true, orderModel: orderModel),
-                                ),
+            if (!adminView)
+              orderModel.status == OrderStatus.complete
+                  ? Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: IconTextElevatedButton(
+                                buttonColor: Colors.amber,
+                                textColor: Colors.white,
+                                borderRadius: 10,
+                                fontSize: 16,
+                                elevation: 0,
+                                icon: Icons.assignment_return,
+                                iconColor: Colors.white,
+                                text: 'return'.tr,
+                                onClick: () => controller.returnOrderTap(
+                                    isPhone: true,
+                                    orderModel: orderModel,
+                                    context: context),
                               ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: IconTextElevatedButton(
-                                  buttonColor: Colors.deepOrange,
-                                  textColor: Colors.white,
-                                  borderRadius: 10,
-                                  elevation: 0,
-                                  fontSize: 16,
-                                  icon: Icons.refresh,
-                                  iconColor: Colors.white,
-                                  text: 'reopen'.tr,
-                                  onClick: () => controller.onReopenOrderTap(
-                                      isPhone: true,
-                                      context: context,
-                                      aOrderModel: orderModel),
-                                ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: IconTextElevatedButton(
+                                buttonColor: Colors.deepOrange,
+                                textColor: Colors.white,
+                                borderRadius: 10,
+                                elevation: 0,
+                                fontSize: 16,
+                                icon: Icons.refresh,
+                                iconColor: Colors.white,
+                                text: 'reopen'.tr,
+                                onClick: () => controller.onReopenOrderTap(
+                                    isPhone: true,
+                                    context: context,
+                                    aOrderModel: orderModel),
                               ),
-                            ],
-                          ),
-                        ],
-                      )
-                    : SizedBox(
-                        width: double.infinity,
-                        child: IconTextElevatedButton(
-                          buttonColor: Colors.deepOrange,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        IconTextElevatedButton(
+                          buttonColor: Colors.green,
                           textColor: Colors.white,
                           borderRadius: 10,
                           elevation: 0,
                           fontSize: 16,
-                          icon: Icons.refresh,
+                          icon: Icons.print_outlined,
                           iconColor: Colors.white,
-                          text: 'reopen'.tr,
-                          onClick: () => controller.onReopenOrderTap(
-                              isPhone: true,
-                              context: context,
-                              aOrderModel: orderModel),
+                          text: 'printInvoice'.tr,
+                          onClick: () => controller.printOrderTap(
+                              isPhone: true, orderModel: orderModel),
                         ),
-                      ),
+                      ],
+                    )
+                  : orderModel.status == OrderStatus.returned
+                      ? Column(
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: IconTextElevatedButton(
+                                    buttonColor: Colors.grey,
+                                    textColor: Colors.white,
+                                    borderRadius: 10,
+                                    elevation: 0,
+                                    fontSize: 16,
+                                    icon: Icons.check_circle,
+                                    iconColor: Colors.white,
+                                    text: 'complete'.tr,
+                                    onClick: () => controller.completeOrderTap(
+                                        isPhone: true, orderModel: orderModel),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: IconTextElevatedButton(
+                                    buttonColor: Colors.deepOrange,
+                                    textColor: Colors.white,
+                                    borderRadius: 10,
+                                    elevation: 0,
+                                    fontSize: 16,
+                                    icon: Icons.refresh,
+                                    iconColor: Colors.white,
+                                    text: 'reopen'.tr,
+                                    onClick: () => controller.onReopenOrderTap(
+                                        isPhone: true,
+                                        context: context,
+                                        aOrderModel: orderModel),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        )
+                      : SizedBox(
+                          width: double.infinity,
+                          child: IconTextElevatedButton(
+                            buttonColor: Colors.deepOrange,
+                            textColor: Colors.white,
+                            borderRadius: 10,
+                            elevation: 0,
+                            fontSize: 16,
+                            icon: Icons.refresh,
+                            iconColor: Colors.white,
+                            text: 'reopen'.tr,
+                            onClick: () => controller.onReopenOrderTap(
+                                isPhone: true,
+                                context: context,
+                                aOrderModel: orderModel),
+                          ),
+                        ),
             const SizedBox(height: 20),
           ],
         ),
