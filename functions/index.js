@@ -22,16 +22,10 @@ exports.checkProductInventory = onSchedule("every 1 minutes", async (event) => {
 
     productsSnapshot.forEach((doc) => {
       const product = doc.data();
-      const measuringUnit = product.measuringUnit;
       const availableQuantity = product.availableQuantity || 0;
+      const minQuantity = product.minQuantity || 0; // Default to 0 if not provided
 
-      if (measuringUnit === "piece" && availableQuantity < 2) {
-        if (availableQuantity <= 0) {
-          emptyInventoryProducts.push({ id: doc.id, ...product });
-        } else {
-          lowInventoryProducts.push({ id: doc.id, ...product });
-        }
-      } else if ((measuringUnit === "ml" || measuringUnit === "gm") && availableQuantity < 100) {
+      if (availableQuantity < minQuantity) {
         if (availableQuantity <= 0) {
           emptyInventoryProducts.push({ id: doc.id, ...product });
         } else {
@@ -66,34 +60,30 @@ exports.checkProductInventory = onSchedule("every 1 minutes", async (event) => {
       const adminFcmToken = admin.fcmToken;
 
       lowInventoryProducts.forEach((product) => {
-        const title = notificationsLang === "en" ? "Low Inventory Alert" : "تنبيه جرد منخفض";
-        const body =
-          notificationsLang === "en"
-            ? `Product ${product.name} inventory is low. Only ${product.availableQuantity} ${product.measuringUnit} left.`
-            : `المنتج ${product.name} جرده منخفض. فقط ${product.availableQuantity} ${product.measuringUnit} متبقية.`;
+        const title = notificationsLang === "en"
+          ? "Low Inventory Alert"
+          : "تنبيه جرد منخفض";
+        const body = notificationsLang === "en"
+          ? `Product ${product.name} inventory is low. Only ${product.availableQuantity} ${product.measuringUnit} left.`
+          : `جرد المنتج ${product.name} منخفض. فقط ${product.availableQuantity} ${product.measuringUnit} متبقية.`;
 
         messages.push({
           token: adminFcmToken,
-          notification: {
-            title,
-            body,
-          },
+          notification: { title, body },
         });
       });
 
       emptyInventoryProducts.forEach((product) => {
-        const title = notificationsLang === "en" ? "Out of Stock Alert" : "تنبيه نفاد المخزون";
-        const body =
-          notificationsLang === "en"
-            ? `Product ${product.name} is out of stock.`
-            : `المنتج ${product.name} نفد من المخزون.`;
+        const title = notificationsLang === "en"
+          ? "Out of Stock Alert"
+          : "تنبيه نفاد المخزون";
+        const body = notificationsLang === "en"
+          ? `Product ${product.name} is out of stock.`
+          : `المنتج ${product.name} نفد من المخزون.`;
 
         messages.push({
           token: adminFcmToken,
-          notification: {
-            title,
-            body,
-          },
+          notification: { title, body },
         });
       });
     });
