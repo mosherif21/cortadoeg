@@ -27,6 +27,7 @@ class InventoryScreenController extends GetxController {
   final TextEditingController productNameController = TextEditingController();
   final TextEditingController costController = TextEditingController();
   final TextEditingController costQuantityController = TextEditingController();
+  final TextEditingController minQuantityController = TextEditingController();
   final TextEditingController availableQuantityController =
       TextEditingController();
   final selectedMeasuringUnit = MeasuringUnit.gm.obs;
@@ -44,6 +45,7 @@ class InventoryScreenController extends GetxController {
     productNameController.text = product.name;
     costController.text = product.cost.toStringAsFixed(2);
     costQuantityController.text = product.costQuantity.toString();
+    minQuantityController.text = product.minimumQuantity.toString();
     availableQuantityController.text = product.availableQuantity.toString();
     selectedMeasuringUnit.value = product.measuringUnit;
     selectedProductIconName.value = product.iconName;
@@ -57,6 +59,7 @@ class InventoryScreenController extends GetxController {
       cost: double.tryParse(costController.text) ?? 0,
       costQuantity: int.tryParse(costQuantityController.text) ?? 0,
       availableQuantity: int.tryParse(availableQuantityController.text) ?? 0,
+      minimumQuantity: int.tryParse(minQuantityController.text) ?? 0,
       iconName: selectedProductIconName.value,
     );
   }
@@ -65,6 +68,7 @@ class InventoryScreenController extends GetxController {
     productNameController.text = '';
     costController.text = '';
     costQuantityController.text = '';
+    minQuantityController.text = '';
     availableQuantityController.text = '';
     selectedMeasuringUnit.value = MeasuringUnit.gm;
     selectedProductIconName.value = 'coffee';
@@ -140,6 +144,7 @@ class InventoryScreenController extends GetxController {
       cost: 0,
       costQuantity: 0,
       availableQuantity: 0,
+      minimumQuantity: 0,
       iconName: 'coffee',
     );
     initializeItem(newProduct);
@@ -147,9 +152,9 @@ class InventoryScreenController extends GetxController {
       await showFlexibleBottomSheet(
         bottomSheetColor: Colors.transparent,
         minHeight: 0,
-        initHeight: AppInit.isWeb ? 0.7 : 0.63,
+        initHeight: AppInit.isWeb ? 0.73 : 0.68,
         maxHeight: 1,
-        anchors: [0, AppInit.isWeb ? 0.7 : 0.63, 1],
+        anchors: [0, AppInit.isWeb ? 0.73 : 0.68, 1],
         isSafeArea: true,
         context: Get.context!,
         builder: (
@@ -228,15 +233,16 @@ class InventoryScreenController extends GetxController {
     costController.text = product.cost.toString();
     costQuantityController.text = product.costQuantity.toString();
     availableQuantityController.text = product.availableQuantity.toString();
+    minQuantityController.text = product.minimumQuantity.toString();
     selectedMeasuringUnit.value = product.measuringUnit;
     selectedProductIconName.value = product.iconName;
     if (isPhone) {
       await showFlexibleBottomSheet(
         bottomSheetColor: Colors.transparent,
         minHeight: 0,
-        initHeight: AppInit.isWeb ? 0.7 : 0.63,
+        initHeight: AppInit.isWeb ? 0.73 : 0.68,
         maxHeight: 1,
-        anchors: [0, AppInit.isWeb ? 0.7 : 0.63, 1],
+        anchors: [0, AppInit.isWeb ? 0.73 : 0.68, 1],
         isSafeArea: true,
         context: Get.context!,
         builder: (
@@ -276,6 +282,7 @@ class InventoryScreenController extends GetxController {
         product.costQuantity == newProduct.costQuantity &&
         product.measuringUnit == newProduct.measuringUnit &&
         product.availableQuantity == newProduct.availableQuantity &&
+        product.minimumQuantity == newProduct.minimumQuantity &&
         product.iconName == selectedProductIconName.value) {
       Get.back();
     } else {
@@ -433,6 +440,7 @@ class InventoryScreenController extends GetxController {
     costQuantityController.dispose();
     productNameController.dispose();
     availableQuantityController.dispose();
+    minQuantityController.dispose();
     refreshController.dispose();
     super.onClose();
   }

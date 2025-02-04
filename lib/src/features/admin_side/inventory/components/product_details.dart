@@ -106,6 +106,22 @@ class ManageProductDetails extends StatelessWidget {
                                           validator: validateNumberIsInt,
                                         ),
                                       ),
+                                      const SizedBox(height: 10),
+                                      Obx(
+                                        () => _buildTextField(
+                                          controller:
+                                              controller.minQuantityController,
+                                          label: 'minimumQuantity'.trParams({
+                                            'measuringUnit': controller
+                                                .selectedMeasuringUnit
+                                                .value
+                                                .name
+                                                .tr
+                                          }),
+                                          keyboardType: TextInputType.number,
+                                          validator: validateNumberIsInt,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),

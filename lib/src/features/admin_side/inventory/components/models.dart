@@ -15,6 +15,7 @@ class ProductModel {
   final double cost;
   final int costQuantity;
   final int availableQuantity;
+  final int minimumQuantity;
 
   ProductModel({
     required this.id,
@@ -24,6 +25,7 @@ class ProductModel {
     required this.cost,
     required this.costQuantity,
     required this.availableQuantity,
+    required this.minimumQuantity,
   });
 
   factory ProductModel.fromFirestore(Map<String, dynamic> data, String id) {
@@ -38,6 +40,7 @@ class ProductModel {
       cost: (data['cost'] ?? 0.0).toDouble(),
       costQuantity: (data['costQuantity'] ?? 1.0).toInt(),
       availableQuantity: (data['availableQuantity'] ?? 0.0).toInt(),
+      minimumQuantity: (data['minQuantity'] ?? 0.0).toInt(),
     );
   }
 
@@ -50,6 +53,7 @@ class ProductModel {
       'cost': cost,
       'costQuantity': costQuantity,
       'availableQuantity': availableQuantity,
+      'minQuantity': minimumQuantity,
     };
   }
 }
