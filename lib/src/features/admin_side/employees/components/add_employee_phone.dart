@@ -436,8 +436,12 @@ class AddEmployeeWidgetPhone extends StatelessWidget {
                                 () => SizedBox(
                                   width: controller.selectedRole.value ==
                                           Role.takeaway
-                                      ? 200
-                                      : 180,
+                                      ? isLangEnglish()
+                                          ? 200
+                                          : 260
+                                      : isLangEnglish()
+                                          ? 180
+                                          : 220,
                                   child: DropdownButtonHideUnderline(
                                     child: DropdownButton2<Role>(
                                       isExpanded: true,
@@ -497,7 +501,7 @@ class AddEmployeeWidgetPhone extends StatelessWidget {
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 16),
                                         height: 40,
-                                        width: 180,
+                                        width: isLangEnglish() ? 200 : 240,
                                       ),
                                       menuItemStyleData:
                                           const MenuItemStyleData(

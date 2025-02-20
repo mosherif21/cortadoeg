@@ -32,10 +32,13 @@ class EmployeeDetailsController extends GetxController {
   List<UserPermission> getAvailablePermissions(Role role) {
     if (role == Role.admin) {
       return rolePermissions[Role.admin]!;
+    } else if (role == Role.owner) {
+      return rolePermissions[Role.owner]!;
     } else {
       return UserPermission.values
           .where((permission) =>
-              !rolePermissions[Role.admin]!.contains(permission) ||
+              !rolePermissions[Role.admin]!.contains(permission) &&
+                  !rolePermissions[Role.owner]!.contains(permission) ||
               rolePermissions[selectedRole.value]!.contains(permission))
           .toList();
     }

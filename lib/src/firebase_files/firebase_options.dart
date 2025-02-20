@@ -64,6 +64,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '571315776995',
     projectId: 'cortadoegypt',
     storageBucket: 'cortadoegypt.firebasestorage.app',
+    androidClientId: '571315776995-cg8piohemp24bmq1a5cc8vlig78q5ss8.apps.googleusercontent.com',
+    iosClientId: '571315776995-0a9dnrh7e9mq0ucs53l14e7r2ipp860v.apps.googleusercontent.com',
     iosBundleId: 'com.example.cortadoeg',
   );
 
@@ -73,6 +75,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '571315776995',
     projectId: 'cortadoegypt',
     storageBucket: 'cortadoegypt.firebasestorage.app',
+    androidClientId: '571315776995-cg8piohemp24bmq1a5cc8vlig78q5ss8.apps.googleusercontent.com',
+    iosClientId: '571315776995-0a9dnrh7e9mq0ucs53l14e7r2ipp860v.apps.googleusercontent.com',
     iosBundleId: 'com.example.cortadoeg',
   );
 

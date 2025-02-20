@@ -656,7 +656,7 @@ class Languages extends Translations {
           "taxAmount": "مبلغ الضريبة",
           "discountAmount": "إجمالي الخصومات",
           "owner": "مالك",
-          "manageAdminAccounts": "إدارة حسابات المديرين",
+          "manageAdminAccounts": "إدارة حسابات المسئولين",
           "noEmployeesFoundTitle": "لم يتم العثور على موظفين",
           "noEmployeesFoundBody": "لم يتم العثور على حسابات موظفين",
           "revenueAfterDiscounts": "الإيرادات بعد الخصومات",

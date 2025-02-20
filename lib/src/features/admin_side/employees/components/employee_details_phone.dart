@@ -10,6 +10,7 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../authentication/authentication_repository.dart';
 import '../../../../constants/enums.dart';
 import '../../../../general/common_widgets/rounded_elevated_button.dart';
 import '../controllers/employee_details_controller.dart';
@@ -123,8 +124,12 @@ class EmployeeEditDetailsPhone extends StatelessWidget {
                     Obx(
                       () => SizedBox(
                         width: controller.selectedRole.value == Role.takeaway
-                            ? 200
-                            : 180,
+                            ? isLangEnglish()
+                                ? 200
+                                : 240
+                            : isLangEnglish()
+                                ? 180
+                                : 200,
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton2<Role>(
                             isExpanded: true,
@@ -138,6 +143,17 @@ class EmployeeEditDetailsPhone extends StatelessWidget {
                             ),
                             items: Role.values
                                 .where((role) => role != Role.allRoles)
+                                .where((role) {
+                                  if (role == Role.admin ||
+                                      role == Role.owner) {
+                                    return hasPermission(
+                                        AuthenticationRepository
+                                            .instance.employeeInfo!,
+                                        UserPermission.manageAdminAccounts);
+                                  } else {
+                                    return true;
+                                  }
+                                })
                                 .map(
                                   (Role role) => DropdownMenuItem<Role>(
                                     value: role,
@@ -168,7 +184,7 @@ class EmployeeEditDetailsPhone extends StatelessWidget {
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 16),
                               height: 40,
-                              width: 180,
+                              width: isLangEnglish() ? 200 : 220,
                             ),
                             menuItemStyleData: const MenuItemStyleData(
                               height: 40,

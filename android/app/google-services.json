@@ -14,11 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "571315776995-cg8piohemp24bmq1a5cc8vlig78q5ss8.apps.googleusercontent.com",
+          "client_id": "571315776995-pbdck9si3u1vg5kbc2iepef7drdvemdj.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.cortadoeg",
-            "certificate_hash": "0e7299de7218cc69529de35b3740625385716e42"
+            "certificate_hash": "43046fbf5e05f999c281c83c8b49e0efe5c3a227"
           }
         },
         {
