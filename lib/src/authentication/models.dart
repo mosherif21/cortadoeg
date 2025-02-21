@@ -64,22 +64,24 @@ bool hasPermission(EmployeeModel employee, UserPermission requiredPermission) {
 final Map<Role, List<UserPermission>> rolePermissions = {
   Role.owner: [
     UserPermission.manageEmployees,
+    UserPermission.managePasscodes,
     UserPermission.manageItems,
     UserPermission.manageInventory,
     UserPermission.viewSalesReports,
     UserPermission.viewCustodyReports,
-    UserPermission.manageOrders,
     UserPermission.manageCustomers,
     UserPermission.manageAdminAccounts,
+    UserPermission.manageTablesAvailability,
   ],
   Role.admin: [
     UserPermission.manageEmployees,
+    UserPermission.managePasscodes,
     UserPermission.manageItems,
     UserPermission.manageInventory,
     UserPermission.viewSalesReports,
     UserPermission.viewCustodyReports,
-    UserPermission.manageOrders,
     UserPermission.manageCustomers,
+    UserPermission.manageTablesAvailability,
   ],
   Role.cashier: [
     UserPermission.finalizeOrders,
@@ -124,7 +126,9 @@ enum UserPermission {
   reopenOrders,
   reopenOrdersWithPass,
   manageTables,
+  manageTablesAvailability,
   manageEmployees,
+  managePasscodes,
   manageItems,
   manageInventory,
   manageOrders,
@@ -158,6 +162,10 @@ String getPermissionName(UserPermission permission) {
       return 'reopenOrdersWithPass'.tr;
     case UserPermission.manageTables:
       return 'manageTables'.tr;
+    case UserPermission.manageTablesAvailability:
+      return 'manageTablesAvailability'.tr;
+    case UserPermission.managePasscodes:
+      return 'managePasscodes'.tr;
     case UserPermission.manageEmployees:
       return 'manageEmployees'.tr;
     case UserPermission.manageItems:

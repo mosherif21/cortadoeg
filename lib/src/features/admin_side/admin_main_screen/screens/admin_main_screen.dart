@@ -8,6 +8,8 @@ import 'package:cortadoeg/src/general/general_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../authentication/authentication_repository.dart';
+import '../../../../authentication/models.dart';
 import '../../account/screens/account_screen.dart';
 import '../../categories/screens/categories_screen.dart';
 import '../../customers/screens/customers_screen.dart';
@@ -81,23 +83,59 @@ class AdminMainScreen extends StatelessWidget {
               itemBuilder: (BuildContext context, int index) {
                 switch (index) {
                   case 0:
-                    return const SalesScreen();
+                    return hasPermission(
+                            AuthenticationRepository.instance.employeeInfo!,
+                            UserPermission.viewSalesReports)
+                        ? const SalesScreen()
+                        : const SizedBox.shrink();
                   case 1:
-                    return const CustodyShiftsScreen();
+                    return hasPermission(
+                            AuthenticationRepository.instance.employeeInfo!,
+                            UserPermission.viewCustodyReports)
+                        ? const CustodyShiftsScreen()
+                        : const SizedBox.shrink();
                   case 2:
-                    return const ManageTablesScreen();
+                    return hasPermission(
+                            AuthenticationRepository.instance.employeeInfo!,
+                            UserPermission.manageTablesAvailability)
+                        ? const ManageTablesScreen()
+                        : const SizedBox.shrink();
                   case 3:
-                    return const MeniItemsScreen();
+                    return hasPermission(
+                            AuthenticationRepository.instance.employeeInfo!,
+                            UserPermission.manageItems)
+                        ? const MeniItemsScreen()
+                        : const SizedBox.shrink();
                   case 4:
-                    return const CategoriesScreen();
+                    return hasPermission(
+                            AuthenticationRepository.instance.employeeInfo!,
+                            UserPermission.manageItems)
+                        ? const CategoriesScreen()
+                        : const SizedBox.shrink();
                   case 5:
-                    return const InventoryScreen();
+                    return hasPermission(
+                            AuthenticationRepository.instance.employeeInfo!,
+                            UserPermission.manageInventory)
+                        ? const InventoryScreen()
+                        : const SizedBox.shrink();
                   case 6:
-                    return const AdminCustomersScreen();
+                    return hasPermission(
+                            AuthenticationRepository.instance.employeeInfo!,
+                            UserPermission.manageCustomers)
+                        ? const AdminCustomersScreen()
+                        : const SizedBox.shrink();
                   case 7:
-                    return const EmployeesScreen();
+                    return hasPermission(
+                            AuthenticationRepository.instance.employeeInfo!,
+                            UserPermission.manageEmployees)
+                        ? const EmployeesScreen()
+                        : const SizedBox.shrink();
                   case 8:
-                    return const PasscodesScreen();
+                    return hasPermission(
+                            AuthenticationRepository.instance.employeeInfo!,
+                            UserPermission.managePasscodes)
+                        ? const PasscodesScreen()
+                        : const SizedBox.shrink();
                   case 9:
                     return const AdminAccountScreen();
                   default:
