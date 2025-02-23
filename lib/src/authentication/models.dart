@@ -90,9 +90,9 @@ final Map<Role, List<UserPermission>> rolePermissions = {
     UserPermission.editOrderItemsWithPass,
     UserPermission.returnOrdersWithPass,
     UserPermission.reopenOrdersWithPass,
-    UserPermission.cancelOrders,
+    UserPermission.cancelOrdersWithPass,
     UserPermission.manageOrders,
-    UserPermission.manageDayShifts,
+    UserPermission.manageDayShiftsWithPass,
     UserPermission.openDrawerWithPass,
   ],
   Role.waiter: [
@@ -141,6 +141,7 @@ enum UserPermission {
   finalizeOrdersWithPass,
   manageTakeawayOrders,
   manageDayShifts,
+  manageDayShiftsWithPass,
   openDrawer,
   openDrawerWithPass,
   manageAdminAccounts,
@@ -192,6 +193,8 @@ String getPermissionName(UserPermission permission) {
       return 'manageTakeawayOrders'.tr;
     case UserPermission.manageDayShifts:
       return 'manageDayShifts'.tr;
+    case UserPermission.manageDayShiftsWithPass:
+      return 'manageDayShiftsWithPass'.tr;
     case UserPermission.openDrawer:
       return 'openDrawer'.tr;
     case UserPermission.openDrawerWithPass:

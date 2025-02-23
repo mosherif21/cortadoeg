@@ -73,14 +73,24 @@ class MainScreenController extends GetxController {
 
   @override
   void onReady() {
-    final hasManageTablesPermission = hasPermission(
-        AuthenticationRepository.instance.employeeInfo!,
-        UserPermission.manageTables);
+    final employeeInfo = AuthenticationRepository.instance.employeeInfo!;
+
+    final hasManageTablesPermission =
+        hasPermission(employeeInfo, UserPermission.manageTables);
+    final hasManageOrdersPermission =
+        hasPermission(employeeInfo, UserPermission.manageOrders);
+    final hasManageTakeawayOrdersPermission =
+        hasPermission(employeeInfo, UserPermission.manageTakeawayOrders);
+
     if (!hasManageTablesPermission) {
-      navBarIndex.value = 1;
+      navBarIndex.value =
+          (hasManageOrdersPermission || hasManageTakeawayOrdersPermission)
+              ? 1
+              : 3;
       pageController.jumpToPage(navBarIndex.value);
-      barController.selectIndex(1);
+      barController.selectIndex(navBarIndex.value);
     }
+
     activeShiftListener = listenToActiveShiftId().listen((activeShiftData) {
       if (activeShiftData != null) {
         currentActiveShiftId.value = activeShiftData['shiftId'].toString();
@@ -94,42 +104,36 @@ class MainScreenController extends GetxController {
     barController.addListener(() {
       navBarExtended.value = barController.extended;
       final selectedNavIndex = barController.selectedIndex;
-      if (selectedNavIndex == 0) {
-        final hasManageTablesPermission = hasPermission(
-            AuthenticationRepository.instance.employeeInfo!,
-            UserPermission.manageTables);
-        if (hasManageTablesPermission) {
-          navBarIndex.value = barController.selectedIndex;
-          pageController.jumpToPage(barController.selectedIndex);
-          newOrderButtonVisibility();
-        } else {
-          barController.selectIndex(navBarIndex.value);
-          showSnackBar(
-            text: 'functionNotAllowed'.tr,
-            snackBarType: SnackBarType.error,
-          );
+
+      bool hasRequiredPermission() {
+        final employeeInfo = AuthenticationRepository.instance.employeeInfo!;
+        switch (selectedNavIndex) {
+          case 0:
+            return hasPermission(employeeInfo, UserPermission.manageTables);
+          case 1:
+            return hasPermission(employeeInfo, UserPermission.manageOrders) ||
+                hasPermission(
+                    employeeInfo, UserPermission.manageTakeawayOrders);
+          case 2:
+            return hasPermission(employeeInfo, UserPermission.manageCustomers);
+          default:
+            return true;
         }
-      } else if (selectedNavIndex == 2) {
-        final hasManageCustomersPermission = hasPermission(
-            AuthenticationRepository.instance.employeeInfo!,
-            UserPermission.manageCustomers);
-        if (hasManageCustomersPermission) {
-          navBarIndex.value = barController.selectedIndex;
-          pageController.jumpToPage(barController.selectedIndex);
-          newOrderButtonVisibility();
-        } else {
-          barController.selectIndex(navBarIndex.value);
-          showSnackBar(
-            text: 'functionNotAllowed'.tr,
-            snackBarType: SnackBarType.error,
-          );
-        }
-      } else {
-        navBarIndex.value = barController.selectedIndex;
-        pageController.jumpToPage(barController.selectedIndex);
+      }
+
+      if (hasRequiredPermission()) {
+        navBarIndex.value = selectedNavIndex;
+        pageController.jumpToPage(selectedNavIndex);
         newOrderButtonVisibility();
+      } else {
+        barController.selectIndex(navBarIndex.value);
+        showSnackBar(
+          text: 'functionNotAllowed'.tr,
+          snackBarType: SnackBarType.error,
+        );
       }
     });
+
     getPasscodesHashStream().listen((hashSnapshot) {
       if (hashSnapshot != null) {
         editOrderPasscodeHash = hashSnapshot['editOrderItemsHash']!.toString();
@@ -457,29 +461,40 @@ class MainScreenController extends GetxController {
     }
   }
 
-  openDayShiftTap({required bool isPhone}) {
+  openDayShiftTap(
+      {required bool isPhone, required BuildContext context}) async {
     final hasManageDayShiftsPermission = hasPermission(
         AuthenticationRepository.instance.employeeInfo!,
         UserPermission.manageDayShifts);
-    if (hasManageDayShiftsPermission) {
-      openDrawerPrinter();
-      if (isPhone) {
-        RegularBottomSheet.showRegularBottomSheet(
-          OpenDayShiftWidgetPhone(
-            openShiftPressed: (openingAmount) => openDayShift(openingAmount),
-            openingAmountTextController: openingAmountTextController,
-          ),
-        );
-      } else {
-        showDialog(
-          context: Get.context!,
-          builder: (BuildContext context) {
-            return OpenDayShiftWidget(
+    final hasManageDayShiftsPassPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.manageDayShiftsWithPass);
+    if (hasManageDayShiftsPermission || hasManageDayShiftsPassPermission) {
+      final passcodeValid = hasManageDayShiftsPermission
+          ? true
+          : await MainScreenController.instance.showPassCodeScreen(
+              context: context, passcodeType: PasscodeType.manageDayShift);
+      if (passcodeValid) {
+        openDrawerPrinter();
+        if (isPhone) {
+          RegularBottomSheet.showRegularBottomSheet(
+            OpenDayShiftWidgetPhone(
               openShiftPressed: (openingAmount) => openDayShift(openingAmount),
               openingAmountTextController: openingAmountTextController,
-            );
-          },
-        );
+            ),
+          );
+        } else {
+          showDialog(
+            context: Get.context!,
+            builder: (BuildContext context) {
+              return OpenDayShiftWidget(
+                openShiftPressed: (openingAmount) =>
+                    openDayShift(openingAmount),
+                openingAmountTextController: openingAmountTextController,
+              );
+            },
+          );
+        }
       }
     } else {
       showSnackBar(
@@ -508,39 +523,49 @@ class MainScreenController extends GetxController {
     }
   }
 
-  closeDayShiftTap({required bool isPhone}) async {
+  closeDayShiftTap(
+      {required bool isPhone, required BuildContext context}) async {
     final hasManageDayShiftsPermission = hasPermission(
         AuthenticationRepository.instance.employeeInfo!,
         UserPermission.manageDayShifts);
-    if (hasManageDayShiftsPermission) {
-      showLoadingScreen();
-      final shiftHasActiveOrders =
-          await getShiftActiveOrders(currentActiveShiftId.value!);
-      hideLoadingScreen();
-      if (shiftHasActiveOrders) {
-        showSnackBar(
-          text: 'shiftHasActiveOrders'.tr,
-          snackBarType: SnackBarType.error,
-        );
-      } else {
-        openDrawerPrinter();
-        if (isPhone) {
-          RegularBottomSheet.showRegularBottomSheet(
-            CloseDayShiftWidgetPhone(
-                closeShiftPressed: (closingAmount) =>
-                    closeDayShift(closingAmount),
-                closingAmountTextController: closingAmountTextController),
+    final hasManageDayShiftsPassPermission = hasPermission(
+        AuthenticationRepository.instance.employeeInfo!,
+        UserPermission.manageDayShiftsWithPass);
+    if (hasManageDayShiftsPermission || hasManageDayShiftsPassPermission) {
+      final passcodeValid = hasManageDayShiftsPermission
+          ? true
+          : await MainScreenController.instance.showPassCodeScreen(
+              context: context, passcodeType: PasscodeType.manageDayShift);
+      if (passcodeValid) {
+        showLoadingScreen();
+        final shiftHasActiveOrders =
+            await getShiftActiveOrders(currentActiveShiftId.value!);
+        hideLoadingScreen();
+        if (shiftHasActiveOrders) {
+          showSnackBar(
+            text: 'shiftHasActiveOrders'.tr,
+            snackBarType: SnackBarType.error,
           );
         } else {
-          showDialog(
-            context: Get.context!,
-            builder: (BuildContext context) {
-              return CloseDayShiftWidget(
+          openDrawerPrinter();
+          if (isPhone) {
+            RegularBottomSheet.showRegularBottomSheet(
+              CloseDayShiftWidgetPhone(
                   closeShiftPressed: (closingAmount) =>
                       closeDayShift(closingAmount),
-                  closingAmountTextController: closingAmountTextController);
-            },
-          );
+                  closingAmountTextController: closingAmountTextController),
+            );
+          } else {
+            showDialog(
+              context: Get.context!,
+              builder: (BuildContext context) {
+                return CloseDayShiftWidget(
+                    closeShiftPressed: (closingAmount) =>
+                        closeDayShift(closingAmount),
+                    closingAmountTextController: closingAmountTextController);
+              },
+            );
+          }
         }
       }
     } else {

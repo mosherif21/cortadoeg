@@ -52,9 +52,10 @@ class MainScreen extends StatelessWidget {
                   ? 'openDayShift'.tr
                   : 'closeDayShift'.tr,
               ontap: () => mainController.currentActiveShiftId.value == null
-                  ? mainController.openDayShiftTap(isPhone: screenType.isPhone)
+                  ? mainController.openDayShiftTap(
+                      isPhone: screenType.isPhone, context: context)
                   : mainController.closeDayShiftTap(
-                      isPhone: screenType.isPhone),
+                      isPhone: screenType.isPhone, context: context),
               icon: const Icon(
                 Icons.calendar_month_rounded,
                 color: Colors.white,
