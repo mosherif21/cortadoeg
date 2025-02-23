@@ -271,7 +271,7 @@ class CustodyShiftsScreen extends StatelessWidget {
                           ),
                           tooltip: 'cashPaymentsNet'.tr,
                           numeric: true,
-                          fixedWidth: 220,
+                          fixedWidth: 240,
                           size: ColumnSize.L,
                           onSort: (index, ascending) =>
                               controller.sortData(index, ascending),
@@ -291,7 +291,7 @@ class CustodyShiftsScreen extends StatelessWidget {
                               child: Text('totalPayOuts'.tr, style: textStyle)),
                           tooltip: 'totalPayOuts'.tr,
                           numeric: true,
-                          fixedWidth: 180,
+                          fixedWidth: 200,
                           size: ColumnSize.L,
                           onSort: (index, ascending) =>
                               controller.sortData(index, ascending),
@@ -412,7 +412,7 @@ class _CustodyDataSource extends AsyncDataTableSource {
             DataCell(
                 onTap: () => controller.onReportTap(
                     isPhone: isPhone, custodyReport: custody),
-                Center(
+                alignHorizontalWidget(
                     child: Text(
                   custody.openingAmount.toString(),
                   style: textStyle,
@@ -420,7 +420,7 @@ class _CustodyDataSource extends AsyncDataTableSource {
             DataCell(
                 onTap: () => controller.onReportTap(
                     isPhone: isPhone, custodyReport: custody),
-                Center(
+                alignHorizontalWidget(
                     child: Text(
                   custody.cashPaymentsNet.toString(),
                   style: textStyle,
@@ -428,7 +428,7 @@ class _CustodyDataSource extends AsyncDataTableSource {
             DataCell(
                 onTap: () => controller.onReportTap(
                     isPhone: isPhone, custodyReport: custody),
-                Center(
+                alignHorizontalWidget(
                     child: Text(
                   custody.totalPayIns.toString(),
                   style: textStyle,
@@ -436,7 +436,7 @@ class _CustodyDataSource extends AsyncDataTableSource {
             DataCell(
                 onTap: () => controller.onReportTap(
                     isPhone: isPhone, custodyReport: custody),
-                Center(
+                alignHorizontalWidget(
                     child: Text(
                   custody.totalPayOuts.toString(),
                   style: textStyle,
@@ -444,7 +444,7 @@ class _CustodyDataSource extends AsyncDataTableSource {
             DataCell(
                 onTap: () => controller.onReportTap(
                     isPhone: isPhone, custodyReport: custody),
-                Center(
+                alignHorizontalWidget(
                     child: Text(
                   custody.cashDrop.toString(),
                   style: textStyle,
@@ -452,7 +452,7 @@ class _CustodyDataSource extends AsyncDataTableSource {
             DataCell(
                 onTap: () => controller.onReportTap(
                     isPhone: isPhone, custodyReport: custody),
-                Center(
+                alignHorizontalWidget(
                     child: Text(
                   custody.closingAmount.toString(),
                   style: textStyle,
@@ -460,7 +460,7 @@ class _CustodyDataSource extends AsyncDataTableSource {
             DataCell(
                 onTap: () => controller.onReportTap(
                     isPhone: isPhone, custodyReport: custody),
-                Center(
+                alignHorizontalWidget(
                     child: Text(
                   custody.expectedDrawerMoney.toString(),
                   style: textStyle,
@@ -468,7 +468,7 @@ class _CustodyDataSource extends AsyncDataTableSource {
             DataCell(
                 onTap: () => controller.onReportTap(
                     isPhone: isPhone, custodyReport: custody),
-                Center(
+                alignHorizontalWidget(
                     child: Text(
                   custody.difference.toString(),
                   style: textStyle,
@@ -476,7 +476,7 @@ class _CustodyDataSource extends AsyncDataTableSource {
             DataCell(
                 onTap: () => controller.onReportTap(
                     isPhone: isPhone, custodyReport: custody),
-                Center(
+                alignHorizontalWidget(
                     child: Text(
                   custody.drawerOpenCount.toString(),
                   style: textStyle,
