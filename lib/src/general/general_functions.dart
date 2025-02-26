@@ -62,10 +62,12 @@ void hideLoadingScreen() {
 }
 
 Widget alignHorizontalWidget({required Widget child}) {
-  return Align(
-    alignment: isLangEnglish() ? Alignment.centerLeft : Alignment.centerRight,
-    child: child,
-  );
+  return isLangEnglish()
+      ? child
+      : Align(
+          alignment: Alignment.centerRight,
+          child: child,
+        );
 }
 
 void closeKeyboard(BuildContext context) {
