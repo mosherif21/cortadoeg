@@ -63,7 +63,7 @@ Future<void> setLocaleLanguage(String languageCode) async {
     if (Get.isRegistered<SalesScreenController>()) {
       SalesScreenController.instance.updateLanguagesFilters();
     }
-    if (!AppInit.isWeb) {
+    if (AppInit.isMobile) {
       AuthenticationRepository.instance.setNotificationsLanguage();
     }
     hideLoadingScreen();

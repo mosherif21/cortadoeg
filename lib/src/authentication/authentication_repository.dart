@@ -143,7 +143,7 @@ class AuthenticationRepository extends GetxController {
           if (kDebugMode) {
             AppInit.logger.i('Employee role: ${userRole.name}');
           }
-          if (!AppInit.isWeb) {
+          if (AppInit.isMobile) {
             setNotificationsLanguage();
           }
           if (fireUser.value!.email != null) {
@@ -654,7 +654,7 @@ class AuthenticationRepository extends GetxController {
   Future<FunctionStatus> logoutAuthUser() async {
     try {
       await employeesListener?.cancel();
-      if (!AppInit.isWeb) {
+      if (AppInit.isMobile) {
         await resetFcmTokens();
       }
       await logoutAuth();

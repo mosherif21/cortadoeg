@@ -27,9 +27,12 @@ import 'notifications.dart';
 class AppInit {
   static bool showOnBoard = false;
   static bool notWebMobile = false;
+  static bool isMobile = false;
   static bool isWeb = false;
   static bool isAndroid = false;
   static bool isIos = false;
+  static bool isWindows = false;
+  static bool isMacOS = false;
   static bool webMobile = false;
   static bool isInitialised = false;
   static bool isConstantsInitialised = false;
@@ -72,6 +75,16 @@ class AppInit {
       if (defaultTargetPlatform == TargetPlatform.iOS && !isWeb) {
         isIos = true;
       }
+      if (defaultTargetPlatform == TargetPlatform.windows && !isWeb) {
+        isWindows = true;
+      }
+      if (defaultTargetPlatform == TargetPlatform.macOS && !isWeb) {
+        isMacOS = true;
+      }
+      if (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS && !isWeb) {
+        isMobile = true;
+      }
       isConstantsInitialised = true;
       SweetSheetColor.NICE = CustomSheetColor(
           main: const Color(0xEE28AADC),
@@ -109,7 +122,7 @@ class AppInit {
       if (kDebugMode) {
         logger.i('Firebase initialized');
       }
-      if (!AppInit.isWeb) {
+      if (AppInit.isMobile) {
         try {
           notificationToken = await FirebaseMessaging.instance.getToken() ?? '';
           initializeNotification();
